@@ -9,12 +9,22 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.HtmlUtils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Sends an e-mail copy of a portal notification. Off when SMTP credentials or the sender are not configured,
+ * Sends an e-mail copy of a portal notification, through the Brevo HTTP API when BREVO_API_KEY is set (works on hosts
+ * that block outbound SMTP, such as Render's free tier), otherwise over SMTP. Off when neither is configured or no sender,
  * and never for the seeded demo accounts (@demo.az). Sending runs off the request thread; a failure is only logged.
  */
 @Service
@@ -26,12 +36,17 @@ public class MailService {
     private final String from;
     private final String password;
     private final String publicUrl;
+    private final String brevoKey;
+    private final HttpClient http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+    private final ObjectMapper json = new ObjectMapper();
     private final ExecutorService pool = Executors.newSingleThreadExecutor();
 
     public MailService(JavaMailSender sender,
                        @Value("${app.mail.from:}") String from,
                        @Value("${spring.mail.password:}") String password,
-                       @Value("${app.mail.public-url:}") String publicUrl) {
+                       @Value("${app.mail.public-url:}") String publicUrl,
+                       @Value("${app.mail.brevo-api-key:}") String brevoKey) {
+        this.brevoKey = brevoKey;
         this.sender = sender;
         this.from = from;
         this.password = password;
@@ -39,13 +54,17 @@ public class MailService {
     }
 
     public boolean enabled() {
-        return !from.isBlank() && !password.isBlank();
+        return !from.isBlank() && (!brevoKey.isBlank() || !password.isBlank());
     }
 
     public void send(String to, String title, String message, String link) {
         if (!enabled() || to == null || !to.contains("@") || to.endsWith("@demo.az")) return;
         pool.submit(() -> {
             try {
+                if (!brevoKey.isBlank()) {
+                    sendViaBrevo(to, title, html(title, message, link));
+                    return;
+                }
                 MimeMessage mime = sender.createMimeMessage();
                 MimeMessageHelper h = new MimeMessageHelper(mime, false, StandardCharsets.UTF_8.name());
                 h.setFrom(from, "Aqrar İnvest portalı");
@@ -58,6 +77,24 @@ public class MailService {
                 log.warn("Notification e-mail failed: {}", e.getMessage());
             }
         });
+    }
+
+    private void sendViaBrevo(String to, String subject, String html) throws Exception {
+        String body = json.writeValueAsString(Map.of(
+                "sender", Map.of("name", "Aqrar İnvest portalı", "email", from),
+                "to", List.of(Map.of("email", to)),
+                "subject", subject,
+                "htmlContent", html));
+        HttpRequest req = HttpRequest.newBuilder(URI.create("https://api.brevo.com/v3/smtp/email"))
+                .timeout(Duration.ofSeconds(15))
+                .header("api-key", brevoKey)
+                .header("Content-Type", "application/json")
+                .header("Accept", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
+                .build();
+        HttpResponse<String> res = http.send(req, HttpResponse.BodyHandlers.ofString());
+        if (res.statusCode() / 100 != 2) throw new IllegalStateException("Brevo API " + res.statusCode() + ": " + res.body());
+        log.info("Notification e-mail sent via Brevo API: {}", subject);
     }
 
     private String html(String title, String message, String link) {
