@@ -19,6 +19,7 @@ import java.util.UUID;
 /**
  * Stores uploaded documents outside the web root under random names.
  * Files are accepted only if both the extension and the file signature ("magic bytes") match.
+ * Each file is also copied into the database and restored from there when the disk copy is gone (ephemeral disks).
  */
 @Service
 public class FileStorageService {
@@ -43,8 +44,10 @@ public class FileStorageService {
     }
 
     private final Path root;
+    private final az.agro.portal.repo.StoredBlobRepository blobs;
 
-    public FileStorageService(@Value("${app.upload-dir}") String uploadDir) throws IOException {
+    public FileStorageService(@Value("${app.upload-dir}") String uploadDir, az.agro.portal.repo.StoredBlobRepository blobs) throws IOException {
+        this.blobs = blobs;
         this.root = Path.of(uploadDir).toAbsolutePath().normalize();
         Files.createDirectories(root);
     }
@@ -66,7 +69,9 @@ public class FileStorageService {
         }
         String stored = UUID.randomUUID() + "." + ext;
         try {
-            file.transferTo(root.resolve(stored));
+            byte[] content = file.getBytes();
+            Files.write(root.resolve(stored), content);
+            blobs.save(new az.agro.portal.domain.StoredBlob(stored, content));
         } catch (IOException e) {
             throw new IllegalStateException("Could not store file", e);
         }
@@ -79,6 +84,7 @@ public class FileStorageService {
         String stored = UUID.randomUUID() + "." + ext;
         try {
             Files.write(root.resolve(stored), content);
+            blobs.save(new az.agro.portal.domain.StoredBlob(stored, content));
         } catch (IOException e) {
             throw new IllegalStateException("Could not store file", e);
         }
@@ -87,7 +93,15 @@ public class FileStorageService {
 
     public Resource load(String storedName) {
         Path p = root.resolve(storedName).normalize();
-        if (!p.startsWith(root) || !Files.exists(p)) throw ApiException.notFound("Fayl");
+        if (!p.startsWith(root)) throw ApiException.notFound("Fayl");
+        if (!Files.exists(p)) {
+            var blob = blobs.findById(storedName).orElseThrow(() -> ApiException.notFound("Fayl"));
+            try {
+                Files.write(p, blob.getContent());
+            } catch (IOException e) {
+                throw new IllegalStateException("Could not restore file", e);
+            }
+        }
         return new FileSystemResource(p);
     }
 

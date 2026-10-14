@@ -25,8 +25,7 @@ public class LedgerEntry {
     @Column(nullable = false, length = 10)
     private Kind kind;
 
-    @Lob
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "text")
     private String payload;
 
     @Column(nullable = false, length = 64)

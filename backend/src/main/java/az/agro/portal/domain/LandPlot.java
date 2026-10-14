@@ -82,7 +82,7 @@ public class LandPlot {
     private PlotStatus status = PlotStatus.AVAILABLE;
 
     /** Real boundary (GeoJSON geometry, WGS84) from the ANAMA certified-areas dataset. */
-    @Lob
+    @Column(columnDefinition = "text")
     private String boundaryGeoJson;
 
     /** ANAMA minefield / task identifier of the certified area, e.g. Az-2637. */

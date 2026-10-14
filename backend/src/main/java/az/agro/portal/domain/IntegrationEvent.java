@@ -28,8 +28,7 @@ public class IntegrationEvent {
     @Column(length = 40)
     private String aggregateId;
 
-    @Lob
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "text")
     private String payload;
 
     @Enumerated(EnumType.STRING)
