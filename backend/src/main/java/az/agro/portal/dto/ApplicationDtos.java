@@ -44,6 +44,22 @@ public final class ApplicationDtos {
     public record ScoreBreakdown(int total, List<ScoreItem> items) {
     }
 
+    public record CommissionScore(String evaluator, int feasibility, int financing, int socialImpact, int technology,
+                                  int total, String comment, Instant updatedAt, boolean mine) {
+    }
+
+    public record Commission(List<CommissionScore> scores, Integer average, int required) {
+    }
+
+    public record ScoreRequest(
+            @Min(0) @Max(10) int feasibility,
+            @Min(0) @Max(10) int financing,
+            @Min(0) @Max(10) int socialImpact,
+            @Min(0) @Max(10) int technology,
+            @Size(max = 1000) String comment,
+            @AssertTrue(message = "Maraqlar toqquşmasının olmadığını təsdiq edin") boolean noConflict) {
+    }
+
     public record ApplicationDto(
             Long id, String applicationNumber, PlotDtos.Label status,
             Long competitionId, String competitionCode, String competitionTitle,
@@ -53,6 +69,7 @@ public final class ApplicationDtos {
             long plannedInvestment, int ownFundsPercent, int jobsCreated, int projectMonths, int experienceYears,
             String businessPlan,
             ScoreBreakdown score,
+            Commission commission,
             String decisionNote,
             PlotDtos.Label ektisStatus, String ektisReference,
             Instant createdAt, Instant updatedAt,

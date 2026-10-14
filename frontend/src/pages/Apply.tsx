@@ -180,7 +180,7 @@ export default function Apply() {
           <Callout tone="info">Müraciət bir neçə saniyə ərzində EKTİS-ə ötürülür və fermer reyestrində yoxlanılır. Nəticəni şəxsi kabinetdə izləyə bilərsiniz.</Callout>
           <div className="row" style={{ justifyContent: "center", marginTop: 24 }}>
             <Link className="btn btn--lg" to={`/kabinet/${result.id}`}>Statusu izlə <ArrowRight size={18} /></Link>
-            <Link className="btn btn--lg btn--ghost" to="/kataloq">Kataloqa qayıt</Link>
+            <Link className="btn btn--lg btn--ghost" to={`/kabinet/${result.id}/qebz`}>Qəbzi yüklə</Link>
           </div>
         </div>
       </div>

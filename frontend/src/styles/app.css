@@ -435,3 +435,34 @@ button.panel.metric:hover .metric__value { color: var(--forest-600); }
 .rules li { display: inline-flex; align-items: center; gap: 5px; }
 .rules li.is-ok { color: var(--forest-600); }
 .linklike { background: none; border: 0; padding: 0; font: inherit; color: var(--forest-600); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+
+/* ------------------------------------------------------------ receipt (screen + print) */
+.receipt-page { min-height: 100vh; background: #e9ece9; padding: 24px 16px 48px; }
+.receipt-actions { max-width: 794px; margin: 0 auto 16px; display: flex; justify-content: space-between; gap: 12px; }
+.receipt { max-width: 794px; margin: 0 auto; background: #fff; padding: 0 0 36px; box-shadow: var(--e2); }
+.receipt__head { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; padding: 32px 48px 20px; border-bottom: 2px solid var(--forest-700); }
+.receipt__org { font-size: 13px; color: var(--ink-soft); margin-bottom: 6px; }
+.receipt h1 { font-size: 28px; }
+.receipt h2 { font-size: 16px; margin: 24px 48px 8px; }
+.receipt__number { display: flex; justify-content: space-between; align-items: baseline; margin: 22px 48px 8px; padding: 14px 18px; background: var(--forest-50); border: 1px solid var(--forest-100); }
+.receipt__number span { font-size: 13px; color: var(--ink-soft); }
+.receipt__number b { font-size: 24px; color: var(--forest-700); }
+.receipt__table { width: calc(100% - 96px); margin: 8px 48px 0; border-collapse: collapse; font-size: 14px; }
+.receipt__table th { text-align: left; font-weight: 500; color: var(--ink-soft); width: 38%; padding: 9px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+.receipt__table td { padding: 9px 0; border-bottom: 1px solid var(--line); font-weight: 550; }
+.receipt__docs { margin: 0 48px; padding-left: 20px; font-size: 14px; line-height: 1.8; }
+.receipt__foot { margin: 28px 48px 0; padding-top: 16px; border-top: 1px dashed var(--line-strong); font-size: 12.5px; color: var(--ink-soft); display: grid; gap: 6px; }
+@media print {
+  @page { size: A4; margin: 12mm; }
+  body { background: #fff; }
+  .no-print { display: none !important; }
+  .receipt-page { padding: 0; background: #fff; }
+  .receipt { box-shadow: none; max-width: none; }
+  .flag-strip { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .receipt__number { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+@media (max-width: 640px) {
+  .receipt__head, .receipt h2, .receipt__number, .receipt__docs, .receipt__foot { margin-inline: 16px; padding-inline: 0; }
+  .receipt__head { padding: 20px 16px; }
+  .receipt__table { width: calc(100% - 32px); margin-inline: 16px; }
+}

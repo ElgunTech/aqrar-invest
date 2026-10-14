@@ -4,7 +4,7 @@ import {
   Activity, BrainCircuit, CheckCheck, ClipboardList, Download, FileSearch, Gauge, History, MapPinned, Pencil, Plus, Power, RefreshCw,
   RotateCcw, Send, ShieldCheck, Trash2, Trophy, Undo2, X,
 } from "lucide-react";
-import { ApplicationFacts, EktisBox, ScoreCard, StatusFlow, Timeline } from "../components/AppView";
+import { ApplicationFacts, CommissionPanel, EktisBox, ScoreCard, StatusFlow, Timeline } from "../components/AppView";
 import { Callout, Drawer, Empty, Loading, MineTag, Tag, useToast } from "../components/ui";
 import { api, ApiError, qs } from "../lib/api";
 import { useAuth } from "../lib/auth";
@@ -145,6 +145,7 @@ function ApplicationDrawer({ id, onClose, onChanged }: { id: number; onClose: ()
             ) : app.decisionNote && <div style={{ marginTop: 14 }}><Callout tone={app.status.code === "APPROVED" ? "ok" : "warn"}>{app.decisionNote}</Callout></div>}
           </div>
           <EktisBox app={app} />
+          <CommissionPanel app={app} onScored={(u) => { setData(u); onChanged(); }} />
           <ScoreCard app={app} />
           <ApplicationFacts app={app} docBase="/api/v1/admin/applications" />
           <section className="panel"><div className="panel__head"><h3>Tarixçə</h3></div><div className="panel__body"><Timeline app={app} /></div></section>

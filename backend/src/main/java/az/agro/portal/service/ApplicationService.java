@@ -7,6 +7,7 @@ import az.agro.portal.dto.Labels;
 import az.agro.portal.dto.PlotDtos;
 import az.agro.portal.repo.ApplicationRepository;
 import az.agro.portal.repo.CompetitionRepository;
+import az.agro.portal.repo.EvaluatorScoreRepository;
 import az.agro.portal.repo.LandPlotRepository;
 import az.agro.portal.security.CurrentUser;
 import az.agro.portal.web.ApiException;
@@ -30,10 +31,15 @@ public class ApplicationService {
     private final NotificationService notifications;
     private final IntegrationService integration;
     private final AuditService audit;
+    private final EvaluatorScoreRepository scores;
 
-    public ApplicationService(ApplicationRepository applications, CompetitionRepository competitions, LandPlotRepository plots,
+    /** Minimum number of independent commission scores before an application can be approved. */
+    public static final int REQUIRED_SCORES = 2;
+
+    public ApplicationService(EvaluatorScoreRepository scores, ApplicationRepository applications, CompetitionRepository competitions, LandPlotRepository plots,
                               CurrentUser currentUser, FileStorageService files, ApplicationScorer scorer,
                               NotificationService notifications, IntegrationService integration, AuditService audit) {
+        this.scores = scores;
         this.applications = applications;
         this.competitions = competitions;
         this.plots = plots;
@@ -185,6 +191,9 @@ public class ApplicationService {
                 a.getPlot().getId(), a.getCompetition().getId(), ApplicationStatus.APPROVED, a.getId())) {
             throw ApiException.conflict("Bu sahə üzrə artıq qalib müəyyən edilib");
         }
+        if (to == ApplicationStatus.APPROVED && scores.countByApplicationId(a.getId()) < REQUIRED_SCORES) {
+            throw ApiException.conflict("Təsdiq üçün ən azı " + REQUIRED_SCORES + " komissiya üzvünün müstəqil balı lazımdır");
+        }
         AppUser actor = currentUser.require();
         a.setStatus(to);
         if (to.isFinal()) a.setDecisionNote(comment);
@@ -204,6 +213,66 @@ public class ApplicationService {
         audit.log("APPLICATION_STATUS_CHANGED", "InvestmentApplication", a.getId(),
                 a.getApplicationNumber() + ": " + from + " → " + to);
         return toDto(a, false);
+    }
+
+    // ------------------------------------------------------------------ commission
+
+    @Transactional
+    public ApplicationDto score(Long id, ScoreRequest r) {
+        InvestmentApplication a = find(id);
+        if (a.getStatus().isFinal()) throw ApiException.conflict("Qərar verilmiş müraciət yenidən qiymətləndirilə bilməz");
+        if (!r.noConflict()) throw ApiException.badRequest("Maraqlar toqquşması olan üzv qiymətləndirmədə iştirak edə bilməz");
+        AppUser me = currentUser.require();
+        EvaluatorScore s = scores.findByApplicationIdAndEvaluatorId(a.getId(), me.getId()).orElseGet(() -> new EvaluatorScore(a, me));
+        s.update(r.feasibility(), r.financing(), r.socialImpact(), r.technology(), r.comment());
+        scores.save(s);
+        audit.log("COMMISSION_SCORE", "InvestmentApplication", a.getId(), a.getApplicationNumber() + ": " + s.total() + "/100");
+        return toDto(a, false);
+    }
+
+    private Commission commission(InvestmentApplication a) {
+        AppUser viewer = currentUser.find().orElse(null);
+        Long me = viewer == null ? -1L : viewer.getId();
+        // Applicants see that independent scores exist, not who gave them or the internal remarks.
+        boolean applicantView = viewer == null || viewer.getRole() == Role.INVESTOR;
+        List<EvaluatorScore> raw = scores.findByApplicationIdOrderByUpdatedAtAsc(a.getId());
+        List<CommissionScore> list = new ArrayList<>();
+        for (int i = 0; i < raw.size(); i++) {
+            EvaluatorScore s = raw.get(i);
+            list.add(new CommissionScore(applicantView ? "Komissiya üzvü " + (i + 1) : s.getEvaluator().getFullName(),
+                    s.getFeasibility(), s.getFinancing(), s.getSocialImpact(), s.getTechnology(), s.total(),
+                    applicantView ? null : s.getComment(), s.getUpdatedAt(), s.getEvaluator().getId().equals(me)));
+        }
+        Integer avg = list.isEmpty() ? null : (int) Math.round(list.stream().mapToInt(CommissionScore::total).average().orElse(0));
+        return new Commission(list, avg, REQUIRED_SCORES);
+    }
+
+    // ------------------------------------------------------------------ public receipt verification
+
+    /** Anyone holding a receipt can confirm it is genuine. Personal data is reduced to initials. */
+    @Transactional(readOnly = true)
+    public java.util.Map<String, Object> verify(String number) {
+        InvestmentApplication a = applications.findByApplicationNumber(number.trim().toUpperCase(Locale.ROOT))
+                .orElseThrow(() -> ApiException.notFound("Müraciət"));
+        java.util.Map<String, Object> m = new java.util.LinkedHashMap<>();
+        m.put("applicationNumber", a.getApplicationNumber());
+        m.put("applicant", initials(a.getApplicantName()));
+        m.put("competition", a.getCompetition().getTitle());
+        m.put("plot", a.getPlot().getCode() + " · " + a.getPlot().getTitle());
+        m.put("submittedAt", a.getCreatedAt().toString());
+        m.put("status", Labels.of(a.getStatus()));
+        m.put("ektisReference", a.getEktisReference());
+        return m;
+    }
+
+    private static String initials(String name) {
+        StringBuilder sb = new StringBuilder();
+        for (String w : name.replace("\"", "").split("\\s+")) {
+            if (w.isEmpty()) continue;
+            if (sb.length() > 0) sb.append(" ");
+            sb.append(w.charAt(0)).append("***");
+        }
+        return sb.toString();
     }
 
     // ------------------------------------------------------------------ documents
@@ -257,7 +326,7 @@ public class ApplicationService {
                 maskPii ? Labels.maskTaxId(a.getTaxId()) : a.getTaxId(), a.getPhone(), a.getEmail(), a.getAddress(),
                 Labels.of(a.getActivityType()), a.getPlannedCrop(), a.getPlannedCrop() == null ? null : CropCatalog.nameAz(a.getPlannedCrop()),
                 a.getPlannedInvestment(), a.getOwnFundsPercent(), a.getJobsCreated(), a.getProjectMonths(), a.getExperienceYears(),
-                a.getBusinessPlan(), scorer.score(a), a.getDecisionNote(),
+                a.getBusinessPlan(), scorer.score(a), commission(a), a.getDecisionNote(),
                 Labels.of(a.getEktisStatus()), a.getEktisReference(), a.getCreatedAt(), a.getUpdatedAt(),
                 docs, history, next);
     }

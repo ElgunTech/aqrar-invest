@@ -110,6 +110,12 @@ public class AdminController {
         return applications.changeStatus(id, r);
     }
 
+    @Operation(summary = "Komissiya üzvünün müstəqil balı (maraqlar toqquşması bəyannaməsi ilə)")
+    @PostMapping("/applications/{id}/score")
+    public ApplicationDto score(@PathVariable Long id, @Valid @RequestBody ScoreRequest r) {
+        return applications.score(id, r);
+    }
+
     @Operation(summary = "Müraciət sənədini yüklə")
     @GetMapping("/applications/{id}/documents/{docId}")
     public ResponseEntity<Resource> document(@PathVariable Long id, @PathVariable Long docId) {

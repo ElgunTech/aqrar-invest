@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, FilePlus2, Inbox, MessageSquareReply, RefreshCw, Upload } from "lucide-react";
-import { ApplicationFacts, EktisBox, ScoreCard, StatusFlow, Timeline } from "../components/AppView";
+import { ArrowLeft, FilePlus2, FileText, Inbox, MessageSquareReply, RefreshCw, Upload } from "lucide-react";
+import { ApplicationFacts, CommissionPanel, EktisBox, ScoreCard, StatusFlow, Timeline } from "../components/AppView";
 import { Callout, Empty, Loading, Tag, useToast } from "../components/ui";
 import { api } from "../lib/api";
 import { useAuth } from "../lib/auth";
@@ -85,7 +85,10 @@ function Detail({ id }: { id: string }) {
     <div className="stack" style={{ ["--gap" as string]: "20px" }}>
       <div className="row row--between">
         <Link to="/kabinet" className="btn btn--sm btn--quiet"><ArrowLeft size={15} /> Bütün müraciətlər</Link>
-        <button className="btn btn--sm btn--ghost" onClick={reload}><RefreshCw size={14} /> Yenilə</button>
+        <div className="row">
+          <Link className="btn btn--sm btn--ghost" to={`/kabinet/${app.id}/qebz`}><FileText size={14} /> Qəbz (PDF)</Link>
+          <button className="btn btn--sm btn--ghost" onClick={reload}><RefreshCw size={14} /> Yenilə</button>
+        </div>
       </div>
       <div className="panel panel--pad">
         <div className="row row--between row--top" style={{ marginBottom: 18 }}>
@@ -104,6 +107,7 @@ function Detail({ id }: { id: string }) {
       <div className="layout-2" style={{ gridTemplateColumns: "minmax(0,1fr) 380px" }}>
         <div className="stack" style={{ ["--gap" as string]: "20px" }}>
           <ScoreCard app={app} />
+          {app.commission.scores.length > 0 && <CommissionPanel app={app} />}
           <ApplicationFacts app={app} docBase="/api/v1/me/applications" />
         </div>
         <section className="panel">

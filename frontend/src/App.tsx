@@ -21,6 +21,8 @@ const About = lazy(() => import("./pages/About"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const MyGovDemo = lazy(() => import("./pages/MyGovDemo"));
 const MyGovCallback = lazy(() => import("./pages/MyGovCallback"));
+const Receipt = lazy(() => import("./pages/Receipt"));
+const Verify = lazy(() => import("./pages/Verify"));
 
 /** Route guard: unauthenticated → login (with return path); wrong role → home. */
 function RequireUser({ roles, children }: { roles?: User["role"][]; children: ReactNode }) {
@@ -38,6 +40,7 @@ export function App() {
       <Routes>
         <Route index element={<Landing />} />
         <Route path="mygov-demo" element={<MyGovDemo />} />
+        <Route path="kabinet/:id/qebz" element={<RequireUser roles={["INVESTOR"]}><Receipt /></RequireUser>} />
         <Route element={<Layout />}>
           <Route path="xerite" element={<MapPage />} />
           <Route path="kataloq" element={<Catalog />} />
@@ -47,6 +50,8 @@ export function App() {
           <Route path="ai" element={<Advisor />} />
           <Route path="seffafliq" element={<Transparency />} />
           <Route path="haqqinda" element={<About />} />
+          <Route path="yoxla" element={<Verify />} />
+          <Route path="yoxla/:number" element={<Verify />} />
           <Route path="giris" element={<Login />} />
           <Route path="mygov/callback" element={<MyGovCallback />} />
           <Route path="muraciet" element={<RequireUser roles={["INVESTOR"]}><Apply /></RequireUser>} />

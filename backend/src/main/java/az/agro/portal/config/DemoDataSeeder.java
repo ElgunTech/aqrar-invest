@@ -4,6 +4,7 @@ import az.agro.portal.domain.*;
 import az.agro.portal.repo.AppUserRepository;
 import az.agro.portal.repo.ApplicationRepository;
 import az.agro.portal.repo.CompetitionRepository;
+import az.agro.portal.repo.EvaluatorScoreRepository;
 import az.agro.portal.repo.LandPlotRepository;
 import az.agro.portal.service.ApplicationScorer;
 import az.agro.portal.service.FileStorageService;
@@ -44,11 +45,13 @@ public class DemoDataSeeder implements ApplicationRunner {
     private final ApplicationScorer scorer;
     private final NotificationService notifications;
     private final boolean enabled;
+    private final EvaluatorScoreRepository scores;
 
-    public DemoDataSeeder(AppUserRepository users, LandPlotRepository plots, CompetitionRepository competitions,
+    public DemoDataSeeder(EvaluatorScoreRepository scores, AppUserRepository users, LandPlotRepository plots, CompetitionRepository competitions,
                           ApplicationRepository applications, PasswordEncoder encoder, FileStorageService files,
                           ApplicationScorer scorer, NotificationService notifications,
                           @Value("${app.seed-demo-data}") boolean enabled) {
+        this.scores = scores;
         this.users = users;
         this.plots = plots;
         this.competitions = competitions;
@@ -160,7 +163,7 @@ public class DemoDataSeeder implements ApplicationRunner {
                 today.minusDays(120), today.minusDays(60), CompetitionStatus.CLOSED, evaluator, admin, fzl3, trt2);
 
         Instant now = Instant.now();
-        application(investor, c1, agd1, ApplicantType.INDIVIDUAL, "cotton", 720_000, 35, 18, 36, 8,
+        InvestmentApplication s1 = application(investor, c1, agd1, ApplicantType.INDIVIDUAL, "cotton", 720_000, 35, 18, 36, 8,
                 ApplicationStatus.UNDER_REVIEW, EktisSyncStatus.VERIFIED, now.minus(Duration.ofDays(9)), evaluator, null);
         application(company, c1, agd5, ApplicantType.COMPANY, "cotton", 1_250_000, 40, 45, 48, 11,
                 ApplicationStatus.SUBMITTED, EktisSyncStatus.VERIFIED, now.minus(Duration.ofDays(2)), null, null);
@@ -171,14 +174,20 @@ public class DemoDataSeeder implements ApplicationRunner {
                 ApplicationStatus.SUBMITTED, EktisSyncStatus.VERIFIED, now.minus(Duration.ofDays(1)), null, null);
         application(leyla, c1, trt1, ApplicantType.INDIVIDUAL, "maize", 360_000, 25, 6, 24, 3,
                 ApplicationStatus.UNDER_REVIEW, EktisSyncStatus.VERIFIED, now.minus(Duration.ofDays(6)), evaluator, null);
-        application(company, c2, fzl1, ApplicantType.COMPANY, "grapes", 950_000, 45, 30, 60, 11,
+        InvestmentApplication s6 = application(company, c2, fzl1, ApplicantType.COMPANY, "grapes", 950_000, 45, 30, 60, 11,
                 ApplicationStatus.UNDER_REVIEW, EktisSyncStatus.VERIFIED, now.minus(Duration.ofDays(4)), evaluator, null);
-        application(company, c4, fzl3, ApplicantType.COMPANY, "chickpea", 520_000, 40, 22, 36, 11,
+        InvestmentApplication s7 = application(company, c4, fzl3, ApplicantType.COMPANY, "chickpea", 520_000, 40, 22, 36, 11,
                 ApplicationStatus.APPROVED, EktisSyncStatus.VERIFIED, now.minus(Duration.ofDays(95)), evaluator,
                 "Komissiyanın qərarı ilə qalib elan edildi: ən yüksək investisiya və iş yeri göstəriciləri.");
         application(leyla, c4, trt2, ApplicantType.INDIVIDUAL, "apple", 150_000, 10, 3, 24, 3,
                 ApplicationStatus.REJECTED, EktisSyncStatus.VERIFIED, now.minus(Duration.ofDays(90)), evaluator,
                 "Planlaşdırılan investisiya minimum tələbdən (310 000 AZN) aşağıdır.");
+
+        score(s1, evaluator, 8, 7, 7, 8, "Real biznes plan, pambıq emalı ilə inteqrasiya müsbətdir.");
+        score(s6, evaluator, 9, 8, 8, 9, "Güclü komanda, ixrac müqavilələri var.");
+        score(s6, admin, 8, 9, 7, 8, "Maliyyə mənbələri təsdiqlənib.");
+        score(s7, evaluator, 8, 8, 9, 7, "Ən çox iş yeri yaradan layihə.");
+        score(s7, admin, 9, 8, 8, 8, null);
 
         log.info("Demo data seeded: {} users, {} plots, {} competitions, {} applications",
                 users.count(), plots.count(), competitions.count(), applications.count());
@@ -248,7 +257,7 @@ public class DemoDataSeeder implements ApplicationRunner {
         return competitions.save(c);
     }
 
-    private void application(AppUser who, Competition c, LandPlot plot, ApplicantType type, String crop, long investment,
+    private InvestmentApplication application(AppUser who, Competition c, LandPlot plot, ApplicantType type, String crop, long investment,
                              int ownFunds, int jobs, int months, int experience, ApplicationStatus status, EktisSyncStatus ektis,
                              Instant createdAt, AppUser reviewer, String note) {
         InvestmentApplication a = new InvestmentApplication();
@@ -305,8 +314,15 @@ public class DemoDataSeeder implements ApplicationRunner {
         applications.save(a);
         a.setApplicationNumber(String.format("QIM-%d-%06d", createdAt.atZone(java.time.ZoneId.systemDefault()).getYear(), a.getId()));
         if (status == ApplicationStatus.INFO_REQUESTED) {
-            notifications.notify(who, "Əlavə məlumat tələb olunur — " + a.getApplicationNumber(), note, "/kabinet/" + a.getId());
+            notifications.notify(who, "Əlavə məlumat tələb olunur: " + a.getApplicationNumber(), note, "/kabinet/" + a.getId());
         }
+        return a;
+    }
+
+    private void score(InvestmentApplication a, AppUser evaluator, int f, int fin, int soc, int tech, String comment) {
+        EvaluatorScore s = new EvaluatorScore(a, evaluator);
+        s.update(f, fin, soc, tech, comment);
+        scores.save(s);
     }
 
     private static void history(InvestmentApplication a, ApplicationStatus from, ApplicationStatus to, String comment, String by, Instant at) {

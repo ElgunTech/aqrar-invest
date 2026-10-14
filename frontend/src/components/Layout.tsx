@@ -165,6 +165,7 @@ export function Footer() {
             <h4>Şəffaflıq</h4>
             <ul>
               <li><Link to="/seffafliq">Açıq statistika</Link></li>
+              <li><Link to="/yoxla">Qəbzi yoxla</Link></li>
               <li><a href="/swagger-ui.html">API sənədləri</a></li>
               <li><Link to="/haqqinda">Foto mənbələri</Link></li>
             </ul>

@@ -1,7 +1,9 @@
 import { Bot, CheckCircle2, CircleDot, Download, FileText, MessageSquareWarning, Send } from "lucide-react";
-import type { Application } from "../lib/types";
+import { useState } from "react";
+import type { Application, CommissionScore } from "../lib/types";
+import { api } from "../lib/api";
 import { dateTime, fileSize, money } from "../lib/format";
-import { Meter, ScoreRing, Tag } from "./ui";
+import { Meter, ScoreRing, Tag, useToast } from "./ui";
 
 const FLOW = [
   { code: "SUBMITTED", label: "Qəbul edilib" },
@@ -126,5 +128,85 @@ export function EktisBox({ app }: { app: Application }) {
         <b>EKTİS inteqrasiyası:</b> <Tag label={app.ektisStatus} /> {app.ektisReference && <span className="mono" style={{ marginLeft: 6 }}>{app.ektisReference}</span>}
       </div>
     </div>
+  );
+}
+
+const CRITERIA: [keyof Pick<CommissionScore, "feasibility" | "financing" | "socialImpact" | "technology">, string][] = [
+  ["feasibility", "Biznes planın icra oluna bilməsi"],
+  ["financing", "Maliyyələşmənin reallığı"],
+  ["socialImpact", "Sosial təsir: iş yerləri, sakinlərin qayıdışı"],
+  ["technology", "Texnologiya və dayanıqlılıq"],
+];
+
+/** Independent commission scores; staff can add or revise their own. */
+export function CommissionPanel({ app, onScored }: { app: Application; onScored?: (a: Application) => void }) {
+  const c = app.commission;
+  const mine = c.scores.find((s) => s.mine);
+  const [form, setForm] = useState({ feasibility: mine?.feasibility ?? 7, financing: mine?.financing ?? 7, socialImpact: mine?.socialImpact ?? 7, technology: mine?.technology ?? 7 });
+  const [comment, setComment] = useState(mine?.comment ?? "");
+  const [noConflict, setNoConflict] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const toast = useToast();
+  const canScore = !!onScored && !["APPROVED", "REJECTED"].includes(app.status.code);
+  const preview = Math.round(((form.feasibility + form.financing + form.socialImpact + form.technology) * 100) / 40);
+
+  const submit = async () => {
+    setBusy(true);
+    try {
+      const updated = await api<Application>(`/api/v1/admin/applications/${app.id}/score`, { method: "POST", body: { ...form, comment, noConflict } });
+      toast("Balınız qeydə alındı");
+      setNoConflict(false);
+      onScored?.(updated);
+    } catch (e) {
+      toast((e as Error).message, true);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <section className="panel">
+      <div className="panel__head">
+        <h3>Komissiyanın müstəqil qiymətləndirməsi</h3>
+        <span className="muted" style={{ fontSize: 13 }}>{c.scores.length} / {c.required} üzv{c.average != null && <> · orta <b style={{ color: "var(--ink)" }}>{c.average}</b>/100</>}</span>
+      </div>
+      <div className="panel__body">
+        {c.scores.length === 0 && <p className="muted" style={{ fontSize: 14 }}>Hələ heç bir komissiya üzvü bal verməyib.</p>}
+        {c.scores.length > 0 && (
+          <table className="table table--compact" style={{ marginBottom: canScore ? 18 : 0 }}>
+            <thead><tr><th>Üzv</th><th className="num">Plan</th><th className="num">Maliyyə</th><th className="num">Sosial</th><th className="num">Texn.</th><th className="num">Cəmi</th></tr></thead>
+            <tbody>
+              {c.scores.map((s) => (
+                <tr key={s.evaluator}>
+                  <td>{s.evaluator}{s.mine && <span className="faint"> (siz)</span>}{s.comment && <div className="faint" style={{ fontSize: 12.5 }}>{s.comment}</div>}</td>
+                  <td className="num">{s.feasibility}</td><td className="num">{s.financing}</td><td className="num">{s.socialImpact}</td><td className="num">{s.technology}</td>
+                  <td className="num"><b>{s.total}</b></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+        {app.status.code === "UNDER_REVIEW" && c.scores.length < c.required && (
+          <p className="faint" style={{ fontSize: 13, marginBottom: canScore ? 14 : 0 }}>Təsdiq qərarı üçün ən azı {c.required} üzvün balı lazımdır.</p>
+        )}
+        {canScore && (
+          <div style={{ borderTop: c.scores.length ? "1px solid var(--line)" : 0, paddingTop: c.scores.length ? 16 : 0 }}>
+            <h4 style={{ marginBottom: 10 }}>{mine ? "Balınızı yeniləyin" : "Sizin balınız"} <span className="faint" style={{ fontWeight: 500 }}>({preview}/100)</span></h4>
+            {CRITERIA.map(([k, label]) => (
+              <div key={k} className="field" style={{ marginBottom: 10 }}>
+                <div className="row row--between"><label htmlFor={`c-${k}`}>{label}</label><b className="tabular">{form[k]}/10</b></div>
+                <input id={`c-${k}`} className="range" type="range" min={0} max={10} value={form[k]} onChange={(e) => setForm({ ...form, [k]: Number(e.target.value) })} />
+              </div>
+            ))}
+            <textarea className="textarea" rows={2} placeholder="Qeyd (istəyə bağlı)" value={comment} onChange={(e) => setComment(e.target.value)} style={{ minHeight: 64 }} />
+            <label className="check" style={{ margin: "12px 0", alignItems: "flex-start" }}>
+              <input type="checkbox" checked={noConflict} onChange={(e) => setNoConflict(e.target.checked)} style={{ marginTop: 3 }} />
+              <span>Bu müraciətçi ilə maraqlar toqquşmam (qohumluq, iş və ya maliyyə əlaqəsi) olmadığını təsdiq edirəm.</span>
+            </label>
+            <button className="btn" disabled={!noConflict || busy} onClick={submit}>Balı təsdiq et</button>
+          </div>
+        )}
+      </div>
+    </section>
   );
 }

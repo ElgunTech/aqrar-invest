@@ -8,6 +8,7 @@ import az.agro.portal.domain.*;
 import az.agro.portal.dto.CompetitionDtos.CompetitionDto;
 import az.agro.portal.dto.Labels;
 import az.agro.portal.dto.PlotDtos.*;
+import az.agro.portal.service.ApplicationService;
 import az.agro.portal.service.CompetitionService;
 import az.agro.portal.service.PlotService;
 import az.agro.portal.service.StatsService;
@@ -30,8 +31,11 @@ public class PublicController {
     private final CompetitionService competitions;
     private final StatsService stats;
     private final CropRecommendationService ai;
+    private final ApplicationService applications;
 
-    public PublicController(PlotService plots, CompetitionService competitions, StatsService stats, CropRecommendationService ai) {
+    public PublicController(PlotService plots, CompetitionService competitions, StatsService stats, CropRecommendationService ai,
+                            ApplicationService applications) {
+        this.applications = applications;
         this.plots = plots;
         this.competitions = competitions;
         this.stats = stats;
@@ -105,6 +109,12 @@ public class PublicController {
     @GetMapping("/competitions/{id}")
     public CompetitionDto competition(@PathVariable Long id) {
         return competitions.getPublic(id);
+    }
+
+    @Operation(summary = "Qəbzin həqiqiliyinin yoxlanması (QR kod)")
+    @GetMapping("/verify/{number}")
+    public Map<String, Object> verify(@PathVariable String number) {
+        return applications.verify(number);
     }
 
     @Operation(summary = "Şəffaflıq statistikası (anonim)")

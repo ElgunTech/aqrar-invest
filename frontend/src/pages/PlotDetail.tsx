@@ -3,6 +3,7 @@ import { Circle, MapContainer, TileLayer } from "react-leaflet";
 import {
   ArrowRight, CalendarClock, Check, Droplets, FileText, Landmark, MapPin, Route, Scale, Zap, X as XIcon,
 } from "lucide-react";
+import { Calculator } from "../components/Calculator";
 import { Callout, Empty, Loading, Meter, MineTag, Tag } from "../components/ui";
 import { useAuth } from "../lib/auth";
 import { ACTIVITY } from "../lib/domain";
@@ -111,6 +112,8 @@ export default function PlotDetail() {
             </div>
 
             {rec ? <AiCard rec={rec} inputs={p} /> : <div className="panel"><Loading /></div>}
+
+            <Calculator plot={p} />
 
             <section className="panel">
               <div className="panel__head"><h3><Landmark size={18} /> Sahə haqqında</h3></div>

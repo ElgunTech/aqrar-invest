@@ -158,6 +158,24 @@ export interface ScoreItem {
   note: string;
 }
 
+export interface CommissionScore {
+  evaluator: string;
+  feasibility: number;
+  financing: number;
+  socialImpact: number;
+  technology: number;
+  total: number;
+  comment: string | null;
+  updatedAt: string;
+  mine: boolean;
+}
+
+export interface Commission {
+  scores: CommissionScore[];
+  average: number | null;
+  required: number;
+}
+
 export interface Application {
   id: number;
   applicationNumber: string;
@@ -185,6 +203,7 @@ export interface Application {
   experienceYears: number;
   businessPlan: string;
   score: { total: number; items: ScoreItem[] };
+  commission: Commission;
   decisionNote: string | null;
   ektisStatus: Label;
   ektisReference: string | null;

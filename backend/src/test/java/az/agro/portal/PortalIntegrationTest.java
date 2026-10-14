@@ -39,6 +39,7 @@ class PortalIntegrationTest {
     @Autowired CompetitionRepository competitions;
     @Autowired AppUserRepository users;
     @Autowired CropRecommendationService ai;
+    @Autowired az.agro.portal.repo.ApplicationRepository applications;
 
     private static final byte[] PDF = "%PDF-1.4\ntest\n%%EOF".getBytes(StandardCharsets.US_ASCII);
 
@@ -161,6 +162,29 @@ class PortalIntegrationTest {
         String body = mvc.perform(get("/api/v1/admin/applications").with(user("evaluator@demo.az").roles("EVALUATOR")))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
         assertThat(body).doesNotContain("5ZK7QWE").contains("5Z***WE");
+    }
+
+    @Test
+    void approvalNeedsTwoIndependentCommissionScores() throws Exception {
+        long id = applications.findAll().stream()
+                .filter(a -> a.getStatus().name().equals("UNDER_REVIEW") && a.getPlot().getCode().equals("QR-TRT-001"))
+                .findFirst().orElseThrow().getId();
+        String approve = "{\"status\":\"APPROVED\",\"comment\":\"Qalib\"}";
+        String score = "{\"feasibility\":8,\"financing\":7,\"socialImpact\":8,\"technology\":7,\"noConflict\":true}";
+
+        mvc.perform(post("/api/v1/admin/applications/" + id + "/status").with(user("evaluator@demo.az").roles("EVALUATOR"))
+                .contentType(MediaType.APPLICATION_JSON).content(approve)).andExpect(status().isConflict());
+        // a member who does not declare the absence of a conflict of interest cannot score
+        mvc.perform(post("/api/v1/admin/applications/" + id + "/score").with(user("evaluator@demo.az").roles("EVALUATOR"))
+                .contentType(MediaType.APPLICATION_JSON).content(score.replace("true", "false"))).andExpect(status().isBadRequest());
+        mvc.perform(post("/api/v1/admin/applications/" + id + "/score").with(user("evaluator@demo.az").roles("EVALUATOR"))
+                .contentType(MediaType.APPLICATION_JSON).content(score)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.commission.average").value(75));
+        mvc.perform(post("/api/v1/admin/applications/" + id + "/score").with(user("admin@demo.az").roles("ADMIN"))
+                .contentType(MediaType.APPLICATION_JSON).content(score)).andExpect(status().isOk());
+        mvc.perform(post("/api/v1/admin/applications/" + id + "/status").with(user("evaluator@demo.az").roles("EVALUATOR"))
+                .contentType(MediaType.APPLICATION_JSON).content(approve)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.status.code").value("APPROVED"));
     }
 
     // ------------------------------------------------------------ AI
