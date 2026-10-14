@@ -1,3 +1,4 @@
+import { useT } from "../lib/i18n";
 import { CartesianGrid, Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Satellite as SatIcon } from "lucide-react";
 import { Loading } from "./ui";
@@ -17,16 +18,17 @@ const monthLabel = (d: string) => `${MONTHS[Number(d.slice(5, 7)) - 1]} ${d.slic
  * For an awarded plot the award date is marked, and the backend flags a plot that stays bare after it.
  */
 export function SatellitePanel({ plotId, compact = false }: { plotId: number; compact?: boolean }) {
+  const { t } = useT();
   const { data, error, loading } = useApi<SatelliteReport>(`/api/v1/public/plots/${plotId}/satellite`);
 
   return (
     <section className="panel">
       <div className="panel__head">
-        <h3 className="row" style={{ ["--gap" as string]: "8px" }}><SatIcon size={18} /> Peyk monitorinqi (NDVI)</h3>
-        <span className="faint" style={{ fontSize: 12.5 }}>Sentinel-2, son 13 ay</span>
+        <h3 className="row" style={{ ["--gap" as string]: "8px" }}><SatIcon size={18} /> {t("Peyk monitorinqi (NDVI)")}</h3>
+        <span className="faint" style={{ fontSize: 12.5 }}>{t("Sentinel-2, son 13 ay")}</span>
       </div>
       <div className="panel__body">
-        {loading && !data && <Loading label="Peyk görüntüləri təhlil edilir" />}
+        {loading && !data && <Loading label={t("Peyk görüntüləri təhlil edilir")} />}
         {error && <p className="faint">{error}</p>}
         {data && (
           <>
@@ -55,8 +57,8 @@ export function SatellitePanel({ plotId, compact = false }: { plotId: number; co
                 </div>
                 {data.images.trueColor && (
                   <div className="sat-images">
-                    <figure><img src={data.images.trueColor} alt="Sahənin son peyk görüntüsü (təbii rənglər)" loading="lazy" /><figcaption>Təbii rənglər</figcaption></figure>
-                    <figure><img src={data.images.ndvi} alt="Sahənin NDVI xəritəsi" loading="lazy" /><figcaption>NDVI: <span className="sat-scale" /> boş → yaşıl</figcaption></figure>
+                    <figure><img src={data.images.trueColor} alt="Sahənin son peyk görüntüsü (təbii rənglər)" loading="lazy" /><figcaption>{t("Təbii rənglər")}</figcaption></figure>
+                    <figure><img src={data.images.ndvi} alt="Sahənin NDVI xəritəsi" loading="lazy" /><figcaption>NDVI: <span className="sat-scale" /> {t("boş → yaşıl")}</figcaption></figure>
                     <p className="faint" style={{ gridColumn: "1 / -1", fontSize: 12 }}>Son görüntü: {date(data.series[data.series.length - 1].date)}, NDVI {data.latestNdvi?.toFixed(2)}</p>
                   </div>
                 )}

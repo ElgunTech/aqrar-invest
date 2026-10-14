@@ -1,3 +1,4 @@
+import { useT } from "../lib/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import maplibregl, { type Map as MlMap } from "maplibre-gl";
@@ -37,7 +38,8 @@ function centroid(p: Plot): [number, number] {
 }
 
 export default function Map3D() {
-  useDocumentTitle("3D xəritə");
+  const { t } = useT();
+  useDocumentTitle(t("3D xəritə"));
   const { data } = useApi<Plot[]>("/api/v1/public/plots");
   const plots = useMemo(() => (data ?? []).filter((p) => p.boundaryGeoJson), [data]);
   const container = useRef<HTMLDivElement>(null);
@@ -174,8 +176,8 @@ export default function Map3D() {
   return (
     <div className="map3d">
       <aside className="map3d__list">
-        <h2 style={{ fontSize: 18 }}>3D investisiya xəritəsi</h2>
-        <p className="faint" style={{ fontSize: 12.5, margin: "4px 0 12px" }}>Relyef, peyk görüntüsü və ANAMA-nın rəsmi sərhədləri. Sahəni seçin, kamera ona uçacaq.</p>
+        <h2 style={{ fontSize: 18 }}>{t("3D investisiya xəritəsi")}</h2>
+        <p className="faint" style={{ fontSize: 12.5, margin: "4px 0 12px" }}>{t("Relyef, peyk görüntüsü və ANAMA-nın rəsmi sərhədləri. Sahəni seçin, kamera ona uçacaq.")}</p>
         {plots.map((p) => {
           const a = ACTIVITY[p.activityType.code];
           const Icon = a.icon;
@@ -193,25 +195,25 @@ export default function Map3D() {
       <div className="map3d__stage">
         <div ref={container} className="map3d__canvas" />
         <div className="map3d__tools">
-          <button className="btn btn--sm btn--light" onClick={toggleOrbit}>{orbiting ? <><Pause size={14} /> Fırlanmanı dayandır</> : <><Play size={14} /> Fırlat</>}</button>
-          <button className="btn btn--sm btn--light" onClick={overview}><RotateCw size={14} /> Ümumi görünüş</button>
-          <Link className="btn btn--sm btn--light" to="/xerite">2D xəritə</Link>
+          <button className="btn btn--sm btn--light" onClick={toggleOrbit}>{orbiting ? <><Pause size={14} /> {t("Fırlanmanı dayandır")}</> : <><Play size={14} /> {t("Fırlat")}</>}</button>
+          <button className="btn btn--sm btn--light" onClick={overview}><RotateCw size={14} /> {t("Ümumi görünüş")}</button>
+          <Link className="btn btn--sm btn--light" to="/xerite">{t("2D xəritə")}</Link>
         </div>
         {selected && (
           <div className="map3d__card rise">
-            <button className="map3d__close" onClick={overview} aria-label="Bağla"><X size={16} /></button>
+            <button className="map3d__close" onClick={overview} aria-label={t("Bağla")}><X size={16} /></button>
             <div className="faint mono" style={{ fontSize: 12 }}>{selected.code} · ANAMA {selected.anamaRef}</div>
             <h3 style={{ margin: "4px 0 8px", fontSize: 18 }}>{selected.title}</h3>
             <div className="row" style={{ marginBottom: 10 }}><MineTag label={selected.mineClearance} /><span className="faint" style={{ fontSize: 12.5 }}>{date(selected.mineClearanceDate)}</span></div>
             <dl className="kv" style={{ gridTemplateColumns: "1fr auto", fontSize: 13.5, gap: "4px 12px" }}>
-              <dt>Rayon, kənd</dt><dd>{selected.district}, {selected.village}</dd>
-              <dt>Ərazi</dt><dd>{num(selected.areaHa, 1)} ha</dd>
-              <dt>Təyinat</dt><dd>{selected.activityType.label}</dd>
-              <dt>Min. investisiya</dt><dd>{money(selected.minInvestment)}</dd>
-              {selected.aiTopCrop && <><dt>AI tövsiyəsi</dt><dd>{selected.aiTopCrop.name} ({pct(selected.aiTopCrop.probability)})</dd></>}
-              {selected.openCompetition && <><dt>Son müraciət</dt><dd>{date(selected.openCompetition.deadline)}</dd></>}
+              <dt>{t("Rayon, kənd")}</dt><dd>{selected.district}, {selected.village}</dd>
+              <dt>{t("Ərazi")}</dt><dd>{num(selected.areaHa, 1)} ha</dd>
+              <dt>{t("Təyinat")}</dt><dd>{t(selected.activityType.label)}</dd>
+              <dt>{t("Min. investisiya")}</dt><dd>{money(selected.minInvestment)}</dd>
+              {selected.aiTopCrop && <><dt>{t("AI tövsiyəsi")}</dt><dd>{t(selected.aiTopCrop.name)} ({pct(selected.aiTopCrop.probability)})</dd></>}
+              {selected.openCompetition && <><dt>{t("Son müraciət:").replace(":", "")}</dt><dd>{date(selected.openCompetition.deadline)}</dd></>}
             </dl>
-            <Link className="btn btn--block" style={{ marginTop: 14 }} to={`/sahe/${selected.id}`}>Ətraflı <ArrowRight size={16} /></Link>
+            <Link className="btn btn--block" style={{ marginTop: 14 }} to={`/sahe/${selected.id}`}>{t("Ətraflı")} <ArrowRight size={16} /></Link>
           </div>
         )}
       </div>

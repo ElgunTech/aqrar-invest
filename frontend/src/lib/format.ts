@@ -1,3 +1,5 @@
+import { getLang } from "./i18n";
+
 const MONTHS = ["yanvar", "fevral", "mart", "aprel", "may", "iyun", "iyul", "avqust", "sentyabr", "oktyabr", "noyabr", "dekabr"];
 
 function group(n: number): string {
@@ -20,6 +22,8 @@ export const pct = (p: number | null | undefined) => (p == null ? "yoxdur" : Mat
 export function date(v: string | null | undefined): string {
   if (!v) return "yoxdur";
   const d = new Date(v.length === 10 ? v + "T00:00:00" : v);
+  const lang = getLang();
+  if (lang !== "az") return d.toLocaleDateString(lang === "en" ? "en-GB" : "ru-RU", { day: "numeric", month: "long", year: "numeric" });
   return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 }
 

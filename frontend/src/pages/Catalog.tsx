@@ -1,3 +1,4 @@
+import { useT } from "../lib/i18n";
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Map as MapIcon, Scale, X } from "lucide-react";
@@ -10,7 +11,8 @@ import { useApi, useDebounced, useDocumentTitle } from "../lib/hooks";
 import type { Plot } from "../lib/types";
 
 export default function Catalog() {
-  useDocumentTitle("İnvestisiya imkanları kataloqu");
+  const { t } = useT();
+  useDocumentTitle(t("İnvestisiya imkanları kataloqu"));
   const [params] = useSearchParams();
   const [filters, setFilters] = useState<Filters>({ ...emptyFilters, q: params.get("q") ?? "", activity: params.get("activity") ?? "" });
   const debounced = useDebounced(filters);
@@ -23,7 +25,7 @@ export default function Catalog() {
     setSelected((s) => {
       if (s.includes(id)) return s.filter((x) => x !== id);
       if (s.length >= 4) {
-        toast("Ən çox 4 sahə müqayisə etmək olar", true);
+        toast(t("Ən çox 4 sahə müqayisə etmək olar"), true);
         return s;
       }
       return [...s, id];
@@ -35,10 +37,10 @@ export default function Catalog() {
         <div className="wrap">
           <div className="row row--between row--top">
             <div>
-              <h1>İnvestisiya imkanları kataloqu</h1>
-              <p>Müsabiqəyə çıxarılan sahələr: ölçü, yerləşmə, istifadə şərtləri, minadan təmizlənmə statusu və son müraciət tarixi. 2–4 sahəni seçib yan-yana müqayisə edin.</p>
+              <h1>{t("İnvestisiya imkanları kataloqu")}</h1>
+              <p>{t("Müsabiqəyə çıxarılan sahələr: ölçü, yerləşmə, istifadə şərtləri, minadan təmizlənmə statusu və son müraciət tarixi. 2–4 sahəni seçib yan-yana müqayisə edin.")}</p>
             </div>
-            <Link className="btn btn--ghost" to="/xerite"><MapIcon size={16} /> Xəritə görünüşü</Link>
+            <Link className="btn btn--ghost" to="/xerite"><MapIcon size={16} /> {t("Xəritə görünüşü")}</Link>
           </div>
         </div>
       </section>
@@ -47,9 +49,9 @@ export default function Catalog() {
           <PlotFilters value={filters} onChange={setFilters} layout="bar" showSort />
         </div>
         <div className="row row--between" style={{ marginBottom: 14 }}>
-          <span className="muted">{plots ? `${plots.length} sahə tapıldı` : " "}</span>
+          <span className="muted">{plots ? t("{n} sahə tapıldı", { n: plots.length }) : " "}</span>
           {JSON.stringify(filters) !== JSON.stringify(emptyFilters) && (
-            <button className="btn btn--sm btn--quiet" onClick={() => setFilters(emptyFilters)}><X size={14} /> Filtrləri sıfırla</button>
+            <button className="btn btn--sm btn--quiet" onClick={() => setFilters(emptyFilters)}><X size={14} /> {t("Filtrləri sıfırla")}</button>
           )}
         </div>
         {loading && !plots ? (
@@ -61,15 +63,15 @@ export default function Catalog() {
             ))}
           </div>
         ) : (
-          <div className="panel"><Empty title="Filtrə uyğun sahə tapılmadı">Filtrləri dəyişin və ya sıfırlayın.</Empty></div>
+          <div className="panel"><Empty title={t("Filtrə uyğun sahə tapılmadı")}>{t("Filtrləri dəyişin və ya sıfırlayın.")}</Empty></div>
         )}
       </div>
       {selected.length > 0 && (
-        <div className="compare-dock" role="region" aria-label="Müqayisə">
+        <div className="compare-dock" role="region" aria-label={t("Müqayisə")}>
           <Scale size={18} />
-          <span>{selected.length} sahə seçilib{selected.length < 2 ? " · ən azı 2" : ""}</span>
-          <button className="btn btn--sm btn--amber" disabled={selected.length < 2} onClick={() => nav(`/muqayise?ids=${selected.join(",")}`)}>Müqayisə et</button>
-          <button className="btn btn--sm btn--outline-light" onClick={() => setSelected([])}>Təmizlə</button>
+          <span>{t("{n} sahə seçilib", { n: selected.length })}{selected.length < 2 ? t(" · ən azı 2") : ""}</span>
+          <button className="btn btn--sm btn--amber" disabled={selected.length < 2} onClick={() => nav(`/muqayise?ids=${selected.join(",")}`)}>{t("Müqayisə et")}</button>
+          <button className="btn btn--sm btn--outline-light" onClick={() => setSelected([])}>{t("Təmizlə")}</button>
         </div>
       )}
     </>

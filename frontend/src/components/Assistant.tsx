@@ -1,3 +1,4 @@
+import { useT } from "../lib/i18n";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { MessageCircle, Send, X } from "lucide-react";
@@ -28,6 +29,7 @@ const START: Message = {
 
 /** Floating portal assistant. Answers come from /api/v1/public/assistant and always cite their sources. */
 export function Assistant() {
+  const { t } = useT();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([START]);
   const [input, setInput] = useState("");
@@ -64,10 +66,10 @@ export function Assistant() {
   return (
     <>
       {open && (
-        <section className="chat" role="dialog" aria-label="Portal köməkçisi">
+        <section className="chat" role="dialog" aria-label={t("Portal köməkçisi")}>
           <header className="chat__head">
             <div>
-              <b>Portal köməkçisi</b>
+              <b>{t("Portal köməkçisi")}</b>
               <span>Rəsmi mənbələrə əsaslanır</span>
             </div>
             <button className="chat__close" onClick={() => setOpen(false)} aria-label="Bağla"><X size={18} /></button>
@@ -100,9 +102,9 @@ export function Assistant() {
           </form>
         </section>
       )}
-      <button className="chat-fab" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-label="Portal köməkçisi">
+      <button className="chat-fab" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-label={t("Portal köməkçisi")}>
         {open ? <X size={22} /> : <MessageCircle size={22} />}
-        {!open && <span>Köməkçi</span>}
+        {!open && <span>{t("Köməkçi")}</span>}
       </button>
     </>
   );
