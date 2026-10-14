@@ -136,6 +136,9 @@ start.bat
 * **Dürüstlük siqnalları:** başqa müraciətçi ilə eyni telefon/e-poçt, kopyalanmış biznes plan (mətn oxşarlığı), real olmayan investisiya, FİN uyğunsuzluğu, qiymətləndiricinin özü ilə maraqlar toqquşması. Siqnallar qərar vermir, komissiyanın diqqətini çəkir; sahibkar onları görmür.
 * **Böyük Qayıdış:** qayıdan sakinlər üçün yaradılan iş yerləri ayrıca qiymətləndirmə meyarı və statistika göstəricisidir.
 * **Komissiya:** ən azı 2 üzvün müstəqil balı, maraqlar toqquşması bəyannaməsi.
+* **Kor qiymətləndirmə:** komissiya üzvü bal verənə qədər müraciətçinin adını, FİN/VÖEN-ini, əlaqə məlumatlarını və şəxsiyyət sənədlərini görmür; yalnız biznes planı, rəqəmlər və dürüstlük siqnalları açıqdır. Ad öz balını verdikdən sonra açılır.
+* **Dəyişdirilə bilməyən qərar jurnalı:** hər status dəyişikliyi və komissiya balı SHA-256 hash zəncirinə möhürlənir. `/yoxla` səhifəsi zəncirin bütövlüyünü və müraciətin cari qeydlərinin möhürlənmiş vəziyyətlə uyğunluğunu ictimaiyyətə göstərir. Demo: admin → müraciət → "Saxtakarlığı simulyasiya et" (bazada birbaşa dəyişiklik) → yoxlama qırmızı olur; təkrar basanda bərpa.
+* **Açıq məlumat (OCDS 1.1):** müsabiqələr, sahələr, iştirakçılar və qaliblər Open Contracting Data Standard formatında (`/api/v1/public/open-data/ocds`), rəsmi OCDS 1.1.5 JSON sxeminə uyğunluğu yoxlanılıb. Fiziki şəxslərin adları açıqlanmır.
 * **QR qəbz və qərar sənədi:** müraciət qəbzi və komissiyanın qərarı (QR kod, komissiya balları, elektron imza, möhür) çap və PDF üçün; ictimai yoxlama səhifəsi `/yoxla`.
 * **Peyk monitorinqi (NDVI):** hər sahə üçün son 13 ayın ən az buludlu Sentinel-2 görüntüsü, NDVI sahənin rəsmi sərhədi üzrə hesablanır. Yazda bütün boş sahələr yağışdan yaşıllaşır, ona görə əkin yay aylarındakı (iyun–sentyabr) NDVI və ötən ilin həmin ayı ilə müqayisə ilə müəyyən edilir. Qərardan 6 ay sonra əkin görünmürsə, qırmızı xəbərdarlıq yaranır. Investorun foto-hesabatından asılı olmayan ikinci yoxlama.
 * **Günəş enerjisi:** sahənin günəş paneli üçün uyğunluğu (100 bal: PVGIS potensialı, minatəmizləmə, şəbəkə, fəaliyyətlə uyğunluq). İki ssenari: «aktiv istehlakçı» (150 kW-a qədər, öz ehtiyacı 10.6 qəpik qənaət, artığı Azərişıq şəbəkəsinə 8.5 qəpik) və aqrovoltaik stansiya (panellər altında əkin davam edir). Sahənin illik gəlirinə təsiri, geri qaytarılma, CO₂. Xərclər redaktə edilə bilən fərziyyələrdir.
@@ -158,6 +161,9 @@ Demo:
 * Siyahılarda FİN/VÖEN maskalanır; tam baxış və sənəd yükləmə audit jurnalına yazılır.
 * CSV hesabatında formula injection qorunması.
 * Sistemlərarası API-lər `X-API-Key` ilə (sabit vaxtlı müqayisə).
+* Sorğu limiti (hər müştəri üçün, dəqiqədə): giriş və qeydiyyat 10, köməkçi 20, peyk/günəş 40, qalan API 300; aşanda HTTP 429.
+* Frontend başlıqları (`frontend/vercel.json`): Content-Security-Policy (yalnız lazım olan mənbələr; production build-də 8 səhifədə pozuntu yoxdur), HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, COOP.
+* CI: hər push-da backend testləri və frontend tip yoxlaması + build (GitHub Actions).
 
 ## Yerləşdirmə
 
