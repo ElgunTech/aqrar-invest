@@ -68,8 +68,9 @@ public class IntegrityService {
         }
 
         if (viewer != null && viewer.getRole().name().equals("INVESTOR") == false) {
-            String vs = surname(viewer.getFullName());
-            if (!vs.isEmpty() && vs.equals(surname(a.getApplicantName()))) {
+            Set<String> shared = surnames(viewer.getFullName());
+            shared.retainAll(surnames(a.getApplicantName()));
+            if (!shared.isEmpty()) {
                 out.add(new Signal("HIGH", "CONFLICT_SURNAME", "Maraqlar toqquşması ehtimalı: müraciətçi ilə sizin soyadınız eynidir"));
             }
             if (!digits(viewer.getPhone()).isEmpty() && digits(viewer.getPhone()).equals(phone)) {
@@ -88,12 +89,21 @@ public class IntegrityService {
         return d.length() > 9 ? d.substring(d.length() - 9) : d;
     }
 
-    private static String surname(String name) {
-        if (name == null) return "";
-        String[] parts = name.replace("\"", "").trim().split("\\s+");
-        String last = parts[parts.length - 1].toLowerCase(Locale.ROOT);
-        // "Hüseynova" and "Hüseynov" are the same family name
-        return last.length() > 3 && last.endsWith("a") ? last.substring(0, last.length() - 1) : last;
+    /**
+     * Family names in a full name, whatever the word order ("Rafael Qurbanov" or "Qurbanov Rafael").
+     * Azerbaijani surnames end in -ov/-ev/-yev, -zadə, -lı/-li; "Hüseynova" and "Hüseynov" count as one.
+     */
+    private static Set<String> surnames(String name) {
+        Set<String> out = new HashSet<>();
+        if (name == null) return out;
+        for (String w : name.replace("\"", "").toLowerCase(Locale.ROOT).split("\\s+")) {
+            String base = w.length() > 4 && w.endsWith("a") ? w.substring(0, w.length() - 1) : w;
+            if (base.length() > 3 && (base.endsWith("ov") || base.endsWith("ev") || base.endsWith("zadə")
+                    || base.endsWith("lı") || base.endsWith("li"))) {
+                out.add(base);
+            }
+        }
+        return out;
     }
 
     private static Set<String> shingles(String text) {

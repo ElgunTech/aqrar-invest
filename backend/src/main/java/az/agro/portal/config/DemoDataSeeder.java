@@ -75,8 +75,8 @@ public class DemoDataSeeder implements ApplicationRunner {
         if (!enabled || users.count() > 0) return;
         log.info("Seeding demo data...");
 
-        AppUser admin = user("admin@demo.az", "Nigar Quliyeva", Role.ADMIN, "+994 50 111 11 11", null);
-        AppUser evaluator = user("evaluator@demo.az", "Orxan Babayev", Role.EVALUATOR, "+994 50 222 22 22", null);
+        AppUser admin = user("admin@demo.az", "Şükürov Elgün", Role.ADMIN, "+994 50 111 11 11", null);
+        AppUser evaluator = user("evaluator@demo.az", "Qurbanov Rafael", Role.EVALUATOR, "+994 50 222 22 22", null);
         AppUser investor = user("investor@demo.az", "Rəşad Məmmədov", Role.INVESTOR, "+994 55 333 33 33", "5ZK7QWE");
         AppUser company = user("aqro@demo.az", "Qarabağ Aqro MMC", Role.INVESTOR, "+994 12 444 44 44", "1402567891");
         AppUser leyla = user("leyla@demo.az", "Leyla Hüseynova", Role.INVESTOR, "+994 70 555 55 55", "7AB3XYZ");
@@ -196,8 +196,8 @@ public class DemoDataSeeder implements ApplicationRunner {
         score(s7, admin, 9, 8, 8, 8, null);
 
         // Integrity demo: a new applicant shares Leyla's phone, copies her business plan, offers an implausibly
-        // low amount and shares a surname with evaluator Orxan Babayev.
-        AppUser suspicious = user("elcin@demo.az", "Elçin Babayev", Role.INVESTOR, "+994 70 555 55 55", "9KD4PLM");
+        // low amount and shares a surname with evaluator Qurbanov Rafael.
+        AppUser suspicious = user("elcin@demo.az", "Elçin Qurbanov", Role.INVESTOR, "+994 70 555 55 55", "9KD4PLM");
         InvestmentApplication s9 = application(suspicious, c2, xcv1, ApplicantType.INDIVIDUAL, "grapes", 90_000, 5, 4, 24, 1,
                 ApplicationStatus.SUBMITTED, EktisSyncStatus.VERIFIED, now.minus(Duration.ofHours(20)), null, null);
         s9.setBusinessPlan(s3.getBusinessPlan());

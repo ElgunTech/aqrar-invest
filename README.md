@@ -107,7 +107,7 @@ PostgreSQL ilə: `--spring.profiles.active=postgres` və `DB_URL`, `DB_USER`, `D
 * **Komissiya:** ən azı 2 üzvün müstəqil balı, maraqlar toqquşması bəyannaməsi.
 * **QR qəbz:** ictimai yoxlama səhifəsi `/yoxla`.
 
-Demo: `evaluator@demo.az` → İnzibati panel → "Öhdəliklərin monitorinqi" (qırmızı layihə) və Müraciətlər → "Elçin Babayev" (6 siqnal).
+Demo: `evaluator@demo.az` → İnzibati panel → "Öhdəliklərin monitorinqi" (qırmızı layihə) və Müraciətlər → "Elçin Qurbanov" (6 siqnal).
 
 ## Təhlükəsizlik
 

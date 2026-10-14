@@ -36,7 +36,7 @@ class MonitoringIntegrityTest {
 
     @Test
     void integritySignalsFlagTheSuspiciousApplication() throws Exception {
-        long id = applications.findAll().stream().filter(a -> a.getApplicantName().equals("Elçin Babayev")).findFirst().orElseThrow().getId();
+        long id = applications.findAll().stream().filter(a -> a.getApplicantName().equals("Elçin Qurbanov")).findFirst().orElseThrow().getId();
         JsonNode app = body(mvc.perform(get("/api/v1/admin/applications/" + id).with(user("evaluator@demo.az").roles("EVALUATOR"))).andExpect(status().isOk()));
         List<String> codes = new ArrayList<>();
         app.get("integrity").forEach(s -> codes.add(s.get("code").asText()));
