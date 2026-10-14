@@ -206,8 +206,20 @@ flowchart LR
 
 ## Peyk monitorinqi (NDVI)
 
-\
-Qarabağda yazda yağışdan sonra bütün boş sahələr yaşıllaşır (NDVI 0.3–0.45) və iyulda quruyur. Ona görə yazdakı pik əkin sübutu sayılmır; 18 real sahənin hamısında bu nümunə müşahidə olunub. Qayda -dədir və  ilə yoxlanılır.
+```mermaid
+flowchart LR
+  P[Sahənin ANAMA sərhədi] --> Q[STAC axtarışı<br/>Sentinel-2 L2A, buludluluq < 25%]
+  Q --> M[Hər ay üçün ən az buludlu görüntü]
+  M --> N[NDVI = B08−B04 / B08+B04<br/>sərhəd daxilində orta]
+  N --> D{Qərar tarixi var?}
+  D -->|yox| B[İlkin vəziyyət]
+  D -->|bəli| Y[Yay ayları iyun–sentyabr<br/>və ötən ilin həmin ayı]
+  Y -->|yay NDVI ≥ 0.35 və ya artım ≥ 0.12| A[Əkin aşkarlanır]
+  Y -->|6 ay keçib, əkin yoxdur| X[Qırmızı xəbərdarlıq]
+  Y -->|yay hələ gəlməyib| W[Gözləmə]
+```
+
+Qarabağda yazda yağışdan sonra bütün boş sahələr yaşıllaşır (NDVI 0.3–0.45) və iyulda quruyur. Ona görə yazdakı pik əkin sübutu sayılmır; 18 real sahənin hamısında bu nümunə müşahidə olunub. Qayda `SatelliteService.assess`-dədir və `SatelliteAssessTest` ilə yoxlanılır.
 
 ## Günəş enerjisi
 
