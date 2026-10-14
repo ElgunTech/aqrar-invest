@@ -9,15 +9,23 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
-/** Which optional channels are switched on in this deployment (no secrets, only on/off). */
+/** Which optional channels are switched on in this deployment and the database engine (no secrets). */
 @RestController
 @Tag(name = "Status")
 public class StatusController {
 
     private final MailService mail;
     private final AssistantService assistant;
+    private final String database;
 
-    public StatusController(MailService mail, AssistantService assistant) {
+    public StatusController(MailService mail, AssistantService assistant, javax.sql.DataSource ds) {
+        String db;
+        try (var c = ds.getConnection()) {
+            db = c.getMetaData().getDatabaseProductName();
+        } catch (Exception e) {
+            db = "unknown";
+        }
+        this.database = db;
         this.mail = mail;
         this.assistant = assistant;
     }
@@ -25,6 +33,6 @@ public class StatusController {
     @Operation(summary = "E-poçt və LLM kanallarının vəziyyəti")
     @GetMapping("/api/v1/public/status")
     public Map<String, Object> status() {
-        return Map.of("email", mail.enabled(), "llm", assistant.llmEnabled());
+        return Map.of("email", mail.enabled(), "llm", assistant.llmEnabled(), "database", database);
     }
 }
