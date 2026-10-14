@@ -199,11 +199,13 @@ export interface Application {
   plannedInvestment: number;
   ownFundsPercent: number;
   jobsCreated: number;
+  returneeJobs: number;
   projectMonths: number;
   experienceYears: number;
   businessPlan: string;
   score: { total: number; items: ScoreItem[] };
   commission: Commission;
+  integrity: Signal[];
   decisionNote: string | null;
   ektisStatus: Label;
   ektisReference: string | null;
@@ -226,6 +228,7 @@ export interface ApplicationListItem {
   activityType: Label;
   plannedInvestment: number;
   autoScore: number;
+  signalCount: number;
   status: Label;
   ektisStatus: Label;
   createdAt: string;
@@ -259,6 +262,7 @@ export interface PublicStats {
   applicationCount: number;
   plannedInvestment: number;
   plannedJobs: number;
+  returneeJobs: number;
   approvedCount: number;
   decidedCount: number;
   clearedPlots: number;
@@ -312,4 +316,46 @@ export interface ModelInfo {
   modelComparison?: Record<string, number>;
   dataset?: string;
   trainedAt?: string;
+}
+
+export interface Signal {
+  level: "HIGH" | "MEDIUM";
+  code: string;
+  text: string;
+}
+
+export interface MilestoneInfo {
+  id: number;
+  seq: number;
+  title: string;
+  investmentPercent: number;
+  expectedInvestment: number;
+  dueDate: string;
+  status: "PLANNED" | "REPORTED" | "ACCEPTED" | "REJECTED";
+  light: "green" | "yellow" | "red" | "grey";
+  daysLeft: number;
+  reportText: string | null;
+  reportedInvestment: number | null;
+  hasPhoto: boolean;
+  photoLat: number | null;
+  photoLng: number | null;
+  gpsInsidePlot: boolean | null;
+  gpsDistanceM: number | null;
+  reportedAt: string | null;
+  reviewNote: string | null;
+  reviewedBy: string | null;
+}
+
+export interface Project {
+  applicationId: number;
+  applicationNumber: string;
+  applicantName: string;
+  plotCode: string;
+  plotTitle: string;
+  district: string;
+  plannedInvestment: number;
+  light: "green" | "yellow" | "red";
+  accepted: number;
+  total: number;
+  milestones: MilestoneInfo[];
 }

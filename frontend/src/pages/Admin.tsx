@@ -5,16 +5,17 @@ import {
   RotateCcw, Send, ShieldCheck, Trash2, Trophy, Undo2, X,
 } from "lucide-react";
 import { ApplicationFacts, CommissionPanel, EktisBox, ScoreCard, StatusFlow, Timeline } from "../components/AppView";
+import { IntegrityPanel, Light, MilestoneList, NextDue } from "../components/Monitoring";
 import { Callout, Drawer, Empty, Loading, MineTag, Tag, useToast } from "../components/ui";
 import { api, ApiError, qs } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { date, dateTime, money, num, pct, pct1 } from "../lib/format";
 import { useApi, useDebounced, useDocumentTitle, useMeta } from "../lib/hooks";
 import type {
-  Application, ApplicationListItem, AuditEntry, Competition, Dashboard, IntegrationEvent, ModelInfo, Plot,
+  Application, ApplicationListItem, AuditEntry, Competition, Dashboard, IntegrationEvent, ModelInfo, Plot, Project,
 } from "../lib/types";
 
-type TabKey = "overview" | "applications" | "plots" | "competitions" | "integration" | "audit";
+type TabKey = "overview" | "applications" | "monitoring" | "plots" | "competitions" | "integration" | "audit";
 
 // ------------------------------------------------------------------ overview
 
@@ -144,6 +145,7 @@ function ApplicationDrawer({ id, onClose, onChanged }: { id: number; onClose: ()
               </div>
             ) : app.decisionNote && <div style={{ marginTop: 14 }}><Callout tone={app.status.code === "APPROVED" ? "ok" : "warn"}>{app.decisionNote}</Callout></div>}
           </div>
+          <IntegrityPanel signals={app.integrity} />
           <EktisBox app={app} />
           <CommissionPanel app={app} onScored={(u) => { setData(u); onChanged(); }} />
           <ScoreCard app={app} />
@@ -179,7 +181,7 @@ function Applications() {
       <div className="panel table-wrap">
         {!data ? <Loading /> : data.length === 0 ? <Empty title="Müraciət tapılmadı" /> : (
           <table className="table">
-            <thead><tr><th>Nömrə</th><th>Sahibkar</th><th>Sahə</th><th className="num">İnvestisiya</th><th className="num">Bal</th><th>Status</th><th>EKTİS</th><th>Tarix</th></tr></thead>
+            <thead><tr><th>Nömrə</th><th>Sahibkar</th><th>Sahə</th><th className="num">İnvestisiya</th><th className="num">Bal</th><th>Siqnal</th><th>Status</th><th>EKTİS</th><th>Tarix</th></tr></thead>
             <tbody>
               {data.map((a) => (
                 <tr key={a.id} className="is-clickable" onClick={() => setOpen(a.id)}>
@@ -188,6 +190,7 @@ function Applications() {
                   <td><div>{a.plotTitle}</div><div className="faint" style={{ fontSize: 12 }}>{a.district} · {a.activityType.label}</div></td>
                   <td className="num">{money(a.plannedInvestment)}</td>
                   <td className="num"><b style={{ color: a.autoScore >= 80 ? "var(--forest-600)" : a.autoScore >= 60 ? "var(--amber-600)" : "var(--danger)" }}>{a.autoScore}</b></td>
+                  <td>{a.signalCount > 0 ? <span className="sig-count" title="Dürüstlük siqnalları">⚠ {a.signalCount}</span> : <span className="faint">yoxdur</span>}</td>
                   <td><Tag label={a.status} /></td>
                   <td><Tag label={a.ektisStatus} /></td>
                   <td>{date(a.createdAt)}</td>
@@ -200,6 +203,43 @@ function Applications() {
       <p className="faint" style={{ fontSize: 12.5, marginTop: 10 }}>Siyahıda FİN/VÖEN maskalanıb. Tam məlumat yalnız müraciət açıldıqda göstərilir və bu baxış audit jurnalına yazılır.</p>
       {open && <ApplicationDrawer id={open} onClose={() => setOpen(null)} onChanged={reload} />}
     </>
+  );
+}
+
+// ------------------------------------------------------------------ post-award monitoring
+
+function MonitoringTab() {
+  const { data, setData } = useApi<Project[]>("/api/v1/admin/monitoring");
+  const [open, setOpen] = useState<number | null>(null);
+  if (!data) return <Loading />;
+  if (!data.length) return <div className="panel"><Empty title="Hələ qalib layihə yoxdur">Müraciət təsdiq edildikdə öhdəlik planı avtomatik yaranır.</Empty></div>;
+  const red = data.filter((p) => p.light === "red").length;
+  return (
+    <div className="stack" style={{ ["--gap" as string]: "16px" }}>
+      <Callout tone={red ? "danger" : "ok"}>
+        Qalib investorların öhdəlikləri: hər layihə üçün 4 mərhələ, son tarix və tələb olunan investisiya payı. Hesabatlar GPS-li fotoyla verilir və sahənin sərhədi ilə yoxlanılır.
+        {red > 0 && <b> {red} layihədə gecikmə və ya pozuntu var.</b>}
+      </Callout>
+      {data.map((p) => (
+        <section key={p.applicationId} className="panel">
+          <div className="panel__head">
+            <div>
+              <div className="row" style={{ ["--gap" as string]: "10px" }}><b>{p.plotTitle}</b><span className="mono faint">{p.applicationNumber}</span></div>
+              <div className="faint" style={{ fontSize: 12.5 }}>{p.applicantName} · {p.district} · {money(p.plannedInvestment)} · {p.accepted}/{p.total} mərhələ icra olunub · <NextDue project={p} /></div>
+            </div>
+            <div className="row">
+              <Light value={p.light} />
+              <button className="btn btn--sm btn--ghost" onClick={() => setOpen(open === p.applicationId ? null : p.applicationId)}>{open === p.applicationId ? "Bağla" : "Mərhələlər"}</button>
+            </div>
+          </div>
+          {open === p.applicationId && (
+            <div className="panel__body">
+              <MilestoneList project={p} mode="staff" onChange={(u) => setData(data.map((x) => (x.applicationId === u.applicationId ? u : x)))} />
+            </div>
+          )}
+        </section>
+      ))}
+    </div>
   );
 }
 
@@ -556,6 +596,7 @@ export default function Admin() {
   const tabs: { key: TabKey; label: string; icon: typeof Gauge; adminOnly?: boolean }[] = [
     { key: "overview", label: "İcmal", icon: Gauge },
     { key: "applications", label: "Müraciətlər", icon: ClipboardList },
+    { key: "monitoring", label: "Öhdəliklərin monitorinqi", icon: Activity },
     { key: "plots", label: "Sahələr", icon: MapPinned },
     { key: "competitions", label: "Müsabiqələr", icon: Trophy },
     { key: "integration", label: "EKTİS və AI", icon: Activity },
@@ -579,6 +620,7 @@ export default function Admin() {
         </div>
         {tab === "overview" && <Overview go={setTab} />}
         {tab === "applications" && <Applications />}
+        {tab === "monitoring" && <MonitoringTab />}
         {tab === "plots" && <Plots isAdmin={isAdmin} />}
         {tab === "competitions" && <Competitions isAdmin={isAdmin} userName={user?.fullName ?? ""} />}
         {tab === "integration" && <Integration isAdmin={isAdmin} />}

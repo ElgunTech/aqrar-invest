@@ -32,14 +32,18 @@ public class ApplicationService {
     private final IntegrationService integration;
     private final AuditService audit;
     private final EvaluatorScoreRepository scores;
+    private final MonitoringService monitoring;
+    private final IntegrityService integrity;
 
     /** Minimum number of independent commission scores before an application can be approved. */
     public static final int REQUIRED_SCORES = 2;
 
-    public ApplicationService(EvaluatorScoreRepository scores, ApplicationRepository applications, CompetitionRepository competitions, LandPlotRepository plots,
+    public ApplicationService(IntegrityService integrity, MonitoringService monitoring, EvaluatorScoreRepository scores, ApplicationRepository applications, CompetitionRepository competitions, LandPlotRepository plots,
                               CurrentUser currentUser, FileStorageService files, ApplicationScorer scorer,
                               NotificationService notifications, IntegrationService integration, AuditService audit) {
         this.scores = scores;
+        this.monitoring = monitoring;
+        this.integrity = integrity;
         this.applications = applications;
         this.competitions = competitions;
         this.plots = plots;
@@ -96,6 +100,8 @@ public class ApplicationService {
         a.setPlannedInvestment(r.plannedInvestment());
         a.setOwnFundsPercent(r.ownFundsPercent());
         a.setJobsCreated(r.jobsCreated());
+        if (r.returneeJobs() > r.jobsCreated()) throw ApiException.badRequest("Qayıdan sakinlər üçün iş yerləri ümumi iş yerlərindən çox ola bilməz");
+        a.setReturneeJobs(r.returneeJobs());
         a.setProjectMonths(r.projectMonths());
         a.setExperienceYears(r.experienceYears());
         a.setBusinessPlan(r.businessPlan());
@@ -197,7 +203,10 @@ public class ApplicationService {
         AppUser actor = currentUser.require();
         a.setStatus(to);
         if (to.isFinal()) a.setDecisionNote(comment);
-        if (to == ApplicationStatus.APPROVED) a.getPlot().setStatus(PlotStatus.ASSIGNED);
+        if (to == ApplicationStatus.APPROVED) {
+            a.getPlot().setStatus(PlotStatus.ASSIGNED);
+            monitoring.createPlan(a, LocalDate.now());
+        }
         a.addHistory(new StatusChange(from, to, comment.isEmpty() ? null : comment, actor.getFullName()));
 
         String title = switch (to) {
@@ -307,6 +316,7 @@ public class ApplicationService {
         return new ApplicationListItem(a.getId(), a.getApplicationNumber(), a.getApplicantName(), Labels.maskTaxId(a.getTaxId()),
                 a.getCompetition().getTitle(), a.getPlot().getCode(), a.getPlot().getTitle(), a.getPlot().getDistrict(),
                 Labels.of(a.getActivityType()), a.getPlannedInvestment(), a.getAutoScore(),
+                currentUser.find().map(u -> u.getRole() != Role.INVESTOR).orElse(false) ? integrity.count(a) : 0,
                 Labels.of(a.getStatus()), Labels.of(a.getEktisStatus()), a.getCreatedAt(), a.getUpdatedAt());
     }
 
@@ -325,8 +335,10 @@ public class ApplicationService {
                 Labels.of(a.getApplicantType()), a.getApplicantName(),
                 maskPii ? Labels.maskTaxId(a.getTaxId()) : a.getTaxId(), a.getPhone(), a.getEmail(), a.getAddress(),
                 Labels.of(a.getActivityType()), a.getPlannedCrop(), a.getPlannedCrop() == null ? null : CropCatalog.nameAz(a.getPlannedCrop()),
-                a.getPlannedInvestment(), a.getOwnFundsPercent(), a.getJobsCreated(), a.getProjectMonths(), a.getExperienceYears(),
-                a.getBusinessPlan(), scorer.score(a), commission(a), a.getDecisionNote(),
+                a.getPlannedInvestment(), a.getOwnFundsPercent(), a.getJobsCreated(), a.getReturneeJobs(), a.getProjectMonths(), a.getExperienceYears(),
+                a.getBusinessPlan(), scorer.score(a), commission(a),
+                currentUser.find().filter(u -> u.getRole() != Role.INVESTOR).map(u -> integrity.signals(a, u)).orElse(List.of()),
+                a.getDecisionNote(),
                 Labels.of(a.getEktisStatus()), a.getEktisReference(), a.getCreatedAt(), a.getUpdatedAt(),
                 docs, history, next);
     }

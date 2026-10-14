@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, FilePlus2, FileText, Inbox, MessageSquareReply, RefreshCw, Upload } from "lucide-react";
+import { MilestoneList } from "../components/Monitoring";
 import { ApplicationFacts, CommissionPanel, EktisBox, ScoreCard, StatusFlow, Timeline } from "../components/AppView";
 import { Callout, Empty, Loading, Tag, useToast } from "../components/ui";
 import { api } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { date, money } from "../lib/format";
 import { useApi, useDocumentTitle, useMeta } from "../lib/hooks";
-import type { Application, ApplicationListItem } from "../lib/types";
+import type { Application, ApplicationListItem, Project } from "../lib/types";
 
 function Reply({ app, onDone }: { app: Application; onDone: () => void }) {
   const meta = useMeta();
@@ -68,6 +69,20 @@ function Reply({ app, onDone }: { app: Application; onDone: () => void }) {
   );
 }
 
+function Obligations({ id }: { id: number }) {
+  const { data, setData } = useApi<Project>(`/api/v1/me/applications/${id}/monitoring`);
+  if (!data || !data.milestones.length) return null;
+  return (
+    <section className="panel">
+      <div className="panel__head"><h3>Öhdəliklərim</h3><span className="faint" style={{ fontSize: 13 }}>{data.accepted}/{data.total} mərhələ icra olunub</span></div>
+      <div className="panel__body">
+        <p className="muted" style={{ fontSize: 13.5, marginBottom: 12 }}>Müsabiqə şərtlərinə görə investisiya mərhələlərlə reallaşdırılır. Hər mərhələ üçün sahədən GPS-li foto ilə hesabat verin.</p>
+        <MilestoneList project={data} mode="investor" onChange={setData} />
+      </div>
+    </section>
+  );
+}
+
 function Detail({ id }: { id: string }) {
   const { data: app, reload } = useApi<Application>(`/api/v1/me/applications/${id}`);
   const { refresh } = useAuth();
@@ -103,6 +118,7 @@ function Detail({ id }: { id: string }) {
         {app.decisionNote && <div style={{ marginTop: 16 }}><Callout tone={app.status.code === "APPROVED" ? "ok" : "warn"}><b>Komissiyanın qərarı:</b> {app.decisionNote}</Callout></div>}
       </div>
       {app.status.code === "INFO_REQUESTED" && <Reply app={app} onDone={reload} />}
+      {app.status.code === "APPROVED" && <Obligations id={app.id} />}
       <EktisBox app={app} />
       <div className="layout-2" style={{ gridTemplateColumns: "minmax(0,1fr) 380px" }}>
         <div className="stack" style={{ ["--gap" as string]: "20px" }}>

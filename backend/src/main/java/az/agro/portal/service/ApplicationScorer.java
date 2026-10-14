@@ -34,14 +34,19 @@ public class ApplicationScorer {
         items.add(new ScoreItem("İnvestisiya həcmi", inv, 25,
                 "Planlaşdırılan " + a.getPlannedInvestment() + " AZN, minimum tələb " + min + " AZN"));
 
-        int own = a.getOwnFundsPercent() >= 30 ? 15 : a.getOwnFundsPercent() >= 15 ? 10 : 4;
-        items.add(new ScoreItem("Öz vəsaitinin payı", own, 15, a.getOwnFundsPercent() + "%"));
+        int own = a.getOwnFundsPercent() >= 30 ? 10 : a.getOwnFundsPercent() >= 15 ? 7 : 3;
+        items.add(new ScoreItem("Öz vəsaitinin payı", own, 10, a.getOwnFundsPercent() + "%"));
 
         int jobs = a.getJobsCreated() >= 20 ? 15 : a.getJobsCreated() >= 10 ? 11 : a.getJobsCreated() >= 5 ? 7 : 3;
         items.add(new ScoreItem("Yaradılacaq iş yerləri", jobs, 15, a.getJobsCreated() + " iş yeri"));
 
-        int exp = a.getExperienceYears() >= 5 ? 15 : a.getExperienceYears() >= 2 ? 10 : 5;
-        items.add(new ScoreItem("Aqrar sahədə təcrübə", exp, 15, a.getExperienceYears() + " il"));
+        int exp = a.getExperienceYears() >= 5 ? 10 : a.getExperienceYears() >= 2 ? 7 : 3;
+        items.add(new ScoreItem("Aqrar sahədə təcrübə", exp, 10, a.getExperienceYears() + " il"));
+
+        double share = a.getJobsCreated() == 0 ? 0 : (double) a.getReturneeJobs() / a.getJobsCreated();
+        int ret = share >= 0.5 ? 10 : share >= 0.25 ? 6 : a.getReturneeJobs() > 0 ? 3 : 0;
+        items.add(new ScoreItem("Böyük Qayıdış: qayıdan sakinlərin işlə təmini", ret, 10,
+                a.getReturneeJobs() + " / " + a.getJobsCreated() + " iş yeri (" + Math.round(share * 100) + "%)"));
 
         boolean sameActivity = a.getActivityType() == plot.getActivityType();
         items.add(new ScoreItem("Fəaliyyətin sahənin təyinatına uyğunluğu", sameActivity ? 15 : 5, 15,

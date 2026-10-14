@@ -60,6 +60,8 @@ public class InvestmentApplication {
     private long plannedInvestment;
     private int ownFundsPercent;
     private int jobsCreated;
+    /** Of the new jobs, how many go to former IDPs returning to the region (Great Return programme). */
+    private int returneeJobs;
     private int projectMonths;
     private int experienceYears;
 
@@ -141,6 +143,8 @@ public class InvestmentApplication {
     public void setOwnFundsPercent(int ownFundsPercent) { this.ownFundsPercent = ownFundsPercent; }
     public int getJobsCreated() { return jobsCreated; }
     public void setJobsCreated(int jobsCreated) { this.jobsCreated = jobsCreated; }
+    public int getReturneeJobs() { return returneeJobs; }
+    public void setReturneeJobs(int returneeJobs) { this.returneeJobs = returneeJobs; }
     public int getProjectMonths() { return projectMonths; }
     public void setProjectMonths(int projectMonths) { this.projectMonths = projectMonths; }
     public int getExperienceYears() { return experienceYears; }

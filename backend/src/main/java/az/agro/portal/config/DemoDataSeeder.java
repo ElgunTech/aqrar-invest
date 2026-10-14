@@ -5,6 +5,8 @@ import az.agro.portal.repo.AppUserRepository;
 import az.agro.portal.repo.ApplicationRepository;
 import az.agro.portal.repo.CompetitionRepository;
 import az.agro.portal.repo.EvaluatorScoreRepository;
+import az.agro.portal.repo.MilestoneRepository;
+import az.agro.portal.service.MonitoringService;
 import az.agro.portal.repo.LandPlotRepository;
 import az.agro.portal.service.ApplicationScorer;
 import az.agro.portal.service.FileStorageService;
@@ -46,12 +48,16 @@ public class DemoDataSeeder implements ApplicationRunner {
     private final NotificationService notifications;
     private final boolean enabled;
     private final EvaluatorScoreRepository scores;
+    private final MonitoringService monitoring;
+    private final MilestoneRepository milestones;
 
-    public DemoDataSeeder(EvaluatorScoreRepository scores, AppUserRepository users, LandPlotRepository plots, CompetitionRepository competitions,
+    public DemoDataSeeder(MonitoringService monitoring, MilestoneRepository milestones, EvaluatorScoreRepository scores, AppUserRepository users, LandPlotRepository plots, CompetitionRepository competitions,
                           ApplicationRepository applications, PasswordEncoder encoder, FileStorageService files,
                           ApplicationScorer scorer, NotificationService notifications,
                           @Value("${app.seed-demo-data}") boolean enabled) {
         this.scores = scores;
+        this.monitoring = monitoring;
+        this.milestones = milestones;
         this.users = users;
         this.plots = plots;
         this.competitions = competitions;
@@ -167,7 +173,7 @@ public class DemoDataSeeder implements ApplicationRunner {
                 ApplicationStatus.UNDER_REVIEW, EktisSyncStatus.VERIFIED, now.minus(Duration.ofDays(9)), evaluator, null);
         application(company, c1, agd5, ApplicantType.COMPANY, "cotton", 1_250_000, 40, 45, 48, 11,
                 ApplicationStatus.SUBMITTED, EktisSyncStatus.VERIFIED, now.minus(Duration.ofDays(2)), null, null);
-        application(leyla, c2, fzl2, ApplicantType.INDIVIDUAL, "pomegranate", 480_000, 20, 9, 60, 3,
+        InvestmentApplication s3 = application(leyla, c2, fzl2, ApplicantType.INDIVIDUAL, "pomegranate", 480_000, 20, 9, 60, 3,
                 ApplicationStatus.INFO_REQUESTED, EktisSyncStatus.VERIFIED, now.minus(Duration.ofDays(11)), evaluator,
                 "Maliyyə imkanını təsdiq edən bank arayışını əlavə edin.");
         application(investor, c2, shs1, ApplicantType.INDIVIDUAL, "apple", 300_000, 30, 7, 36, 8,
@@ -188,6 +194,23 @@ public class DemoDataSeeder implements ApplicationRunner {
         score(s6, admin, 8, 9, 7, 8, "Maliyyə mənbələri təsdiqlənib.");
         score(s7, evaluator, 8, 8, 9, 7, "Ən çox iş yeri yaradan layihə.");
         score(s7, admin, 9, 8, 8, 8, null);
+
+        // Integrity demo: a new applicant shares Leyla's phone, copies her business plan, offers an implausibly
+        // low amount and shares a surname with evaluator Orxan Babayev.
+        AppUser suspicious = user("elcin@demo.az", "Elçin Babayev", Role.INVESTOR, "+994 70 555 55 55", "9KD4PLM");
+        InvestmentApplication s9 = application(suspicious, c2, xcv1, ApplicantType.INDIVIDUAL, "grapes", 90_000, 5, 4, 24, 1,
+                ApplicationStatus.SUBMITTED, EktisSyncStatus.VERIFIED, now.minus(Duration.ofHours(20)), null, null);
+        s9.setBusinessPlan(s3.getBusinessPlan());
+
+        // Post-award monitoring: the pilot winner was awarded 14 months ago. Milestone 1 reported and accepted,
+        // milestone 2 (50% of the investment within 12 months) is overdue: the red light the ministry must act on.
+        monitoring.createPlan(s7, LocalDate.now().minusMonths(14));
+        var plan = milestones.findByApplicationIdOrderBySeq(s7.getId());
+        FileStorageService.StoredFile photo = files.storeBytes("sahe-foto.png", fieldPhoto());
+        plan.get(0).report("Torpaq şumlanıb, damcı suvarma xətti çəkilib (12 km). Nasos stansiyası quraşdırılıb.", 110_000,
+                photo.storedName(), photo.originalName(), fzl3.getLatitude() + 0.002, fzl3.getLongitude() - 0.001, true, 250);
+        plan.get(0).setReportedAt(Instant.now().minus(Duration.ofDays(230)));
+        plan.get(0).review(true, "Səfər zamanı təsdiqləndi.", evaluator.getFullName());
 
         log.info("Demo data seeded: {} users, {} plots, {} competitions, {} applications",
                 users.count(), plots.count(), competitions.count(), applications.count());
@@ -275,6 +298,7 @@ public class DemoDataSeeder implements ApplicationRunner {
         a.setPlannedInvestment(investment);
         a.setOwnFundsPercent(ownFunds);
         a.setJobsCreated(jobs);
+        a.setReturneeJobs(jobs * (int) (Math.abs(plot.getCode().hashCode()) % 7 + 2) / 10);
         a.setProjectMonths(months);
         a.setExperienceYears(experience);
         a.setBusinessPlan("Layihənin məqsədi " + plot.getDistrict() + " rayonunda " + plot.getAreaHa() + " ha sahədə müasir "
@@ -329,6 +353,25 @@ public class DemoDataSeeder implements ApplicationRunner {
         StatusChange s = new StatusChange(from, to, comment, by);
         s.setChangedAt(at);
         a.addHistory(s);
+    }
+
+    /** A small generated "field photo" (PNG) for the seeded milestone report. */
+    private static byte[] fieldPhoto() {
+        java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(640, 400, java.awt.image.BufferedImage.TYPE_INT_RGB);
+        java.awt.Graphics2D g = img.createGraphics();
+        g.setPaint(new java.awt.GradientPaint(0, 0, new java.awt.Color(150, 190, 225), 0, 180, new java.awt.Color(215, 230, 240)));
+        g.fillRect(0, 0, 640, 180);
+        g.setColor(new java.awt.Color(92, 70, 50));
+        g.fillRect(0, 180, 640, 220);
+        g.setColor(new java.awt.Color(60, 140, 70));
+        for (int row = 0; row < 7; row++) for (int x = 20; x < 640; x += 46) g.fillOval(x + row * 6, 200 + row * 28, 14, 14);
+        g.dispose();
+        try (var out = new ByteArrayOutputStream()) {
+            javax.imageio.ImageIO.write(img, "png", out);
+            return out.toByteArray();
+        } catch (java.io.IOException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     /** Minimal valid single-page PDF with one line of ASCII text. */

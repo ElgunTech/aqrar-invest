@@ -22,6 +22,7 @@ interface Form {
   plannedInvestment: string;
   ownFundsPercent: string;
   jobsCreated: string;
+  returneeJobs: string;
   projectMonths: string;
   experienceYears: string;
   businessPlan: string;
@@ -53,7 +54,7 @@ export default function Apply() {
   const [form, setForm] = useState<Form>(() => {
     const base: Form = {
       applicantType: "INDIVIDUAL", applicantName: user?.fullName ?? "", taxId: user?.taxId ?? "", phone: user?.phone ?? "", email: user?.email ?? "", address: "",
-      activityType: "", plannedCrop: "", plannedInvestment: "", ownFundsPercent: "30", jobsCreated: "", projectMonths: "36", experienceYears: "", businessPlan: "",
+      activityType: "", plannedCrop: "", plannedInvestment: "", ownFundsPercent: "30", jobsCreated: "", returneeJobs: "", projectMonths: "36", experienceYears: "", businessPlan: "",
     };
     try {
       const saved = localStorage.getItem(draftKey);
@@ -100,6 +101,7 @@ export default function Apply() {
       if (form.jobsCreated === "" || Number(form.jobsCreated) < 0) e.jobsCreated = "İş yerlərinin sayını daxil edin";
       if (form.experienceYears === "" || Number(form.experienceYears) < 0) e.experienceYears = "Təcrübəni daxil edin";
       if (!(Number(form.projectMonths) >= 1)) e.projectMonths = "Müddəti daxil edin";
+      if (Number(form.returneeJobs || 0) > Number(form.jobsCreated || 0)) e.returneeJobs = "Ümumi iş yerlərindən çox ola bilməz";
       if (form.businessPlan.trim().length < 100) e.businessPlan = "Biznes planın xülasəsi ən azı 100 simvol olmalıdır";
     }
     if (s === 3 && missingDocs.length) e.docs = "Çatışmayan sənədlər: " + missingDocs.join(", ");
@@ -137,7 +139,7 @@ export default function Apply() {
       const data = {
         competitionId: comp.id, plotId: plot.id, applicantType: form.applicantType, applicantName: form.applicantName.trim(), taxId: form.taxId.trim(),
         phone: form.phone.trim(), email: form.email.trim(), address: form.address.trim(), activityType: form.activityType, plannedCrop: form.plannedCrop || null,
-        plannedInvestment: Number(form.plannedInvestment), ownFundsPercent: Number(form.ownFundsPercent), jobsCreated: Number(form.jobsCreated),
+        plannedInvestment: Number(form.plannedInvestment), ownFundsPercent: Number(form.ownFundsPercent), jobsCreated: Number(form.jobsCreated), returneeJobs: Number(form.returneeJobs || 0),
         projectMonths: Number(form.projectMonths), experienceYears: Number(form.experienceYears), businessPlan: form.businessPlan.trim(),
       };
       const fd = new FormData();
@@ -295,6 +297,11 @@ export default function Apply() {
                   <div className={cls("projectMonths")}><label htmlFor="mon">Layihə müddəti (ay)</label><input id="mon" className="input" type="number" min={1} value={form.projectMonths} onChange={set("projectMonths")} />{err("projectMonths")}</div>
                   <div className={cls("experienceYears")}><label htmlFor="exp">Aqrar təcrübə (il)</label><input id="exp" className="input" type="number" min={0} value={form.experienceYears} onChange={set("experienceYears")} />{err("experienceYears")}</div>
                 </div>
+                <div className={cls("returneeJobs")}>
+                  <label htmlFor="ret">Böyük Qayıdış: bu iş yerlərindən neçəsi qayıdan sakinlər üçündür?</label>
+                  <input id="ret" className="input" type="number" min={0} value={form.returneeJobs} onChange={set("returneeJobs")} style={{ maxWidth: 220 }} />
+                  <span className="hint">İşğaldan azad edilmiş ərazilərə qayıdan keçmiş məcburi köçkünlərin işlə təmini ayrıca meyar kimi qiymətləndirilir.</span>{err("returneeJobs")}
+                </div>
                 <div className={cls("businessPlan")}>
                   <label htmlFor="bp">Biznes planın xülasəsi</label>
                   <textarea id="bp" className="textarea" rows={8} maxLength={6000} value={form.businessPlan} onChange={set("businessPlan")}
@@ -344,7 +351,7 @@ export default function Apply() {
                   <dt>Əlaqə</dt><dd>{form.phone} · {form.email}</dd>
                   <dt>Fəaliyyət / bitki</dt><dd>{meta?.activityTypes.find((a) => a.code === form.activityType)?.label} {cropName && `· ${cropName}`}</dd>
                   <dt>İnvestisiya</dt><dd>{money(Number(form.plannedInvestment))} · öz vəsaiti {form.ownFundsPercent}%</dd>
-                  <dt>İş yerləri / müddət</dt><dd>{form.jobsCreated} iş yeri · {form.projectMonths} ay</dd>
+                  <dt>İş yerləri / müddət</dt><dd>{form.jobsCreated} iş yeri ({form.returneeJobs || 0} qayıdan sakinlər üçün) · {form.projectMonths} ay</dd>
                   <dt>Sənədlər</dt><dd>{Object.values(files).filter(Boolean).length} fayl</dd>
                 </dl>
                 <hr className="divider" />

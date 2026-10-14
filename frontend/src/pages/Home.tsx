@@ -87,6 +87,7 @@ export default function Home() {
                   <tr><td>Daxil olan müraciətlər</td><td className="num"><b>{stats.applicationCount}</b></td></tr>
                   <tr><td>Planlaşdırılan investisiya</td><td className="num"><b>{money(stats.plannedInvestment)}</b></td></tr>
                   <tr><td>Yaradılacaq iş yerləri</td><td className="num"><b>{num(stats.plannedJobs)}</b></td></tr>
+                  <tr><td>Onlardan qayıdan sakinlər üçün</td><td className="num"><b>{num(stats.returneeJobs)}</b></td></tr>
                 </tbody>
               </table>
             )}

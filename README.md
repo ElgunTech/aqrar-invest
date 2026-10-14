@@ -99,6 +99,16 @@ PostgreSQL ilə: `--spring.profiles.active=postgres` və `DB_URL`, `DB_USER`, `D
   portalın webhook-una (`/api/v1/integration/ektis/events`) fermer reyestri yoxlamasının nəticəsini göndərir.
 * Demo: Admin → "EKTİS və AI" → "EKTİS-i söndür" → müraciət göndər → hadisə növbədə gözləyir → "Bərpa et" → avtomatik çatdırılır.
 
+## Fərqləndirici modullar
+
+* **Öhdəliklərin monitorinqi:** müraciət təsdiqlənəndə investor üçün 4 mərhələli öhdəlik planı yaranır (6/12/24/36 ay, investisiyanın 20/50/80/100%-i). Hesabat GPS-li foto ilə verilir, koordinat sahənin sərhədi ilə yoxlanılır. Nazirlik panelində svetofor: vaxtında, diqqət, gecikir.
+* **Dürüstlük siqnalları:** başqa müraciətçi ilə eyni telefon/e-poçt, kopyalanmış biznes plan (mətn oxşarlığı), real olmayan investisiya, FİN uyğunsuzluğu, qiymətləndiricinin özü ilə maraqlar toqquşması. Siqnallar qərar vermir, komissiyanın diqqətini çəkir; sahibkar onları görmür.
+* **Böyük Qayıdış:** qayıdan sakinlər üçün yaradılan iş yerləri ayrıca qiymətləndirmə meyarı və statistika göstəricisidir.
+* **Komissiya:** ən azı 2 üzvün müstəqil balı, maraqlar toqquşması bəyannaməsi.
+* **QR qəbz:** ictimai yoxlama səhifəsi `/yoxla`.
+
+Demo: `evaluator@demo.az` → İnzibati panel → "Öhdəliklərin monitorinqi" (qırmızı layihə) və Müraciətlər → "Elçin Babayev" (6 siqnal).
+
 ## Təhlükəsizlik
 
 * Rollar: `INVESTOR`, `EVALUATOR`, `ADMIN`; URL və servis səviyyəsində yoxlama.

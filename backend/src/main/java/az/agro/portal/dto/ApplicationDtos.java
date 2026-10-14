@@ -3,6 +3,7 @@ package az.agro.portal.dto;
 import az.agro.portal.domain.ActivityType;
 import az.agro.portal.domain.ApplicantType;
 import az.agro.portal.domain.ApplicationStatus;
+import az.agro.portal.service.IntegrityService;
 import jakarta.validation.constraints.*;
 
 import java.time.Instant;
@@ -27,6 +28,7 @@ public final class ApplicationDtos {
             @Positive(message = "İnvestisiya məbləği müsbət olmalıdır") long plannedInvestment,
             @Min(0) @Max(100) int ownFundsPercent,
             @Min(0) @Max(10000) int jobsCreated,
+            @Min(0) @Max(10000) int returneeJobs,
             @Min(1) @Max(240) int projectMonths,
             @Min(0) @Max(80) int experienceYears,
             @NotBlank @Size(min = 100, max = 6000, message = "Biznes plan ən azı 100 simvol olmalıdır") String businessPlan) {
@@ -66,10 +68,11 @@ public final class ApplicationDtos {
             Long plotId, String plotCode, String plotTitle, String district,
             PlotDtos.Label applicantType, String applicantName, String taxId, String phone, String email, String address,
             PlotDtos.Label activityType, String plannedCrop, String plannedCropName,
-            long plannedInvestment, int ownFundsPercent, int jobsCreated, int projectMonths, int experienceYears,
+            long plannedInvestment, int ownFundsPercent, int jobsCreated, int returneeJobs, int projectMonths, int experienceYears,
             String businessPlan,
             ScoreBreakdown score,
             Commission commission,
+            List<IntegrityService.Signal> integrity,
             String decisionNote,
             PlotDtos.Label ektisStatus, String ektisReference,
             Instant createdAt, Instant updatedAt,
@@ -81,7 +84,7 @@ public final class ApplicationDtos {
     public record ApplicationListItem(
             Long id, String applicationNumber, String applicantName, String taxIdMasked,
             String competitionTitle, String plotCode, String plotTitle, String district,
-            PlotDtos.Label activityType, long plannedInvestment, int autoScore,
+            PlotDtos.Label activityType, long plannedInvestment, int autoScore, int signalCount,
             PlotDtos.Label status, PlotDtos.Label ektisStatus, Instant createdAt, Instant updatedAt) {
     }
 

@@ -39,6 +39,7 @@ public class StatsService {
         s.put("applicationCount", apps.size());
         s.put("plannedInvestment", apps.stream().mapToLong(InvestmentApplication::getPlannedInvestment).sum());
         s.put("plannedJobs", apps.stream().mapToInt(InvestmentApplication::getJobsCreated).sum());
+        s.put("returneeJobs", apps.stream().mapToInt(InvestmentApplication::getReturneeJobs).sum());
         s.put("approvedCount", apps.stream().filter(a -> a.getStatus() == ApplicationStatus.APPROVED).count());
         s.put("decidedCount", apps.stream().filter(a -> a.getStatus().isFinal()).count());
         s.put("clearedPlots", allPlots.stream().filter(p -> p.getMineClearance() == MineClearanceStatus.CLEARED).count());

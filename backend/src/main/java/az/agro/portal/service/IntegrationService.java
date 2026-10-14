@@ -86,6 +86,7 @@ public class IntegrationService {
                 "amountAzn", a.getPlannedInvestment(),
                 "ownFundsPercent", a.getOwnFundsPercent(),
                 "jobsCreated", a.getJobsCreated(),
+                "returneeJobs", a.getReturneeJobs(),
                 "projectMonths", a.getProjectMonths()));
         save(IntegrationEvent.Direction.OUTBOUND, APPLICATION_SUBMITTED, a.getApplicationNumber(), p, IntegrationEventStatus.PENDING);
     }

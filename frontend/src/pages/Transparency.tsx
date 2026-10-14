@@ -20,7 +20,7 @@ export default function Transparency() {
     ["Təklif olunan sahələr", num(s.plotCount), `${num(s.totalAreaHa)} ha ümumi ərazi`],
     ["Minadan təmizlənmiş", num(s.clearedPlots), `${Math.round((s.clearedPlots / Math.max(1, s.plotCount)) * 100)}% sahələrin`],
     ["Daxil olan müraciətlər", num(s.applicationCount), `${num(s.decidedCount)} üzrə qərar verilib`],
-    ["Planlaşdırılan investisiya", money(s.plannedInvestment), `${num(s.plannedJobs)} yeni iş yeri`],
+    ["Planlaşdırılan investisiya", money(s.plannedInvestment), `${num(s.plannedJobs)} yeni iş yeri, ${num(s.returneeJobs)} qayıdan sakinlər üçün`],
   ];
 
   return (

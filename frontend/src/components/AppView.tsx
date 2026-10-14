@@ -91,7 +91,7 @@ export function ApplicationFacts({ app, docBase }: { app: Application; docBase: 
             <dt>Əlaqə</dt><dd>{app.phone}<br />{app.email}</dd>
             <dt>Fəaliyyət</dt><dd>{app.activityType.label}{app.plannedCropName && ` · ${app.plannedCropName}`}</dd>
             <dt>İnvestisiya</dt><dd>{money(app.plannedInvestment)} · öz vəsaiti {app.ownFundsPercent}%</dd>
-            <dt>İş yerləri</dt><dd>{app.jobsCreated}</dd>
+            <dt>İş yerləri</dt><dd>{app.jobsCreated} (qayıdan sakinlər üçün: {app.returneeJobs})</dd>
             <dt>Müddət / təcrübə</dt><dd>{app.projectMonths} ay · {app.experienceYears} il</dd>
           </dl>
         </div>
