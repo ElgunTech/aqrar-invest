@@ -3,6 +3,8 @@
 Qarabağ iqtisadi rayonunda kənd təsərrüfatı sahələrinə investisiya müsabiqəsini rəqəmsallaşdıran,
 EKTİS-ə inteqrasiyaya hazır işlək prototip.
 
+[![CI](https://github.com/ElgunTech/aqrar-invest/actions/workflows/ci.yml/badge.svg)](https://github.com/ElgunTech/aqrar-invest/actions/workflows/ci.yml)
+
 **Canlı versiya:** https://frontend-black-seven-54.vercel.app (backend: https://aqrar-invest-api.onrender.com, Swagger: `/swagger-ui.html`)
 
 | Komponent | Texnologiya |
