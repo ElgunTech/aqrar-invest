@@ -1,3 +1,4 @@
+import { SolarPanel } from "../components/Solar";
 import { SatellitePanel } from "../components/Satellite";
 import { Link, useParams } from "react-router-dom";
 import { GeoJSON, MapContainer, TileLayer } from "react-leaflet";
@@ -150,6 +151,7 @@ export default function PlotDetail() {
             {rec ? <AiCard rec={rec} inputs={p} /> : <div className="panel"><Loading /></div>}
 
             <OfficialStats district={p.district} />
+            <SolarPanel plot={p} />
             <SatellitePanel plotId={p.id} />
 
             <Calculator plot={p} />

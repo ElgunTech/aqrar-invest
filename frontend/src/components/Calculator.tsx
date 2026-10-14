@@ -8,8 +8,8 @@ import { useApi, useMeta } from "../lib/hooks";
  * Per-hectare economics. These are illustrative, editable assumptions (not official statistics);
  * in production they would come from EKTİS / State Statistics data.
  */
-interface Economics { setup: number; annual: number; yieldT: number; price: number; perennial: boolean }
-const ECON: Record<string, Economics> = {
+export interface Economics { setup: number; annual: number; yieldT: number; price: number; perennial: boolean }
+export const ECON: Record<string, Economics> = {
   cotton: { setup: 1500, annual: 1800, yieldT: 3.5, price: 1000, perennial: false },
   maize: { setup: 800, annual: 1200, yieldT: 7, price: 350, perennial: false },
   grapes: { setup: 12000, annual: 3000, yieldT: 12, price: 600, perennial: true },
@@ -20,7 +20,7 @@ const ECON: Record<string, Economics> = {
   watermelon: { setup: 1500, annual: 2500, yieldT: 35, price: 200, perennial: false },
   muskmelon: { setup: 1500, annual: 2500, yieldT: 25, price: 300, perennial: false },
 };
-const GENERIC: Economics = { setup: 1000, annual: 1500, yieldT: 5, price: 400, perennial: false };
+export const GENERIC: Economics = { setup: 1000, annual: 1500, yieldT: 5, price: 400, perennial: false };
 const RAMP = [0, 0.3, 0.7, 1]; // perennial orchards and vineyards reach full yield in year 4
 
 export function Calculator({ plot }: { plot: Plot }) {

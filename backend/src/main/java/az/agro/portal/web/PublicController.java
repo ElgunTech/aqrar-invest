@@ -33,10 +33,13 @@ public class PublicController {
     private final CropRecommendationService ai;
     private final ApplicationService applications;
     private final az.agro.portal.service.SatelliteService satellite;
+    private final az.agro.portal.service.SolarService solar;
 
     public PublicController(PlotService plots, CompetitionService competitions, StatsService stats, CropRecommendationService ai,
-                            ApplicationService applications, az.agro.portal.service.SatelliteService satellite) {
+                            ApplicationService applications, az.agro.portal.service.SatelliteService satellite,
+                            az.agro.portal.service.SolarService solar) {
         this.satellite = satellite;
+        this.solar = solar;
         this.applications = applications;
         this.plots = plots;
         this.competitions = competitions;
@@ -74,6 +77,12 @@ public class PublicController {
     @GetMapping("/plots/{id}/satellite")
     public az.agro.portal.service.SatelliteService.Report satellite(@PathVariable Long id) {
         return satellite.report(id);
+    }
+
+    @Operation(summary = "Günəş enerjisi: sahənin uyğunluğu, PVGIS istehsal potensialı və tariflər")
+    @GetMapping("/plots/{id}/solar")
+    public az.agro.portal.service.SolarService.Report solar(@PathVariable Long id) {
+        return solar.report(id);
     }
 
     @Operation(summary = "AI: sahə üçün bitki tövsiyəsi")

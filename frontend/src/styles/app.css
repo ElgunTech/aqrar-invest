@@ -719,3 +719,12 @@ html, body { overflow-x: clip; }
 .lang-switch button { background: none; border: 0; color: inherit; font: 600 11.5px var(--font-text); padding: 2px 8px; cursor: pointer; opacity: .75; }
 .lang-switch button + button { border-left: 1px solid currentColor; }
 .lang-switch button[aria-pressed="true"] { background: var(--forest-600); color: #fff; opacity: 1; }
+
+/* solar suitability */
+.solar-criteria td { vertical-align: top; }
+.solar-meter { display: inline-block; width: 56px; height: 6px; background: #eef1ee; border-radius: 3px; margin-right: 8px; vertical-align: middle; overflow: hidden; }
+.solar-meter i { display: block; height: 100%; background: #d99a06; }
+.solar-split { display: flex; height: 10px; border-radius: 5px; overflow: hidden; background: #eef1ee; margin-top: 10px; }
+.solar-split span { background: var(--forest-600); min-width: 2px; }
+.solar-split .solar-split__sun { background: #e0a106; }
+.solar-notes { margin: 16px 0 6px; padding-left: 18px; font-size: 12.5px; color: var(--ink-soft); line-height: 1.6; }
