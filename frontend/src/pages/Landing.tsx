@@ -152,6 +152,10 @@ export default function Landing() {
           titleRef.current.style.transform = `translate(-50%, calc(-50% - ${(hero * 9).toFixed(2)}vh)) scale(${(1 - hero * 0.12).toFixed(4)})`;
           titleRef.current.style.opacity = String(Math.max(0, 1 - Math.max(0, hero - 0.3) / 0.32).toFixed(3));
         }
+        if (bloomRef.current) {
+          bloomRef.current.style.translate = `0 ${(-hero * 16).toFixed(2)}vh`;
+          bloomRef.current.style.opacity = String(Math.max(0, 1 - Math.max(0, hero - 0.25) / 0.3).toFixed(3));
+        }
         if (fgRef.current) fgRef.current.style.transform = `scale(${(1 + hero * 0.11).toFixed(4)})`;
         if (mistRef.current) {
           mistRef.current.style.transform = `translate3d(${(-hero * 7).toFixed(2)}vw, ${(-hero * 3).toFixed(2)}vh, 0)`;
@@ -160,17 +164,9 @@ export default function Landing() {
         if (mistFrontRef.current) mistFrontRef.current.style.transform = `translate3d(${(hero * 10).toFixed(2)}vw, 0, 0)`;
       } else if (titleRef.current) {
         titleRef.current.style.opacity = hero > 0.55 ? "0" : "1";
+        if (bloomRef.current) bloomRef.current.style.opacity = hero > 0.5 ? "0" : "1";
       }
       const pr = t / TOTAL;
-      // Signature: the xarıbülbül of Shusha rises out of the spring plain, turns and opens as the last leg plays.
-      if (bloomRef.current) {
-        const raw = (t - (STARTS[4] + 0.12 * LEGS[4].w)) / (0.55 * LEGS[4].w);
-        const k = Math.min(1, Math.max(0, raw));
-        const e = 1 - Math.pow(1 - k, 3);
-        const b = bloomRef.current;
-        b.style.opacity = (reduce ? (k > 0 ? 1 : 0) : Math.min(1, k * 2.2)).toFixed(3);
-        b.style.setProperty("--k", (reduce ? 1 : e).toFixed(4));
-      }
       root.current?.querySelectorAll<HTMLElement>("[data-lf-win]").forEach((s) => {
         s.style.opacity = windowVis(pr, s.dataset.lfWin!).toFixed(3);
       });
@@ -249,6 +245,13 @@ export default function Landing() {
                 <div className="lf-hero__frame">
                   <img className="lf-hero__bg" src="/world/01-mountains.jpg" srcSet="/world/01-mountains-m.jpg 1100w, /world/01-mountains.jpg 2400w" sizes="150vh" alt="" decoding="async" />
                   <div className="lf-hero__mist" ref={mistRef} />
+                  <figure className="lf-bloom" ref={bloomRef} aria-hidden="true">
+                    <div className="lf-bloom__glow" />
+                    <picture>
+                      <source type="image/webp" srcSet="/world/xaribulbul-m.webp 480w, /world/xaribulbul.webp 900w" sizes="(max-width: 620px) 34vw, 18vw" />
+                      <img src="/world/xaribulbul.png" alt="" width={900} height={671}  decoding="async" />
+                    </picture>
+                  </figure>
                   <h1 className="lf-hero__title" ref={titleRef}>{t("Qarabağın torpağı yenidən")} <em>{t("əkinə hazırdır")}</em></h1>
                   <img className="lf-hero__fg" ref={fgRef} src="/world/01-mountains.jpg" srcSet="/world/01-mountains-m.jpg 1100w, /world/01-mountains.jpg 2400w" sizes="150vh" alt="" decoding="async" />
                   <div className="lf-hero__mist lf-hero__mist--front" ref={mistFrontRef} />
@@ -348,15 +351,6 @@ export default function Landing() {
                   </div>
               </div>
             </div>
-
-            <figure className="lf-bloom" ref={bloomRef} aria-hidden="true">
-              <div className="lf-bloom__glow" />
-              <picture>
-                <source type="image/webp" srcSet="/world/xaribulbul-m.webp 480w, /world/xaribulbul.webp 900w" sizes="(max-width: 760px) 60vw, 40vw" />
-                <img src="/world/xaribulbul.png" alt="" width={900} height={671} decoding="async" loading="lazy" />
-              </picture>
-              <figcaption>Xarıbülbül · Şuşa</figcaption>
-            </figure>
 
             <div className="lf-copy lf-finale" data-sc-copy data-sc-window="finale">
               <h2>Torpaq gözləyir. Müsabiqə açıqdır.</h2>

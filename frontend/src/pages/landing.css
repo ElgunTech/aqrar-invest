@@ -229,25 +229,23 @@
 .lf-govbar__links a:hover { color: var(--forest-600, #1d7a3e); }
 @media (max-width: 560px) { .lf-govbar__links a:not(:first-child) { display: none; } }
 
-/* Finale signature: the xarıbülbül of Shusha blooms out of the spring plain.
-   --k (0→1) is written by the scroll loop; everything below is derived from it. */
-.lf-bloom { --k: 0; position: fixed; right: clamp(16px, 7vw, 140px); top: 50%; z-index: 3; margin: 0; width: min(40vw, 64vh);
-  opacity: 0; pointer-events: none; will-change: transform, opacity;
-  transform: translate3d(0, calc(-50% + (1 - var(--k)) * 34vh), 0) rotate(calc((1 - var(--k)) * -38deg)) scale(calc(0.5 + var(--k) * 0.5)); }
+/* Hero signature: the xarıbülbül of Shusha opens above the headline when the page loads,
+   then rises and fades with it on scroll. --k (0→1) drives the opening. */
+@property --k { syntax: "<number>"; inherits: true; initial-value: 1; }
+.lf-hero__frame > .lf-bloom { --k: 1; position: absolute; inset: auto; height: auto; z-index: 2; margin: 0; pointer-events: none;
+  left: calc(var(--fx) * 100% - 5vw); top: calc(50% - 20vh); width: min(20vw, 27vh);
+  transform: translate(-50%, -50%) translateY(calc((1 - var(--k)) * 12vh)) rotate(calc((1 - var(--k)) * -40deg)) scale(calc(0.45 + var(--k) * 0.55));
+  will-change: transform, opacity, translate; }
 .lf-bloom picture { display: block; clip-path: circle(calc(var(--k) * 78%) at 52% 60%); }
-.lf-bloom img { display: block; width: 100%; height: auto; filter: drop-shadow(0 18px 40px rgb(40 0 60 / 0.45)) drop-shadow(0 0 22px rgb(224 161 6 / calc(var(--k) * 0.55))); }
-.lf-bloom__glow { position: absolute; inset: 12% 10% 6%; border-radius: 50%;
-  background: radial-gradient(closest-side, rgb(224 161 6 / 0.45), rgb(170 60 220 / 0.18) 55%, transparent 72%);
-  opacity: var(--k); transform: scale(calc(0.6 + var(--k) * 0.6)); filter: blur(6px); }
-.lf-bloom figcaption { position: absolute; left: 50%; bottom: -6%; transform: translateX(-50%); white-space: nowrap;
-  font: 600 13px/1 var(--sc-font-text, "Roboto", sans-serif); letter-spacing: 0.18em; text-transform: uppercase;
-  color: #f3e3b3; opacity: calc((var(--k) - 0.75) * 4); text-shadow: 0 1px 8px rgb(0 0 0 / 0.6); }
+.lf-bloom img { display: block; width: 100%; height: auto;
+  filter: drop-shadow(0 14px 30px rgb(30 0 50 / 0.35)) drop-shadow(0 0 18px rgb(224 161 6 / calc(var(--k) * 0.5))); }
+.lf-bloom__glow { position: absolute; inset: 8% 6% 2%; border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(255 236 170 / 0.75), rgb(224 161 6 / 0.25) 50%, transparent 72%);
+  opacity: calc(var(--k) * 0.9); transform: scale(calc(0.5 + var(--k) * 0.7)); filter: blur(8px); }
 @media (prefers-reduced-motion: no-preference) {
-  .lf-bloom img { animation: lf-bloom-float 6s ease-in-out infinite; }
+  .lf-hero__frame > .lf-bloom { animation: lf-bloom-open 2.2s cubic-bezier(.2, .8, .2, 1) .35s both; }
+  .lf-bloom img { animation: lf-bloom-float 6s ease-in-out 2.6s infinite; }
 }
-@keyframes lf-bloom-float { 50% { transform: translateY(-1.6%) rotate(1.5deg); } }
-@media (max-width: 760px) {
-  .lf-bloom { right: 50%; top: 27%; width: min(52vw, 28vh);
-    transform: translate3d(50%, calc(-50% + (1 - var(--k)) * 26vh), 0) rotate(calc((1 - var(--k)) * -38deg)) scale(calc(0.5 + var(--k) * 0.5)); }
-}
-@media (max-width: 760px) { .lf-bloom figcaption { display: none; } }
+@keyframes lf-bloom-open { from { --k: 0; } to { --k: 1; } }
+@keyframes lf-bloom-float { 50% { transform: translateY(-2%) rotate(2deg); } }
+@media (max-width: 620px) { .lf-hero__frame > .lf-bloom { left: calc(var(--fx) * 100%); top: 19%; width: min(25vw, 14vh); z-index: 5; } }
