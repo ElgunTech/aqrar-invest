@@ -10,7 +10,7 @@ const NAV = [
   { to: "/xerite", label: "Xəritə" },
   { to: "/kataloq", label: "Kataloq" },
   { to: "/musabiqeler", label: "Müsabiqələr" },
-  { to: "/ai", label: "AI məsləhətçi" },
+  { to: "/ai", label: "Məsləhətçi" },
   { to: "/seffafliq", label: "Şəffaflıq" },
 ];
 
@@ -20,7 +20,7 @@ export function Brand({ light }: { light?: boolean }) {
       <span className="brand__mark"><Sprout size={22} aria-hidden /></span>
       <span>
         <span className="brand__name">Aqrar İnvest</span>
-        <span className="brand__sub" style={light ? { color: "rgb(255 255 255 / .65)" } : undefined}>Qarabağ investisiya müsabiqəsi portalı</span>
+        <span className="brand__sub" style={light ? { color: "rgb(255 255 255 / .7)" } : undefined}>İnvestisiya müsabiqəsi portalı</span>
       </span>
     </Link>
   );
@@ -87,13 +87,13 @@ export function Header() {
 
   return (
     <>
-      <div className="flag-strip" />
       <div className="gov-bar">
         <div className="wrap">
-          <span>Prototip · EKTİS-ə inteqrasiya üçün hazırlanmış investisiya müsabiqəsi portalı</span>
-          <span className="hide-sm row" style={{ ["--gap" as string]: "16px" }}>
-            <a href="/swagger-ui.html"><BookOpen size={12} style={{ verticalAlign: -1 }} /> Açıq API</a>
-            <span>REST API · OpenAPI 3</span>
+          <span className="lang"><b>Azərbaycanca</b><span className="hide-sm">Prototip: EKTİS-ə inteqrasiya üçün hazırlanıb</span></span>
+          <span className="row" style={{ ["--gap" as string]: "18px" }}>
+            <Link to="/kataloq">Axtarış</Link>
+            <Link to="/yoxla" className="hide-sm">Qəbzi yoxla</Link>
+            <a href="/swagger-ui.html" className="hide-sm"><BookOpen size={12} style={{ verticalAlign: -1 }} /> Açıq API</a>
           </span>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Map as MapIcon, Scale, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { PlotCard } from "../components/PlotCard";
@@ -11,7 +11,8 @@ import type { Plot } from "../lib/types";
 
 export default function Catalog() {
   useDocumentTitle("İnvestisiya imkanları kataloqu");
-  const [filters, setFilters] = useState<Filters>(emptyFilters);
+  const [params] = useSearchParams();
+  const [filters, setFilters] = useState<Filters>({ ...emptyFilters, q: params.get("q") ?? "", activity: params.get("activity") ?? "" });
   const debounced = useDebounced(filters);
   const { data: plots, loading } = useApi<Plot[]>("/api/v1/public/plots" + qs(filtersToQuery(debounced)));
   const [selected, setSelected] = useState<number[]>([]);

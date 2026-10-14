@@ -466,3 +466,141 @@ button.panel.metric:hover .metric__value { color: var(--forest-600); }
   .receipt__head { padding: 20px 16px; }
   .receipt__table { width: calc(100% - 32px); margin-inline: 16px; }
 }
+
+/* ======================================================================
+   Government theme (modelled on Azerbaijani state portals such as agro.gov.az):
+   Roboto, institutional green header band, dense type, small radii, light shadows.
+   ====================================================================== */
+:root {
+  --forest-950: #12401f;
+  --forest-900: #165226;
+  --forest-800: #1b5e20;
+  --forest-700: #237a33;
+  --forest-600: #2e9e44;
+  --forest-500: #3aaa4f;
+  --forest-200: #bfe3c6;
+  --forest-100: #e3f3e6;
+  --forest-50: #f1f9f2;
+  --canvas: #f2f3f2;
+  --line: #dcdfdc;
+  --line-strong: #c7ccc8;
+  --ink: #222b25;
+  --ink-soft: #55605a;
+  --ink-faint: #7d8781;
+  --font-display: "Roboto", Arial, sans-serif;
+  --font-text: "Roboto", Arial, sans-serif;
+  --r-sm: 3px;
+  --r-md: 4px;
+  --r-lg: 6px;
+  --e1: 0 1px 3px rgb(0 0 0 / 0.08);
+  --e2: 0 2px 8px rgb(0 0 0 / 0.1);
+  --header-h: 76px;
+}
+body { font-size: 14.5px; }
+h1 { font-size: clamp(24px, 2.2vw, 30px); font-weight: 500; letter-spacing: 0; }
+h2 { font-size: 22px; font-weight: 500; letter-spacing: 0; }
+h3 { font-size: 16px; font-weight: 500; letter-spacing: 0; }
+.panel { box-shadow: var(--e1); border-color: #e3e6e3; }
+
+/* utility bar */
+.gov-bar { background: #f7f7f7; color: var(--ink-soft); border-bottom: 1px solid #e6e6e6; }
+.gov-bar a { color: var(--ink-soft); }
+.gov-bar a:hover { color: var(--forest-600); }
+.gov-bar .lang { display: flex; gap: 14px; }
+.gov-bar .lang b { color: var(--forest-600); font-weight: 500; }
+.flag-strip { display: none; }
+
+/* green header band */
+.header { background: var(--forest-600); border-bottom: 0; backdrop-filter: none; position: sticky; }
+.header .wrap { height: var(--header-h); gap: 32px; }
+.brand { color: #fff; }
+.brand:hover { color: #fff; }
+.brand__mark { background: #fff; color: var(--forest-600); border-radius: 50%; width: 46px; height: 46px; box-shadow: none; }
+.brand__name { font: 700 15px/1.15 var(--font-display); text-transform: uppercase; letter-spacing: 0.02em; color: #fff; }
+.brand__sub { color: rgb(255 255 255 / 0.9); text-transform: uppercase; font-size: 11px; font-weight: 500; letter-spacing: 0.03em; }
+.nav { gap: 0; margin-left: auto; }
+.nav a { color: #fff; font-weight: 500; font-size: 14px; padding: 6px 14px; border-radius: 0; position: relative; background: none; }
+.nav a + a::before { content: ""; position: absolute; left: 0; top: 9px; bottom: 9px; width: 1px; background: rgb(255 255 255 / 0.55); }
+.nav a:hover { background: none; color: #fff; text-decoration: underline; text-underline-offset: 6px; }
+.nav a.active { background: none; color: #fff; }
+.nav a.active::after { content: ""; position: absolute; left: 50%; bottom: -21px; transform: translateX(-50%); border: 8px solid transparent; border-bottom-color: #fff; }
+.header__right { margin-left: 8px; }
+.header .icon-btn { background: transparent; border-color: rgb(255 255 255 / 0.7); color: #fff; border-radius: var(--r-md); }
+.header .icon-btn:hover { background: rgb(255 255 255 / 0.12); color: #fff; }
+.header .btn { --bg: transparent; --fg: #fff; --bd: rgb(255 255 255 / 0.85); box-shadow: none; }
+.header .btn:hover { --bg: #fff; --fg: var(--forest-700); --bd: #fff; }
+.user-chip__name, .user-chip__role { color: #fff; }
+.header .avatar { background: rgb(255 255 255 / 0.2); color: #fff; }
+@media (max-width: 1100px) {
+  .nav { background: var(--forest-600); }
+  .nav a + a::before { display: none; }
+  .nav a.active::after { display: none; }
+}
+
+/* buttons: rectangular, institutional */
+.btn { border-radius: var(--r-md); box-shadow: none; font-weight: 500; }
+.btn--lg { border-radius: var(--r-md); }
+.btn:hover { --bg: var(--forest-700); --bd: var(--forest-700); }
+
+/* page title strip */
+.band { background: #fff; border-bottom: 1px solid var(--line); }
+.band .wrap { padding-top: 22px; padding-bottom: 22px; }
+.band h1 { font-size: 26px; font-weight: 500; }
+.band p { font-size: 14.5px; margin-top: 6px; }
+.crumbs { margin-bottom: 10px; font-size: 12.5px; }
+
+/* section heading: centred, small green rule */
+.sec-title { text-align: center; margin-bottom: 26px; }
+.sec-title h2 { font-size: 21px; font-weight: 500; display: inline-block; padding-bottom: 10px; border-bottom: 2px solid var(--forest-600); }
+.sec-title p { color: var(--ink-faint); font-size: 13px; margin-top: 6px; }
+
+/* tabs: green underline */
+.tabs button[aria-selected="true"] { color: var(--forest-600); border-bottom-color: var(--forest-600); }
+
+/* footer: dark institutional green */
+.footer { background: var(--forest-900); color: rgb(255 255 255 / 0.8); }
+.footer h4 { font-weight: 500; }
+.footer .brand__mark { background: #fff; color: var(--forest-700); }
+
+/* metrics on the plot page etc. keep the hairline style, slightly calmer */
+.metric__value { font-weight: 500; font-size: 26px; }
+
+/* ------------------------------------------------------------ home (gov portal layout) */
+.home-hero { position: relative; height: 380px; overflow: hidden; background: var(--forest-900); }
+.home-hero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 60%; }
+.home-hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgb(10 40 18 / 0.82) 0%, rgb(10 40 18 / 0.55) 45%, rgb(10 40 18 / 0.05) 80%); }
+.home-hero__inner { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column; justify-content: center; color: #fff; }
+.home-hero__kicker { font-size: 13px; font-weight: 500; opacity: 0.9; margin-bottom: 8px; }
+.home-hero h1 { color: #fff; font-size: clamp(24px, 2.6vw, 34px); font-weight: 700; max-width: 640px; line-height: 1.2; }
+.home-search { margin-top: 26px; max-width: 560px; padding-top: 18px; border-top: 1px solid rgb(255 255 255 / 0.35); }
+.home-search label { color: #fff; font-weight: 500; font-size: 14px; }
+.home-search__row { display: flex; gap: 8px; margin-top: 8px; }
+.home-search__row .input { height: 40px; }
+.home-search__row .btn { --bg: transparent; --bd: #fff; height: 40px; }
+.home-search__row .btn:hover { --bg: #fff; --fg: var(--forest-700); }
+.home-search__hints { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; font-size: 12.5px; }
+.home-search__hints a { color: #fff; background: rgb(255 255 255 / 0.18); padding: 3px 12px; border-radius: 12px; text-decoration: none; }
+.home-search__hints a:hover { background: rgb(255 255 255 / 0.3); }
+.home-row { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+@media (max-width: 900px) { .home-row { grid-template-columns: 1fr; } .home-hero { height: 420px; } }
+.home-block__head { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+.home-block__head h2 { font-size: 16px; font-weight: 500; color: var(--forest-600); }
+.home-block__head a { font-size: 12.5px; color: var(--ink-faint); }
+.notice-list { list-style: none; margin: 0; padding: 0; }
+.notice-list li { display: flex; align-items: center; gap: 16px; padding: 12px 18px; border-bottom: 1px solid #eef0ee; }
+.notice-list li:nth-child(even) { background: #f8f9f8; }
+.notice-list li:last-child { border-bottom: 0; }
+.notice-date { width: 64px; flex: none; text-align: center; line-height: 1.1; }
+.notice-date b { display: block; font-size: 22px; font-weight: 700; color: var(--ink); }
+.notice-date span { font-size: 11.5px; color: var(--ink-soft); }
+.notice-title { color: var(--ink); font-weight: 500; text-decoration: none; }
+.notice-title:hover { color: var(--forest-600); text-decoration: underline; }
+.home-band { background: #e9ebe9; padding: 44px 0; }
+.service-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+@media (max-width: 900px) { .service-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .service-grid { grid-template-columns: 1fr; } }
+.service { display: flex; gap: 16px; align-items: center; background: #fff; padding: 18px 20px; border-radius: var(--r-md); box-shadow: var(--e2); color: var(--forest-600); text-decoration: none; transition: box-shadow 150ms; }
+.service:hover { box-shadow: 0 4px 14px rgb(0 0 0 / 0.14); color: var(--forest-600); }
+.service b { display: block; color: var(--ink); font-weight: 500; font-size: 14.5px; }
+.service span span { display: block; color: var(--ink-faint); font-size: 12.5px; margin-top: 2px; }
+.service--static:hover { box-shadow: var(--e2); }

@@ -6,6 +6,7 @@ import { useAuth } from "./lib/auth";
 import type { User } from "./lib/types";
 
 const Landing = lazy(() => import("./pages/Landing"));
+const Home = lazy(() => import("./pages/Home"));
 const MapPage = lazy(() => import("./pages/MapPage"));
 const Catalog = lazy(() => import("./pages/Catalog"));
 const PlotDetail = lazy(() => import("./pages/PlotDetail"));
@@ -38,10 +39,11 @@ export function App() {
   return (
     <Suspense fallback={<Loading />}>
       <Routes>
-        <Route index element={<Landing />} />
+        <Route path="tanitim" element={<Landing />} />
         <Route path="mygov-demo" element={<MyGovDemo />} />
         <Route path="kabinet/:id/qebz" element={<RequireUser roles={["INVESTOR"]}><Receipt /></RequireUser>} />
         <Route element={<Layout />}>
+          <Route index element={<Home />} />
           <Route path="xerite" element={<MapPage />} />
           <Route path="kataloq" element={<Catalog />} />
           <Route path="sahe/:id" element={<PlotDetail />} />
