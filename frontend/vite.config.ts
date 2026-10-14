@@ -18,7 +18,8 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: "../backend/src/main/resources/static",
+    // Vercel hosts the SPA on its own; locally the build goes into the Spring Boot JAR
+    outDir: process.env.VERCEL ? "dist" : "../backend/src/main/resources/static",
     emptyOutDir: true,
     chunkSizeWarningLimit: 900,
   },

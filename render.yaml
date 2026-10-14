@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: aqrar-invest-api
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/v1/public/meta
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false

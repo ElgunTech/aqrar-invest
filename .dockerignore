@@ -1,0 +1,9 @@
+**/node_modules
+frontend/dist
+backend/target
+backend/data
+backend/uploads
+backend/src/main/resources/static
+.tools
+.git
+ml

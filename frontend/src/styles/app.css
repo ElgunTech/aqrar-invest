@@ -674,3 +674,14 @@ h3 { font-size: 16px; font-weight: 500; letter-spacing: 0; }
 .map3d__card { position: absolute; left: 14px; bottom: 34px; width: min(340px, calc(100% - 28px)); background: #fff; border-radius: 8px; padding: 18px; box-shadow: 0 10px 30px rgb(0 0 0 / 0.3); z-index: 2; }
 .map3d__close { position: absolute; right: 10px; top: 10px; background: none; border: 0; cursor: pointer; color: var(--ink-faint); }
 @media (max-width: 900px) { .map3d { grid-template-columns: 1fr; height: auto; } .map3d__list { max-height: 220px; } .map3d__stage { height: 75vh; } }
+
+/* phones: grid children may shrink below their content width; long rows wrap instead of widening the page */
+.grid > *, .layout-2 > *, .layout-side > *, .home-row > * { min-width: 0; }
+@media (max-width: 560px) {
+  .header__right { gap: 6px; margin-left: 4px; }
+  .header__right .btn { padding: 0 10px; }
+  .map3d__tools { right: 56px; flex-wrap: wrap; }
+  .metric__value { font-size: 22px; }
+}
+html, body { overflow-x: clip; }
+@media (max-width: 620px) { .grid--4:has(> .metric) { grid-template-columns: 1fr 1fr; row-gap: 14px; } }
