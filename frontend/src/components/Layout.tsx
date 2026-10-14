@@ -4,6 +4,7 @@ import { Bell, BookOpen, LogOut, Menu, Sprout } from "lucide-react";
 import { useAuth, isStaff } from "../lib/auth";
 import { api } from "../lib/api";
 import type { Notification } from "../lib/types";
+import { Assistant } from "./Assistant";
 import { dateTime, initials } from "../lib/format";
 
 const NAV = [
@@ -167,7 +168,7 @@ export function Footer() {
               <li><Link to="/seffafliq">Açıq statistika</Link></li>
               <li><Link to="/yoxla">Qəbzi yoxla</Link></li>
               <li><a href="/swagger-ui.html">API sənədləri</a></li>
-              <li><Link to="/haqqinda">Foto mənbələri</Link></li>
+              <li><Link to="/haqqinda">Məlumat mənbələri</Link></li>
             </ul>
           </div>
           <div>
@@ -201,6 +202,7 @@ export function Layout() {
         <Outlet />
       </main>
       <Footer />
+      <Assistant />
     </>
   );
 }

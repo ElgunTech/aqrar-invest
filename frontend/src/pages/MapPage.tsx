@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { Link, useSearchParams } from "react-router-dom";
-import { Circle, LayersControl, MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
+import { GeoJSON, LayersControl, MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 import L, { type Marker as LMarker } from "leaflet";
 import { ArrowRight, Clock } from "lucide-react";
 import { emptyFilters, filtersToQuery, PlotFilters, type Filters } from "../components/PlotFilters";
@@ -47,6 +47,18 @@ function FlyTo({ target }: { target: Plot | null }) {
   return null;
 }
 
+function AnamaLayer() {
+  const { data } = useApi<GeoJSON.FeatureCollection>("/api/v1/public/official/anama");
+  if (!data) return null;
+  return (
+    <GeoJSON data={data} style={{ color: "#c2410c", weight: 1, fillColor: "#f59e0b", fillOpacity: 0.18 }}
+      onEachFeature={(f, layer) => {
+        const p = f.properties as { district: string; village: string; ref: string; areaHa: number; end: string };
+        layer.bindPopup(`<b>ANAMA ${p.ref}</b><br>${p.district}, ${p.village ?? ""}<br>${p.areaHa} ha · sertifikat: ${p.end ?? "?"}<br><span style="color:#777">Sifarişçi: Kənd Təsərrüfatı Nazirliyi</span>`);
+      }} />
+  );
+}
+
 function Legend() {
   return (
     <div className="map-legend" style={{ position: "absolute", left: 12, bottom: 24, zIndex: 500 }}>
@@ -55,8 +67,8 @@ function Legend() {
         <div key={k}><i style={{ background: ACTIVITY[k].color }} />{v}</div>
       ))}
       <div style={{ marginTop: 6, borderTop: "1px solid var(--line)", paddingTop: 6 }}>
-        <div><i style={{ border: "2px solid #26775a", background: "transparent" }} />Minadan təmizlənib</div>
-        <div><i style={{ border: "2px dashed #9a610a", background: "transparent" }} />Təmizlənmə davam edir</div>
+        <div><i style={{ border: "2px solid #26775a", background: "transparent", borderRadius: 2 }} />Müsabiqə sahəsinin real sərhədi</div>
+        <div><i style={{ border: "1px solid #c2410c", background: "#fde7c4", borderRadius: 2 }} />ANAMA: təmizlənmiş k/t sahələri</div>
       </div>
     </div>
   );
@@ -80,7 +92,7 @@ export default function MapPage() {
     <div className="map-shell">
       <aside className="map-shell__side" aria-label="Filtrlər">
         <h2 style={{ fontSize: 20 }}>Aqrar investisiya xəritəsi</h2>
-        <p className="muted" style={{ fontSize: 13.5, margin: "6px 0 18px" }}>Qarabağ iqtisadi rayonunda təklif olunan təsərrüfat sahələri. Dairənin ölçüsü sahənin real ərazisinə uyğundur.</p>
+        <p className="muted" style={{ fontSize: 13.5, margin: "6px 0 18px" }}>Sahələrin sərhədləri ANAMA-nın rəsmi açıq məlumatlarındandır (opendata.az). Narıncı qat: Kənd Təsərrüfatı Nazirliyinin sifarişi ilə minadan təmizlənmiş bütün sahələr.</p>
         <PlotFilters value={filters} onChange={setFilters} />
         <div className="row row--between">
           <b>{plots.length} sahə</b>
@@ -111,17 +123,16 @@ export default function MapPage() {
             <LayersControl.BaseLayer name="Peyk görüntüsü">
               <TileLayer attribution="Esri World Imagery" url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" maxZoom={18} />
             </LayersControl.BaseLayer>
+            <LayersControl.Overlay checked name="ANAMA: minadan təmizlənmiş k/t sahələri (rəsmi)">
+              <AnamaLayer />
+            </LayersControl.Overlay>
           </LayersControl>
           <FitBounds plots={plots} />
           <FlyTo target={focus} />
-          {plots.map((p) => {
-            const a = ACTIVITY[p.activityType.code];
-            const cleared = p.mineClearance.code === "CLEARED";
-            return (
-              <Circle key={"c" + p.id} center={[p.latitude, p.longitude]} radius={Math.sqrt((p.areaHa * 10000) / Math.PI)}
-                pathOptions={{ color: cleared ? "#26775a" : "#9a610a", weight: 2, dashArray: cleared ? undefined : "6 6", fillColor: a.color, fillOpacity: 0.22 }} />
-            );
-          })}
+          {plots.filter((p) => p.boundaryGeoJson).map((p) => (
+            <GeoJSON key={"b" + p.id} data={JSON.parse(p.boundaryGeoJson!)}
+              style={{ color: "#1b5e20", weight: 2.5, fillColor: ACTIVITY[p.activityType.code].color, fillOpacity: 0.35 }} />
+          ))}
           {plots.map((p) => (
             <Marker key={p.id} position={[p.latitude, p.longitude]} icon={pinIcon(p.activityType.code)} title={p.title}
               ref={(m) => { markers.current[p.id] = m; }}>

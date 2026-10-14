@@ -1,0 +1,133 @@
+[
+  {
+    "key": "wheat_yield",
+    "title": "Buğdanın məhsuldarlığı, sent/ha",
+    "publisher": "Azərbaycan Respublikasının Dövlət Statistika Komitəsi",
+    "dataset": "https://opendata.az/@dsk/bugdanin-mehsuldarligi-sent-ha",
+    "api": "https://www.azstat.gov.az/AsisOpenDataApi/csv?table_id=DT_BB_413&lang=az",
+    "license": "Creative Commons CCZero",
+    "rows": 246,
+    "fetchedAt": "2026-10-14T12:50:40.023Z"
+  },
+  {
+    "key": "barley_yield",
+    "title": "Arpanın məhsuldarlığı, sent/ha",
+    "publisher": "Azərbaycan Respublikasının Dövlət Statistika Komitəsi",
+    "dataset": "https://opendata.az/@dsk/arpanin-mehsuldarligi-sent-ha",
+    "api": "https://www.azstat.gov.az/AsisOpenDataApi/csv?table_id=DT_BB_414&lang=az",
+    "license": "Creative Commons CCZero",
+    "rows": 246,
+    "fetchedAt": "2026-10-14T12:50:40.023Z"
+  },
+  {
+    "key": "maize_yield",
+    "title": "Dən üçün qarğıdalının məhsuldarlığı, sent/ha",
+    "publisher": "Azərbaycan Respublikasının Dövlət Statistika Komitəsi",
+    "dataset": "https://opendata.az/@dsk/den-ucun-qargidalinin-mehsuldarligi-sent-ha",
+    "api": "https://www.azstat.gov.az/AsisOpenDataApi/csv?table_id=DT_BB_417&lang=az",
+    "license": "Creative Commons CCZero",
+    "rows": 183,
+    "fetchedAt": "2026-10-14T12:50:40.023Z"
+  },
+  {
+    "key": "chickpea_yield",
+    "title": "Noxudun (nutun) məhsuldarlığı, sent/ha",
+    "publisher": "Azərbaycan Respublikasının Dövlət Statistika Komitəsi",
+    "dataset": "https://opendata.az/@dsk/noxudun-nutun-mehsuldarligi-sent-ha",
+    "api": "https://www.azstat.gov.az/AsisOpenDataApi/csv?table_id=DT_BB_422&lang=az",
+    "license": "Creative Commons CCZero",
+    "rows": 59,
+    "fetchedAt": "2026-10-14T12:50:40.023Z"
+  },
+  {
+    "key": "lentil_yield",
+    "title": "Mərciməyin məhsuldarlığı, sent/ha",
+    "publisher": "Azərbaycan Respublikasının Dövlət Statistika Komitəsi",
+    "dataset": "https://opendata.az/@dsk/mercimeyin-mehsuldarligi-sent-ha",
+    "api": "https://www.azstat.gov.az/AsisOpenDataApi/csv?table_id=DT_BB_424&lang=az",
+    "license": "Creative Commons CCZero",
+    "rows": 28,
+    "fetchedAt": "2026-10-14T12:50:40.023Z"
+  },
+  {
+    "key": "bean_yield",
+    "title": "Lobyanın məhsuldarlığı, sent/ha",
+    "publisher": "Azərbaycan Respublikasının Dövlət Statistika Komitəsi",
+    "dataset": "https://opendata.az/@dsk/lobyanin-mehsuldarligi-sent-ha",
+    "api": "https://www.azstat.gov.az/AsisOpenDataApi/csv?table_id=DT_BB_423&lang=az",
+    "license": "Creative Commons CCZero",
+    "rows": 81,
+    "fetchedAt": "2026-10-14T12:50:40.023Z"
+  },
+  {
+    "key": "grain_yield",
+    "title": "Dənli və dənli paxlalı bitkilərin məhsuldarlığı, sent/ha",
+    "publisher": "Azərbaycan Respublikasının Dövlət Statistika Komitəsi",
+    "dataset": "https://opendata.az/@dsk/denli-ve-denli-paxlali-bitkilerin-mehsuldarligi-sent-ha",
+    "api": "https://www.azstat.gov.az/AsisOpenDataApi/csv?table_id=DT_BB_412&lang=az",
+    "license": "Creative Commons CCZero",
+    "rows": 260,
+    "fetchedAt": "2026-10-14T12:50:40.023Z"
+  },
+  {
+    "key": "grain_area",
+    "title": "Dənli və dənli paxlalı bitkilərin əkin sahəsi, ha",
+    "publisher": "Azərbaycan Respublikasının Dövlət Statistika Komitəsi",
+    "dataset": "https://opendata.az/@dsk/denli-ve-denli-paxlali-bitkilerin-ekin-sahesi-ha",
+    "api": "https://www.azstat.gov.az/AsisOpenDataApi/csv?table_id=DT_BB_230&lang=az",
+    "license": "Creative Commons CCZero",
+    "rows": 285,
+    "fetchedAt": "2026-10-14T12:50:40.023Z"
+  },
+  {
+    "key": "watermelon_prod",
+    "title": "Qarpız istehsalı, ton",
+    "publisher": "Azərbaycan Respublikasının Dövlət Statistika Komitəsi",
+    "dataset": "https://opendata.az/@dsk/qarpiz-istehsali-ton",
+    "api": "https://www.azstat.gov.az/AsisOpenDataApi/csv?table_id=DT_BB_377&lang=az",
+    "license": "Creative Commons CCZero",
+    "rows": 150,
+    "fetchedAt": "2026-10-14T12:50:40.023Z"
+  },
+  {
+    "key": "melon_prod",
+    "title": "Yemiş istehsalı, ton",
+    "publisher": "Azərbaycan Respublikasının Dövlət Statistika Komitəsi",
+    "dataset": "https://opendata.az/@dsk/yemis-istehsali-ton",
+    "api": "https://www.azstat.gov.az/AsisOpenDataApi/csv?table_id=DT_BB_378&lang=az",
+    "license": "Creative Commons CCZero",
+    "rows": 145,
+    "fetchedAt": "2026-10-14T12:50:40.023Z"
+  },
+  {
+    "key": "fruit_prod",
+    "title": "Meyvə və giləmeyvəlilərin istehsalı – cəmi, ton",
+    "publisher": "Azərbaycan Respublikasının Dövlət Statistika Komitəsi",
+    "dataset": "https://opendata.az/@dsk/meyve-ve-gilemeyvelilerin-istehsali-cemi-ton",
+    "api": "https://www.azstat.gov.az/AsisOpenDataApi/csv?table_id=DT_BB_379&lang=az",
+    "license": "Creative Commons CCZero",
+    "rows": 216,
+    "fetchedAt": "2026-10-14T12:50:40.023Z"
+  },
+  {
+    "key": "potato_prod",
+    "title": "Kartof istehsalı, ton",
+    "publisher": "Azərbaycan Respublikasının Dövlət Statistika Komitəsi",
+    "dataset": "https://opendata.az/@dsk/kartof-istehsali-ton",
+    "api": "https://www.azstat.gov.az/AsisOpenDataApi/csv?table_id=DT_BB_358&lang=az",
+    "license": "Creative Commons CCZero",
+    "rows": 249,
+    "fetchedAt": "2026-10-14T12:50:40.023Z"
+  },
+  {
+    "key": "anama",
+    "title": "İşğaldan azad olunmuş ərazilərində təmizlənmiş və sertifikatlaşdırılmış sahələrinin sərhədləri",
+    "publisher": "Azərbaycan Respublikasının Minatəmizləmə Agentliyi (ANAMA)",
+    "dataset": "https://opendata.az/@anama/isgaldan-azad-olunmus-erazilerinde-temizlenmis-ve-sertifikatlasdirilmis-sahelerinin-serhedleri",
+    "api": "https://admin.opendata.az/dataset/2cf3d74f-b77e-4cde-8915-304168b9f365/resource/7d26761a-7907-4e3d-8dbe-0cfb2cfd2d95/download/certified_1nov2020_30sep2026.zip",
+    "license": "Open Data Commons Attribution License",
+    "rows": 1019,
+    "filter": "Sifarişçi: Kənd Təsərrüfatı Nazirliyi; Qarabağ iqtisadi rayonu",
+    "fetchedAt": "2026-10-14T12:50:40.023Z"
+  }
+]

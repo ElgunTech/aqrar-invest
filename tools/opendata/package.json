@@ -1,0 +1,11 @@
+{
+  "name": "aqrar-invest-opendata",
+  "private": true,
+  "type": "module",
+  "description": "Fetches official open data (ANAMA, State Statistics Committee) for the portal",
+  "dependencies": {
+    "proj4": "2.12.1",
+    "shapefile": "0.6.6",
+    "adm-zip": "0.5.16"
+  }
+}

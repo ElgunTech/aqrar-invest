@@ -52,6 +52,21 @@ export interface Plot {
   openCompetition: CompetitionRef | null;
   applicationCount: number;
   aiTopCrop: CropRef | null;
+  boundaryGeoJson: string | null;
+  anamaRef: string | null;
+  clearanceStartDate: string | null;
+  dataSource: string | null;
+}
+
+export interface OfficialIndicator {
+  key: string;
+  label: string;
+  unit: string;
+  year: number;
+  district: number;
+  national: number | null;
+  region: number | null;
+  series: { year: number; value: number }[];
 }
 
 export interface CropScore {

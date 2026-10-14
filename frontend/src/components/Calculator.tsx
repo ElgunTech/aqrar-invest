@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Area, AreaChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { Plot } from "../lib/types";
 import { money, num } from "../lib/format";
-import { useMeta } from "../lib/hooks";
+import { useApi, useMeta } from "../lib/hooks";
 
 /**
  * Per-hectare economics. These are illustrative, editable assumptions (not official statistics);
@@ -27,7 +27,10 @@ export function Calculator({ plot }: { plot: Plot }) {
   const meta = useMeta();
   const [crop, setCrop] = useState(plot.aiTopCrop?.code ?? "maize");
   const [area, setArea] = useState(Math.min(plot.areaHa, Math.max(5, Math.round(plot.areaHa / 2))));
-  const base = ECON[crop] ?? GENERIC;
+  const official = useApi<{ tonsPerHa?: number; year?: number; unit?: string; source?: string }>(
+    `/api/v1/public/official/yield?crop=${crop}&district=${encodeURIComponent(plot.district)}`).data;
+  const officialYield = official?.tonsPerHa;
+  const base = { ...(ECON[crop] ?? GENERIC), ...(officialYield ? { yieldT: officialYield } : {}) };
   const [over, setOver] = useState<Partial<Economics>>({});
   const e = { ...base, ...over };
   const years = Math.min(plot.leaseYears, 15);
@@ -81,6 +84,11 @@ export function Calculator({ plot }: { plot: Plot }) {
               {field("yieldT", "Məhsuldarlıq, ton/ha", 0.5)}
               {field("price", "Satış qiyməti, ₼/ton", 10)}
             </div>
+            {officialYield && over.yieldT === undefined && (
+              <p style={{ fontSize: 12.5, color: "var(--forest-600)", marginBottom: 6 }}>
+                Məhsuldarlıq rəsmi statistikadandır: {officialYield} t/ha, {official?.unit}, {official?.year}-ci il ({official?.source}).
+              </p>
+            )}
             {e.perennial && <p className="faint" style={{ fontSize: 12.5 }}>Çoxillik bitki: məhsul 2-ci ildə 30%, 3-cü ildə 70%, 4-cü ildən tam həcmdə.</p>}
           </div>
           <div>

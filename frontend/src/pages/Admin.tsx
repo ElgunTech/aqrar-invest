@@ -485,6 +485,15 @@ function Integration({ isAdmin }: { isAdmin: boolean }) {
     toast("AI modeli diskdən yenidən yükləndi");
     reloadModel();
   };
+  const refreshOfficial = async () => {
+    toast("Statistika azstat.gov.az-dan yüklənir…");
+    try {
+      const r = await api<{ updated: number }>("/api/v1/admin/ai/official-refresh", { method: "POST" });
+      toast(`${r.updated} rəsmi cədvəl yeniləndi`);
+    } catch (e) {
+      toast((e as Error).message, true);
+    }
+  };
   const pending = events?.filter((e) => e.status.code === "PENDING").length ?? 0;
 
   return (
@@ -508,6 +517,7 @@ function Integration({ isAdmin }: { isAdmin: boolean }) {
           <div style={{ font: "650 16px var(--font-display)", margin: "10px 0 4px" }}>{model?.modelLoaded ? `${model.modelName} v${model.version}` : "Yüklənməyib"}</div>
           <div className="faint" style={{ fontSize: 12.5, marginBottom: 12 }}>{model?.metrics ? `Test dəqiqliyi ${pct1(model.metrics.test_accuracy)}` : "Fallback alqoritm"}</div>
           {isAdmin && <button className="btn btn--sm btn--ghost" onClick={reloadAi}><RefreshCw size={14} /> Modeli yenidən yüklə</button>}
+          {isAdmin && <button className="btn btn--sm btn--ghost" style={{ marginLeft: 8 }} onClick={refreshOfficial}><RefreshCw size={14} /> Rəsmi statistikanı yenilə</button>}
         </div>
       </div>
       <section className="panel">

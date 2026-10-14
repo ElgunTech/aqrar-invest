@@ -99,6 +99,28 @@ PostgreSQL ilə: `--spring.profiles.active=postgres` və `DB_URL`, `DB_USER`, `D
   portalın webhook-una (`/api/v1/integration/ektis/events`) fermer reyestri yoxlamasının nəticəsini göndərir.
 * Demo: Admin → "EKTİS və AI" → "EKTİS-i söndür" → müraciət göndər → hadisə növbədə gözləyir → "Bərpa et" → avtomatik çatdırılır.
 
+## Rəsmi açıq məlumatlar
+
+Portal demo deyil, rəsmi mənbələrdən istifadə edir (`tools/opendata/fetch.mjs` ilə yenidən yüklənir):
+
+| Məlumat | Mənbə | Lisenziya | İstifadə |
+|---|---|---|---|
+| Minadan təmizlənmiş və sertifikatlaşdırılmış sahələrin sərhədləri (2020–2026) | ANAMA, opendata.az | ODC-BY | Müsabiqə sahələrinin real sərhədi, sahəsi, kəndi və təmizlənmə tarixi; xəritədə 1019 k/t sahəsi |
+| Rayonlar üzrə məhsuldarlıq və istehsal (2000–2025, 12 göstərici) | Dövlət Statistika Komitəsi (azstat.gov.az API) | CC0 | Sahə səhifəsində rayon statistikası, kalkulyatorda rəsmi məhsuldarlıq, köməkçinin cavabları |
+
+Nümunəvi qalanlar (açıq mənbədə yoxdur): sahələrin torpaq analizləri (N, P, K, pH), suya və yola məsafə, investisiya şərtləri, müraciətçilər.
+Admin paneldən statistikanı azstat API-dən canlı yeniləmək olar.
+
+## Köməkçi (chatbot)
+
+Sağ aşağıdakı "Köməkçi" düyməsi. Cavablar portalın bazasından, rəsmi statistikadan, ANAMA qatından və AI modelindən götürülür və mənbə ilə göstərilir. Açar tələb etmir.
+İstəyə bağlı: pulsuz Groq API açarı ilə ([console.groq.com](https://console.groq.com)) cavablar LLM ilə təbii dildə yazılır, yenə yalnız tapılmış faktlar əsasında:
+
+```bat
+set GROQ_API_KEY=gsk_...
+start.bat
+```
+
 ## Fərqləndirici modullar
 
 * **Öhdəliklərin monitorinqi:** müraciət təsdiqlənəndə investor üçün 4 mərhələli öhdəlik planı yaranır (6/12/24/36 ay, investisiyanın 20/50/80/100%-i). Hesabat GPS-li foto ilə verilir, koordinat sahənin sərhədi ilə yoxlanılır. Nazirlik panelində svetofor: vaxtında, diqqət, gecikir.

@@ -26,7 +26,7 @@ export async function api<T>(path: string, opts: Options = {}): Promise<T> {
   }
   const res = await fetch(path, init);
   const type = res.headers.get("content-type") ?? "";
-  const data = type.includes("application/json") ? await res.json() : await res.text();
+  const data = type.includes("json") ? await res.json() : await res.text();
   if (!res.ok) {
     const d = data as { message?: string; fields?: Record<string, string> };
     throw new ApiError(d?.message ?? `Xəta baş verdi (${res.status})`, res.status, d?.fields);

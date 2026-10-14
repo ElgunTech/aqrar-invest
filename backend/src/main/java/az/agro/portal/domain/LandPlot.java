@@ -81,6 +81,20 @@ public class LandPlot {
     @Column(nullable = false, length = 20)
     private PlotStatus status = PlotStatus.AVAILABLE;
 
+    /** Real boundary (GeoJSON geometry, WGS84) from the ANAMA certified-areas dataset. */
+    @Lob
+    private String boundaryGeoJson;
+
+    /** ANAMA minefield / task identifier of the certified area, e.g. Az-2637. */
+    @Column(length = 30)
+    private String anamaRef;
+
+    private LocalDate clearanceStartDate;
+
+    /** Where the plot geometry comes from (shown to users). */
+    @Column(length = 300)
+    private String dataSource;
+
     private Instant createdAt = Instant.now();
     private Instant updatedAt = Instant.now();
 
@@ -146,6 +160,14 @@ public class LandPlot {
     public void setDescription(String description) { this.description = description; }
     public PlotStatus getStatus() { return status; }
     public void setStatus(PlotStatus status) { this.status = status; }
+    public String getBoundaryGeoJson() { return boundaryGeoJson; }
+    public void setBoundaryGeoJson(String boundaryGeoJson) { this.boundaryGeoJson = boundaryGeoJson; }
+    public String getAnamaRef() { return anamaRef; }
+    public void setAnamaRef(String anamaRef) { this.anamaRef = anamaRef; }
+    public LocalDate getClearanceStartDate() { return clearanceStartDate; }
+    public void setClearanceStartDate(LocalDate clearanceStartDate) { this.clearanceStartDate = clearanceStartDate; }
+    public String getDataSource() { return dataSource; }
+    public void setDataSource(String dataSource) { this.dataSource = dataSource; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
 }

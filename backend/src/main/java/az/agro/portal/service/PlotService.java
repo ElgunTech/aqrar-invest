@@ -131,7 +131,8 @@ public class PlotService {
                 p.getWaterSourceKm(), p.getRoadKm(), p.isIrrigationAvailable(), p.isElectricityAvailable(),
                 Labels.of(p.getMineClearance()), p.getMineClearanceDate(),
                 p.getLeaseYears(), p.getMinInvestment(), p.getUsageTerms(), p.getDescription(),
-                Labels.of(p.getStatus()), ref, ctx.appCounts().getOrDefault(p.getId(), 0L), crop);
+                Labels.of(p.getStatus()), ref, ctx.appCounts().getOrDefault(p.getId(), 0L), crop,
+                p.getBoundaryGeoJson(), p.getAnamaRef(), p.getClearanceStartDate(), p.getDataSource());
     }
 
     // ---------------------------------------------------------------- "Which plot suits me?"

@@ -34,7 +34,8 @@ public final class PlotDtos {
             Label status,
             CompetitionRef openCompetition,
             long applicationCount,
-            CropRef aiTopCrop) {
+            CropRef aiTopCrop,
+            String boundaryGeoJson, String anamaRef, LocalDate clearanceStartDate, String dataSource) {
     }
 
     /** Filter for the catalogue and the map. All fields optional. */

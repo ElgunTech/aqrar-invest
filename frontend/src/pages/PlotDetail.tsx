@@ -1,5 +1,5 @@
 import { Link, useParams } from "react-router-dom";
-import { Circle, MapContainer, TileLayer } from "react-leaflet";
+import { GeoJSON, MapContainer, TileLayer } from "react-leaflet";
 import {
   ArrowRight, CalendarClock, Check, Droplets, FileText, Landmark, MapPin, Route, Scale, Zap, X as XIcon,
 } from "lucide-react";
@@ -9,7 +9,7 @@ import { useAuth } from "../lib/auth";
 import { ACTIVITY } from "../lib/domain";
 import { countdown, date, money, num, pct, pct1 } from "../lib/format";
 import { useApi, useDocumentTitle } from "../lib/hooks";
-import type { CropRecommendation, Plot } from "../lib/types";
+import type { CropRecommendation, OfficialIndicator, Plot } from "../lib/types";
 
 export function AiCard({ rec, inputs }: { rec: CropRecommendation; inputs?: Plot }) {
   const shown = rec.recommendations.filter((c) => c.probability >= 0.01);
@@ -57,6 +57,41 @@ export function AiCard({ rec, inputs }: { rec: CropRecommendation; inputs?: Plot
   );
 }
 
+function OfficialStats({ district }: { district: string }) {
+  const { data } = useApi<OfficialIndicator[]>(`/api/v1/public/official/district/${encodeURIComponent(district)}`);
+  if (!data || data.length === 0) return null;
+  return (
+    <section className="panel">
+      <div className="panel__head"><h3>{district} rayonu: rəsmi statistika</h3><span className="faint" style={{ fontSize: 12.5 }}>Dövlət Statistika Komitəsi</span></div>
+      <div className="table-wrap">
+        <table className="table table--compact">
+          <thead><tr><th>Göstərici</th><th className="num">İl</th><th className="num">Rayon</th><th className="num">Qarabağ i/r</th><th className="num">Ölkə</th><th>10 il</th></tr></thead>
+          <tbody>
+            {data.map((i) => {
+              const max = Math.max(...i.series.map((s) => s.value));
+              return (
+                <tr key={i.key}>
+                  <td>{i.label}, <span className="faint">{i.unit}</span></td>
+                  <td className="num">{i.year}</td>
+                  <td className="num"><b>{num(i.district, 1)}</b></td>
+                  <td className="num">{i.region != null ? num(i.region, 1) : "yoxdur"}</td>
+                  <td className="num">{i.national != null ? num(i.national, 1) : "yoxdur"}</td>
+                  <td>
+                    <span className="spark" aria-label="10 illik dinamika">
+                      {i.series.map((s) => <i key={s.year} title={`${s.year}: ${s.value}`} style={{ height: `${Math.max(8, (s.value / max) * 100)}%` }} />)}
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <div className="panel__foot faint" style={{ fontSize: 12.5 }}>Mənbə: azstat.gov.az açıq məlumat API-si (CC0), opendata.az. Rayonlar işğal dövründə uçotdan kənarda qaldığı üçün bəzi göstəricilər yalnız son illər üzrə mövcuddur.</div>
+    </section>
+  );
+}
+
 export default function PlotDetail() {
   const { id } = useParams();
   const { user } = useAuth();
@@ -95,7 +130,7 @@ export default function PlotDetail() {
                 <Tag label={p.status} />
               </div>
               <h1>{p.title}</h1>
-              <p className="row" style={{ ["--gap" as string]: "6px" }}><MapPin size={16} /> {p.district} rayonu, {p.village} kəndi · Kadastr № <span className="mono">{p.cadastreNumber ?? "yoxdur"}</span></p>
+              <p className="row" style={{ ["--gap" as string]: "6px" }}><MapPin size={16} /> {p.district} rayonu, {p.village} kəndi · ANAMA sahə kodu <span className="mono">{p.anamaRef ?? "yoxdur"}</span></p>
             </div>
           </div>
         </div>
@@ -113,6 +148,8 @@ export default function PlotDetail() {
 
             {rec ? <AiCard rec={rec} inputs={p} /> : <div className="panel"><Loading /></div>}
 
+            <OfficialStats district={p.district} />
+
             <Calculator plot={p} />
 
             <section className="panel">
@@ -125,12 +162,13 @@ export default function PlotDetail() {
                   <dt><Route size={14} /> Asfalt yola məsafə</dt><dd>{num(p.roadKm, 1)} km</dd>
                   <dt>Suvarma sistemi</dt><dd>{yes(p.irrigationAvailable)}</dd>
                   <dt><Zap size={14} /> Elektrik xətti</dt><dd>{yes(p.electricityAvailable)}</dd>
-                  <dt>Minadan təmizlənmə</dt><dd><MineTag label={p.mineClearance} /> {p.mineClearanceDate && <span className="muted"> · {date(p.mineClearanceDate)}</span>}</dd>
+                  <dt>Minadan təmizlənmə</dt><dd><MineTag label={p.mineClearance} /> {p.clearanceStartDate && <span className="muted"> {date(p.clearanceStartDate)} –</span>}{p.mineClearanceDate && <span className="muted"> {date(p.mineClearanceDate)}</span>}</dd>
                   <dt>İcarə müddəti</dt><dd>{p.leaseYears} il</dd>
                 </dl>
                 <hr className="divider" />
                 <h4 style={{ marginBottom: 6 }}>İstifadə şərtləri</h4>
                 <p className="muted">{p.usageTerms}</p>
+                {p.dataSource && <p className="faint" style={{ fontSize: 12.5, marginTop: 12 }}>Mənbə: {p.dataSource} Torpaq göstəriciləri, infrastruktur məsafələri və investisiya şərtləri nümunəvidir.</p>}
               </div>
             </section>
 
@@ -138,7 +176,7 @@ export default function PlotDetail() {
               <div style={{ height: 360 }}>
                 <MapContainer center={[p.latitude, p.longitude]} zoom={13} scrollWheelZoom={false} style={{ height: "100%" }}>
                   <TileLayer attribution="Esri World Imagery" url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" maxZoom={18} />
-                  <Circle center={[p.latitude, p.longitude]} radius={Math.sqrt((p.areaHa * 10000) / Math.PI)} pathOptions={{ color: "#d9a23a", weight: 3, fillColor: a.color, fillOpacity: 0.28 }} />
+                  {p.boundaryGeoJson && <GeoJSON data={JSON.parse(p.boundaryGeoJson)} style={{ color: "#f5c542", weight: 3, fillColor: a.color, fillOpacity: 0.3 }} />}
                 </MapContainer>
               </div>
             </section>

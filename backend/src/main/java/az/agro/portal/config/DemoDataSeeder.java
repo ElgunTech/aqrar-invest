@@ -136,7 +136,7 @@ public class DemoDataSeeder implements ApplicationRunner {
         LandPlot shs1 = plot("QR-SHS-001", "11-501-0008-002", "Daşaltı dağ meyvəçiliyi sahəsi", "Şuşa", "Daşaltı", 39.740, 46.730, 25,
                 ActivityType.HORTICULTURE, "Qəhvəyi dağ-meşə", apple, 0.9, 2.0, true, true, MineClearanceStatus.CLEARED, "2022-08-20", 25, 260_000,
                 "Alma, armud və giləmeyvə üçün. Turizm marşrutuna yaxın — aqroturizm imkanı.");
-        LandPlot shs2 = plot("QR-SHS-002", "11-501-0014-007", "Turşsu arıçılıq sahəsi", "Şuşa", "Turşsu", 39.780, 46.700, 35,
+        LandPlot shs2 = plot("QR-SHS-002", "11-501-0014-007", "Turşsu arıçılıq sahəsi", "Xocavənd", "Turşsu", 39.780, 46.700, 35,
                 ActivityType.BEEKEEPING, "Dağ-çəmən", apple, 0.3, 2.5, false, false, MineClearanceStatus.CLEARED, "2023-07-07", 10, 60_000,
                 "Şuşa dağ balı brendi üçün. Turşsu bulağına yaxın.");
         LandPlot trt1 = plot("QR-TRT-001", "13-601-0019-003", "Suqovuşan suvarılan massiv", "Tərtər", "Suqovuşan", 40.300, 46.860, 75,
@@ -145,7 +145,7 @@ public class DemoDataSeeder implements ApplicationRunner {
         LandPlot trt2 = plot("QR-TRT-002", "13-601-0025-001", "Talış meyvə bağı sahəsi", "Tərtər", "Talış", 40.270, 46.800, 50,
                 ActivityType.HORTICULTURE, "Qəhvəyi dağ-meşə", apple, 1.6, 2.1, true, false, MineClearanceStatus.IN_PROGRESS, null, 25, 310_000,
                 "Dağətəyi meyvə bağı. Elektrik xəttinin çəkilməsi 2027-ci ildə planlaşdırılıb.");
-        LandPlot xnk1 = plot("QR-XNK-001", "12-701-0004-002", "Xankəndi istixana sahəsi", "Xankəndi", "Xankəndi ətrafı", 39.840, 46.800, 20,
+        LandPlot xnk1 = plot("QR-XNK-001", "12-701-0004-002", "Xankəndi istixana sahəsi", "Tərtər", "Xankəndi ətrafı", 39.840, 46.800, 20,
                 ActivityType.GREENHOUSE, "Boz-qəhvəyi", new double[]{100, 17, 50, 27.5, 90, 6.4, 30}, 0.7, 0.5, true, true,
                 MineClearanceStatus.CLEARED, "2024-06-10", 15, 750_000,
                 "Şəhərə yaxın istixana kompleksi — yerli bazara təzə məhsul.");
@@ -255,7 +255,73 @@ public class DemoDataSeeder implements ApplicationRunner {
         p.setUsageTerms("Torpaq " + lease + " il müddətinə icarəyə verilir. Təyinatı dəyişdirilə bilməz. "
                 + "İlk 2 il ərzində investisiyanın ən azı 50%-i reallaşdırılmalıdır. Minadan təmizlənmə sertifikatı ANAMA tərəfindən verilir.");
         p.setDescription(description);
+        applyRealPlot(p, district, activity);
         return plots.save(p);
+    }
+
+    // ---------------------------------------------------------------- real geometry from official open data
+
+    private record RealPlot(String district, String village, String ref, double areaHa, String clearedFrom, String clearedAt,
+                            double lat, double lng, com.fasterxml.jackson.databind.JsonNode boundary) {
+    }
+
+    private final java.util.Map<String, java.util.Deque<RealPlot>> realPlots = new java.util.HashMap<>();
+    private final java.util.Map<String, Integer> codeSeq = new java.util.HashMap<>();
+    /** How much a plot grew when its real area replaced the illustrative one; seeded applications scale with it. */
+    private final java.util.Map<LandPlot, Double> investmentScale = new java.util.IdentityHashMap<>();
+
+    private static final java.util.Map<String, String> CODE = java.util.Map.of(
+            "Ağdam", "AGD", "Füzuli", "FZL", "Xocavənd", "XCV", "Xocalı", "XCL", "Şuşa", "SHS", "Tərtər", "TRT");
+
+    private static final java.util.Map<ActivityType, String> NOUN = java.util.Map.of(
+            ActivityType.CROP_FARMING, "əkinçilik sahəsi", ActivityType.LIVESTOCK, "heyvandarlıq sahəsi",
+            ActivityType.HORTICULTURE, "meyvə bağı sahəsi", ActivityType.VITICULTURE, "üzümçülük sahəsi",
+            ActivityType.GREENHOUSE, "istixana sahəsi", ActivityType.BEEKEEPING, "arıçılıq sahəsi");
+
+    /**
+     * Replaces location, boundary, area and clearance with a real certified area (ANAMA, requested by the Ministry
+     * of Agriculture). Soil indicators, infrastructure distances and investment terms stay illustrative.
+     */
+    private void applyRealPlot(LandPlot p, String district, ActivityType activity) {
+        if (realPlots.isEmpty()) loadRealPlots();
+        RealPlot r = java.util.Optional.ofNullable(realPlots.get(district)).map(java.util.Deque::poll).orElse(null);
+        if (r == null) return;
+        double perHa = p.getMinInvestment() / Math.max(1, p.getAreaHa());
+        int seq = codeSeq.merge(r.district(), 1, Integer::sum);
+        p.setCode("QR-" + CODE.getOrDefault(r.district(), "KRB") + "-" + String.format("%03d", seq));
+        p.setCadastreNumber(null);
+        p.setDistrict(r.district());
+        p.setVillage(r.village());
+        p.setTitle(r.village() + " " + NOUN.get(activity));
+        p.setLatitude(r.lat());
+        p.setLongitude(r.lng());
+        p.setAreaHa(r.areaHa());
+        long oldMin = p.getMinInvestment();
+        p.setMinInvestment(Math.round(perHa * r.areaHa() / 10_000) * 10_000);
+        investmentScale.put(p, oldMin == 0 ? 1.0 : (double) p.getMinInvestment() / oldMin);
+        p.setMineClearance(MineClearanceStatus.CLEARED);
+        p.setClearanceStartDate(r.clearedFrom() == null ? null : LocalDate.parse(r.clearedFrom()));
+        p.setMineClearanceDate(r.clearedAt() == null ? null : LocalDate.parse(r.clearedAt()));
+        p.setAnamaRef(r.ref());
+        p.setBoundaryGeoJson(r.boundary().toString());
+        p.setDataSource("Sərhəd, sahə və təmizlənmə tarixi: ANAMA, opendata.az (ODC-BY). Sifarişçi: Kənd Təsərrüfatı Nazirliyi.");
+        p.setDescription("Minadan təmizlənmiş və sertifikatlaşdırılmış sahə (ANAMA " + r.ref() + "). "
+                + p.getActivityType().getLabel() + " üçün təklif olunur.");
+    }
+
+    private void loadRealPlots() {
+        try (var in = new org.springframework.core.io.ClassPathResource("opendata/plots.json").getInputStream()) {
+            var arr = new com.fasterxml.jackson.databind.ObjectMapper().readTree(in);
+            for (var n : arr) {
+                RealPlot r = new RealPlot(n.get("district").asText(), n.get("village").asText(), n.get("ref").asText(),
+                        n.get("areaHa").asDouble(), n.path("clearedFrom").asText(null), n.path("clearedAt").asText(null),
+                        n.get("lat").asDouble(), n.get("lng").asDouble(), n.get("boundary"));
+                realPlots.computeIfAbsent(r.district(), k -> new java.util.ArrayDeque<>()).add(r);
+            }
+            log.info("Loaded {} real plot boundaries from opendata/plots.json", arr.size());
+        } catch (java.io.IOException e) {
+            log.warn("opendata/plots.json not available, plots keep illustrative locations", e);
+        }
     }
 
     private Competition competition(String code, String title, String description, String requirements, LocalDate start,
@@ -295,7 +361,7 @@ public class DemoDataSeeder implements ApplicationRunner {
         a.setAddress(type == ApplicantType.COMPANY ? "Bakı ş., Nəsimi r., 28 May küç. 12" : "Bakı ş., Yasamal r.");
         a.setActivityType(plot.getActivityType());
         a.setPlannedCrop(crop);
-        a.setPlannedInvestment(investment);
+        a.setPlannedInvestment(Math.round(investment * investmentScale.getOrDefault(plot, 1.0) / 1000) * 1000);
         a.setOwnFundsPercent(ownFunds);
         a.setJobsCreated(jobs);
         a.setReturneeJobs(jobs * (int) (Math.abs(plot.getCode().hashCode()) % 7 + 2) / 10);

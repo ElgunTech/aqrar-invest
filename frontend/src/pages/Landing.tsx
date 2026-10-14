@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Map as MapIcon } from "lucide-react";
 import { Brand } from "../components/Layout";
+import { Assistant } from "../components/Assistant";
 import { api } from "../lib/api";
 import { useAuth, isStaff } from "../lib/auth";
 import { countdown, money, num } from "../lib/format";
@@ -213,6 +214,7 @@ export default function Landing() {
         </nav>
       </div>
 
+      <Assistant />
       <nav className="lf-rail" aria-label="Hekayənin mərhələləri">
         {LEGS.map((l, i) => (
           <button key={l.label} aria-current={leg === i} onClick={() => go(i)}>{l.label}<i /></button>
