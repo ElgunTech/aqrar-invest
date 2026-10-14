@@ -48,6 +48,10 @@ public class IntegrationService {
     private final ObjectMapper json;
     private final TransactionTemplate tx;
     private final int maxAttempts;
+    private LedgerService ledger;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    void setLedger(LedgerService ledger) { this.ledger = ledger; }
 
     public IntegrationService(IntegrationEventRepository events, ApplicationRepository applications,
                               NotificationService notifications, EktisClient ektis, ObjectMapper json,
@@ -220,13 +224,20 @@ public class IntegrationService {
         switch (in.eventType()) {
             case "FARMER_VERIFIED", "FARMER_REGISTERED" -> {
                 a.setEktisStatus(EktisSyncStatus.VERIFIED);
-                a.addHistory(new StatusChange(a.getStatus(), a.getStatus(), "EKTİS: " + text, "EKTİS"));
+                ektisNote(a, text);
                 notifications.notify(a.getApplicant(), "EKTİS təsdiqi: " + a.getApplicationNumber(), text,
                         "/kabinet/" + a.getId());
             }
-            default -> a.addHistory(new StatusChange(a.getStatus(), a.getStatus(), "EKTİS: " + text, "EKTİS"));
+            default -> ektisNote(a, text);
         }
         return Map.of("accepted", true, "eventId", e.getId());
+    }
+
+    /** EKTİS remarks are part of the decision history, so they are sealed into the ledger like any other entry. */
+    private void ektisNote(InvestmentApplication a, String text) {
+        StatusChange c = new StatusChange(a.getStatus(), a.getStatus(), "EKTİS: " + text, "EKTİS");
+        a.addHistory(c);
+        ledger.status(a, c);
     }
 
     private static Object nz(Object o) {

@@ -54,6 +54,19 @@ class LedgerIntegrationTest {
     }
 
     @Test
+    void ektisRemarksAreSealedToo() throws Exception {
+        String number = applications.findAll().stream().filter(a -> a.getStatus() == ApplicationStatus.UNDER_REVIEW)
+                .findFirst().orElseThrow().getApplicationNumber();
+        mvc.perform(post("/api/v1/integration/ektis/events").header("X-API-Key", "demo-ektis-inbound-key")
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                        .content("{\"eventType\":\"NOTE\",\"applicationNumber\":\"" + number + "\",\"message\":\"Test qeydi\"}"))
+                .andExpect(status().isOk());
+        JsonNode v = check(number);
+        assertThat(v.path("recordsValid").asBoolean()).isTrue();
+        assertThat(v.path("entries").toString()).contains("EKTİS");
+    }
+
+    @Test
     void investorCannotTamper() throws Exception {
         String number = applications.findAll().get(0).getApplicationNumber();
         mvc.perform(post("/api/v1/admin/ledger/tamper/" + number).with(csrf()).with(user("investor@demo.az").roles("INVESTOR"))).andExpect(status().isForbidden());
