@@ -48,6 +48,15 @@ npm run dev
 
 Vite `/api` sorğularını avtomatik 8080-ə yönləndirir.
 
+### Ən sadə yol (Windows)
+
+```bat
+build.bat
+start.bat
+```
+
+`start.bat reset` demo məlumatlarını ilkin vəziyyətə qaytarır (hər demo məşqindən sonra).
+
 ### 3. İstehsal rejimi (tək JAR)
 
 ```bash
