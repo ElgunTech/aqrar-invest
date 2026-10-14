@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { BadgeCheck } from "lucide-react";
 import { Callout, Loading, Tag } from "../components/ui";
+import { LedgerPanel } from "../components/Ledger";
 import { dateTime } from "../lib/format";
 import { useApi, useDocumentTitle } from "../lib/hooks";
 import type { Label } from "../lib/types";
@@ -63,6 +64,7 @@ export default function Verify() {
             </dl>
           </div>
         )}
+        {data && <div style={{ marginTop: 18 }}><LedgerPanel number={data.applicationNumber} /></div>}
       </div>
     </>
   );

@@ -34,9 +34,13 @@ public class ApplicationService {
     private final EvaluatorScoreRepository scores;
     private final MonitoringService monitoring;
     private final IntegrityService integrity;
+    private LedgerService ledger;
 
     /** Minimum number of independent commission scores before an application can be approved. */
     public static final int REQUIRED_SCORES = 2;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    void setLedger(LedgerService ledger) { this.ledger = ledger; }
 
     public ApplicationService(IntegrityService integrity, MonitoringService monitoring, EvaluatorScoreRepository scores, ApplicationRepository applications, CompetitionRepository competitions, LandPlotRepository plots,
                               CurrentUser currentUser, FileStorageService files, ApplicationScorer scorer,
@@ -114,6 +118,7 @@ public class ApplicationService {
         a.setAutoScore(scorer.score(a).total());
         applications.save(a);
         a.setApplicationNumber(String.format("QIM-%d-%06d", LocalDate.now().getYear(), a.getId()));
+        a.getHistory().forEach(h -> ledger.status(a, h));
 
         notifications.notify(user, "Müraciətiniz qəbul edildi: " + a.getApplicationNumber(),
                 plot.getTitle() + " sahəsi üzrə müraciətiniz qeydə alındı. Statusu şəxsi kabinetdən izləyə bilərsiniz.",
@@ -153,6 +158,7 @@ public class ApplicationService {
         a.addHistory(new StatusChange(from, ApplicationStatus.UNDER_REVIEW,
                 "Sahibkarın cavabı: " + comment + (docs.isEmpty() ? "" : " (" + docs.size() + " sənəd əlavə edildi)"),
                 a.getApplicant().getFullName()));
+        ledger.status(a, a.getHistory().get(a.getHistory().size() - 1));
         integration.enqueueStatusChanged(a, from, ApplicationStatus.UNDER_REVIEW, "Applicant provided additional information");
         audit.log("APPLICATION_REPLIED", "InvestmentApplication", a.getId(), a.getApplicationNumber());
         return toDto(a, false);
@@ -208,6 +214,7 @@ public class ApplicationService {
             monitoring.createPlan(a, LocalDate.now());
         }
         a.addHistory(new StatusChange(from, to, comment.isEmpty() ? null : comment, actor.getFullName()));
+        ledger.status(a, a.getHistory().get(a.getHistory().size() - 1));
 
         String title = switch (to) {
             case UNDER_REVIEW -> "Müraciətinizə baxılır";
@@ -235,6 +242,7 @@ public class ApplicationService {
         EvaluatorScore s = scores.findByApplicationIdAndEvaluatorId(a.getId(), me.getId()).orElseGet(() -> new EvaluatorScore(a, me));
         s.update(r.feasibility(), r.financing(), r.socialImpact(), r.technology(), r.comment());
         scores.save(s);
+        ledger.score(a, s);
         audit.log("COMMISSION_SCORE", "InvestmentApplication", a.getId(), a.getApplicationNumber() + ": " + s.total() + "/100");
         return toDto(a, false);
     }

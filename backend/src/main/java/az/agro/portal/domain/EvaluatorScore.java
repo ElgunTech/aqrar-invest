@@ -73,4 +73,6 @@ public class EvaluatorScore {
     public String getComment() { return comment; }
     public boolean isNoConflictDeclared() { return noConflictDeclared; }
     public Instant getUpdatedAt() { return updatedAt; }
+    /** Seed data only: backdate a score so it precedes the decision it supported. */
+    public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
 }

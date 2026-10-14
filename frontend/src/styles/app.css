@@ -739,3 +739,17 @@ html, body { overflow-x: clip; }
 .plot-tabs { margin-bottom: 0; scroll-margin-top: 90px; background: #fff; border: 1px solid var(--line); border-radius: var(--r-md); padding: 0 6px; }
 .plot-tabs button { gap: 6px; }
 @media (max-width: 760px) { .glance { grid-template-columns: 1fr; } }
+
+/* decision ledger */
+.ledger { border: 1px solid var(--line); border-radius: var(--r-md); background: #fff; padding: 16px 18px; }
+.ledger__head { display: flex; gap: 12px; align-items: flex-start; padding-bottom: 12px; border-bottom: 1px solid var(--line); margin-bottom: 10px; }
+.ledger__head > div { display: grid; gap: 2px; font-size: 13.5px; }
+.ledger__head b { font-size: 15px; }
+.ledger--ok .ledger__head svg { color: var(--forest-600); }
+.ledger--bad { border-color: var(--danger); background: #fdf6f5; }
+.ledger--bad .ledger__head svg, .ledger--bad .ledger__head b { color: var(--danger); }
+.ledger__chain { list-style: none; margin: 0 0 10px; padding: 0; }
+.ledger__chain li { display: flex; gap: 10px; padding: 6px 0; font-size: 13.5px; position: relative; }
+.ledger__chain li + li::before { content: ""; position: absolute; left: 10px; top: -6px; height: 12px; border-left: 2px solid var(--line-strong); }
+.ledger__dot { width: 22px; height: 22px; border-radius: 50%; background: var(--forest-50); color: var(--forest-600); display: grid; place-items: center; flex: none; }
+.ledger--bad .ledger__dot { background: #fbe4e1; color: var(--danger); }

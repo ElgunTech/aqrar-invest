@@ -48,6 +48,8 @@ public class StatusChange {
     public ApplicationStatus getFromStatus() { return fromStatus; }
     public ApplicationStatus getToStatus() { return toStatus; }
     public String getComment() { return comment; }
+    /** Only for the tamper demonstration: a direct edit that bypasses the ledger. */
+    public void setComment(String comment) { this.comment = comment; }
     public String getChangedBy() { return changedBy; }
     public Instant getChangedAt() { return changedAt; }
     public void setChangedAt(Instant changedAt) { this.changedAt = changedAt; }

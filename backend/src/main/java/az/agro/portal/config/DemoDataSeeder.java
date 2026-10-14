@@ -50,6 +50,8 @@ public class DemoDataSeeder implements ApplicationRunner {
     private final EvaluatorScoreRepository scores;
     private final MonitoringService monitoring;
     private final MilestoneRepository milestones;
+    @org.springframework.beans.factory.annotation.Autowired
+    private az.agro.portal.service.LedgerService ledger;
 
     public DemoDataSeeder(MonitoringService monitoring, MilestoneRepository milestones, EvaluatorScoreRepository scores, AppUserRepository users, LandPlotRepository plots, CompetitionRepository competitions,
                           ApplicationRepository applications, PasswordEncoder encoder, FileStorageService files,
@@ -211,6 +213,18 @@ public class DemoDataSeeder implements ApplicationRunner {
                 photo.storedName(), photo.originalName(), fzl3.getLatitude() + 0.002, fzl3.getLongitude() - 0.001, true, 250);
         plan.get(0).setReportedAt(Instant.now().minus(Duration.ofDays(230)));
         plan.get(0).review(true, "Səfər zamanı təsdiqləndi.", evaluator.getFullName());
+
+        // Seal the seeded decisions into the tamper-evident ledger, oldest first.
+        record Sealable(java.time.Instant at, Runnable seal) {}
+        java.util.List<Sealable> seal = new java.util.ArrayList<>();
+        for (InvestmentApplication app : applications.findAll()) {
+            app.getHistory().forEach(c -> seal.add(new Sealable(c.getChangedAt(), () -> ledger.status(app, c))));
+            // seeded scores are created now; date them before the decision they led to
+            app.getHistory().stream().filter(c -> c.getToStatus() != null && c.getToStatus().isFinal()).findFirst().ifPresent(d ->
+                    scores.findByApplicationIdOrderByUpdatedAtAsc(app.getId()).forEach(sc -> sc.setUpdatedAt(d.getChangedAt().minus(java.time.Duration.ofDays(2)))));
+            scores.findByApplicationIdOrderByUpdatedAtAsc(app.getId()).forEach(sc -> seal.add(new Sealable(sc.getUpdatedAt(), () -> ledger.score(app, sc))));
+        }
+        seal.stream().sorted(java.util.Comparator.comparing(Sealable::at)).forEach(x -> x.seal().run());
 
         log.info("Demo data seeded: {} users, {} plots, {} competitions, {} applications",
                 users.count(), plots.count(), competitions.count(), applications.count());

@@ -1,4 +1,5 @@
 import { SatellitePanel } from "../components/Satellite";
+import { LedgerPanel } from "../components/Ledger";
 import { Link } from "react-router-dom";
 import { useMemo, useState, type FormEvent } from "react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
@@ -95,6 +96,8 @@ function Overview({ go }: { go: (t: TabKey) => void }) {
 
 function ApplicationDrawer({ id, onClose, onChanged }: { id: number; onClose: () => void; onChanged: () => void }) {
   const { data: app, reload, setData } = useApi<Application>(`/api/v1/admin/applications/${id}`);
+  const { user: me } = useAuth();
+  const [ledgerKey, setLedgerKey] = useState(0);
   const [status, setStatus] = useState("");
   const [comment, setComment] = useState("");
   const [busy, setBusy] = useState(false);
@@ -154,6 +157,18 @@ function ApplicationDrawer({ id, onClose, onChanged }: { id: number; onClose: ()
           <ScoreCard app={app} />
           <ApplicationFacts app={app} docBase="/api/v1/admin/applications" />
           <section className="panel"><div className="panel__head"><h3>Tarixçə</h3></div><div className="panel__body"><Timeline app={app} /></div></section>
+          <section className="panel">
+            <div className="panel__head">
+              <h3>Qərar jurnalı (hash zənciri)</h3>
+              {me?.role === "ADMIN" && (
+                <button className="btn btn--sm btn--ghost" title="Demo: verilənlər bazasında tarixçəni jurnaldan yan keçərək birbaşa dəyişir; təkrar basanda bərpa edir"
+                  onClick={async () => { const r = await api<{ tampered: boolean }>(`/api/v1/admin/ledger/tamper/${app.applicationNumber}`, { method: "POST" }); toast(r.tampered ? "Bazada qeyd birbaşa dəyişdirildi (demo)" : "Qeyd bərpa edildi", r.tampered); setLedgerKey((k) => k + 1); reload(); }}>
+                  Saxtakarlığı simulyasiya et
+                </button>
+              )}
+            </div>
+            <div className="panel__body"><LedgerPanel number={app.applicationNumber} reloadKey={ledgerKey} /></div>
+          </section>
           <p className="faint" style={{ fontSize: 12 }}><ShieldCheck size={13} style={{ verticalAlign: -2 }} /> Bu baxış audit jurnalına yazıldı (şəxsi məlumatlara giriş).</p>
         </div>
       )}
