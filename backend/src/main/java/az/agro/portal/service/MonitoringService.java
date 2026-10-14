@@ -37,7 +37,7 @@ public class MonitoringService {
                                Instant reportedAt, String reviewNote, String reviewedBy) {
     }
 
-    public record ProjectDto(Long applicationId, String applicationNumber, String applicantName, String plotCode, String plotTitle,
+    public record ProjectDto(Long applicationId, String applicationNumber, String applicantName, Long plotId, String plotCode, String plotTitle,
                              String district, long plannedInvestment, String light, int accepted, int total,
                              List<MilestoneDto> milestones) {
     }
@@ -147,7 +147,7 @@ public class MonitoringService {
         String light = list.stream().anyMatch(m -> m.light().equals("red")) ? "red"
                 : list.stream().anyMatch(m -> m.light().equals("yellow")) ? "yellow" : "green";
         int accepted = (int) list.stream().filter(m -> m.status().equals("ACCEPTED")).count();
-        return new ProjectDto(a.getId(), a.getApplicationNumber(), a.getApplicantName(), a.getPlot().getCode(), a.getPlot().getTitle(),
+        return new ProjectDto(a.getId(), a.getApplicationNumber(), a.getApplicantName(), a.getPlot().getId(), a.getPlot().getCode(), a.getPlot().getTitle(),
                 a.getPlot().getDistrict(), a.getPlannedInvestment(), light, accepted, list.size(), list);
     }
 

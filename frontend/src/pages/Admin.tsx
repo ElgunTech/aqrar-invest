@@ -1,3 +1,4 @@
+import { SatellitePanel } from "../components/Satellite";
 import { Link } from "react-router-dom";
 import { useMemo, useState, type FormEvent } from "react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
@@ -236,6 +237,7 @@ function MonitoringTab() {
           </div>
           {open === p.applicationId && (
             <div className="panel__body">
+              <SatellitePanel plotId={p.plotId} compact />
               <MilestoneList project={p} mode="staff" onChange={(u) => setData(data.map((x) => (x.applicationId === u.applicationId ? u : x)))} />
             </div>
           )}

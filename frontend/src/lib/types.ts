@@ -365,6 +365,7 @@ export interface Project {
   applicationId: number;
   applicationNumber: string;
   applicantName: string;
+  plotId: number;
   plotCode: string;
   plotTitle: string;
   district: string;
@@ -373,4 +374,18 @@ export interface Project {
   accepted: number;
   total: number;
   milestones: MilestoneInfo[];
+}
+
+export interface SatObservation { date: string; item: string; cloud: number; ndvi: number; vegetatedShare: number }
+export interface SatelliteReport {
+  plotId: number;
+  status: "BASELINE" | "PENDING" | "ACTIVE" | "WATCH" | "ALERT" | "NO_DATA";
+  headline: string;
+  message: string;
+  latestNdvi: number | null;
+  awardDate: string | null;
+  series: SatObservation[];
+  images: { trueColor?: string; ndvi?: string; bbox?: string };
+  source: string;
+  checkedAt: string;
 }

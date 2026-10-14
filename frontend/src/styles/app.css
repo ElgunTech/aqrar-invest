@@ -697,3 +697,19 @@ html, body { overflow-x: clip; }
 .decision__seal i { font-size: 12px; color: var(--ink-faint); }
 .decision__stamp { width: 84px; height: 84px; border-radius: 50%; border: 2px solid #2b5fa8; color: #2b5fa8; display: grid; place-items: center; font-weight: 700; opacity: .7; transform: rotate(-12deg); }
 @media (max-width: 640px) { .decision__lead, .decision > p, .decision__seal { margin-inline: 16px; } }
+
+/* satellite monitoring */
+.sat-banner { display: grid; gap: 2px; padding: 10px 14px; border-left: 4px solid var(--info, #2b5fa8); background: #f3f6fa; margin-bottom: 14px; font-size: 13.5px; }
+.sat-banner b { font-size: 14.5px; }
+.sat-banner--ok { border-color: var(--forest-600); background: var(--forest-50); }
+.sat-banner--warn { border-color: #d97706; background: #fff8eb; }
+.sat-banner--danger { border-color: var(--danger); background: #fdf0ef; }
+.sat-banner--muted { border-color: var(--line-strong); background: #f5f6f5; }
+.sat-grid { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.sat-grid--compact { grid-template-columns: 1fr; }
+.sat-images { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.sat-images figure { margin: 0; }
+.sat-images img { width: 100%; aspect-ratio: 1; image-rendering: pixelated; object-fit: cover; border-radius: 6px; background: #e9ece9; display: block; }
+.sat-images figcaption { font-size: 12px; color: var(--ink-soft); margin-top: 4px; display: flex; align-items: center; gap: 6px; }
+.sat-scale { display: inline-block; width: 54px; height: 8px; border-radius: 4px; background: linear-gradient(90deg, #a50026, #f46d43, #fee08b, #a6d96a, #1a9850); }
+@media (max-width: 800px) { .sat-grid { grid-template-columns: 1fr; } }

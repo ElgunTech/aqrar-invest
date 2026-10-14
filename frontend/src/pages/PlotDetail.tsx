@@ -1,3 +1,4 @@
+import { SatellitePanel } from "../components/Satellite";
 import { Link, useParams } from "react-router-dom";
 import { GeoJSON, MapContainer, TileLayer } from "react-leaflet";
 import { Box,
@@ -149,6 +150,7 @@ export default function PlotDetail() {
             {rec ? <AiCard rec={rec} inputs={p} /> : <div className="panel"><Loading /></div>}
 
             <OfficialStats district={p.district} />
+            <SatellitePanel plotId={p.id} />
 
             <Calculator plot={p} />
 

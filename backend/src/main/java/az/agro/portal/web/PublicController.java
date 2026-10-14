@@ -32,9 +32,11 @@ public class PublicController {
     private final StatsService stats;
     private final CropRecommendationService ai;
     private final ApplicationService applications;
+    private final az.agro.portal.service.SatelliteService satellite;
 
     public PublicController(PlotService plots, CompetitionService competitions, StatsService stats, CropRecommendationService ai,
-                            ApplicationService applications) {
+                            ApplicationService applications, az.agro.portal.service.SatelliteService satellite) {
+        this.satellite = satellite;
         this.applications = applications;
         this.plots = plots;
         this.competitions = competitions;
@@ -66,6 +68,12 @@ public class PublicController {
     @GetMapping("/plots/compare")
     public List<PlotDto> compare(@RequestParam List<Long> ids) {
         return plots.compare(ids);
+    }
+
+    @Operation(summary = "Peyk monitorinqi: Sentinel-2 NDVI sahənin sərhədi üzrə, aylıq")
+    @GetMapping("/plots/{id}/satellite")
+    public az.agro.portal.service.SatelliteService.Report satellite(@PathVariable Long id) {
+        return satellite.report(id);
     }
 
     @Operation(summary = "AI: sahə üçün bitki tövsiyəsi")
