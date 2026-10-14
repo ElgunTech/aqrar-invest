@@ -5,6 +5,6 @@
     { "source": "/v3/:path*", "destination": "https://aqrar-invest-api.onrender.com/v3/:path*" },
     { "source": "/swagger-ui/:path*", "destination": "https://aqrar-invest-api.onrender.com/swagger-ui/:path*" },
     { "source": "/swagger-ui.html", "destination": "https://aqrar-invest-api.onrender.com/swagger-ui.html" },
-    { "source": "/((?!scrollcraft/|assets/|.*\..*).*)", "destination": "/index.html" }
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
