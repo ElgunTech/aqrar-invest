@@ -3,12 +3,16 @@
 Qarabağ iqtisadi rayonunda kənd təsərrüfatı sahələrinə investisiya müsabiqəsini rəqəmsallaşdıran,
 EKTİS-ə inteqrasiyaya hazır işlək prototip.
 
+**Canlı versiya:** https://frontend-black-seven-54.vercel.app (backend: https://aqrar-invest-api.onrender.com, Swagger: `/swagger-ui.html`)
+
 | Komponent | Texnologiya |
 |---|---|
 | Backend | Java 21, Spring Boot 3.3, Spring Security, Spring Data JPA, H2 (demo) / PostgreSQL |
-| Frontend | React 18, TypeScript, Vite, React Router, Leaflet, Recharts |
+| Frontend | React 18, TypeScript, Vite, React Router, Leaflet, MapLibre GL (3D), Recharts; AZ / EN / RU interfeys |
 | AI | scikit-learn RandomForest (Kaggle-da öyrədilib) → ONNX → Java-da ONNX Runtime |
 | API sənədləri | OpenAPI 3 / Swagger UI |
+| Xarici açıq xidmətlər | Sentinel-2 (Microsoft Planetary Computer), PVGIS (Avropa Komissiyası JRC), AWS Terrain Tiles, Esri World Imagery |
+| Yerləşdirmə | Vercel (frontend) + Render (Docker, backend); GitHub-a push → hər ikisi avtomatik yenilənir |
 
 ## Sənədlər
 
@@ -107,6 +111,9 @@ Portal demo deyil, rəsmi mənbələrdən istifadə edir (`tools/opendata/fetch.
 |---|---|---|---|
 | Minadan təmizlənmiş və sertifikatlaşdırılmış sahələrin sərhədləri (2020–2026) | ANAMA, opendata.az | ODC-BY | Müsabiqə sahələrinin real sərhədi, sahəsi, kəndi və təmizlənmə tarixi; xəritədə 1019 k/t sahəsi |
 | Rayonlar üzrə məhsuldarlıq və istehsal (2000–2025, 12 göstərici) | Dövlət Statistika Komitəsi (azstat.gov.az API) | CC0 | Sahə səhifəsində rayon statistikası, kalkulyatorda rəsmi məhsuldarlıq, köməkçinin cavabları |
+| Sentinel-2 L2A peyk görüntüləri (aylıq, son 13 ay) | Copernicus / ESA, Microsoft Planetary Computer | Copernicus açıq lisenziyası | Sahənin sərhədi üzrə NDVI, öhdəliklərin peyk monitorinqi |
+| Günəş radiasiyası və PV istehsalı | PVGIS 5.3, Avropa Komissiyası JRC | açıq | Sahənin günəş paneli üçün uyğunluğu və istehsal potensialı |
+| Elektrik enerjisi tarifləri | Tarif (Qiymət) Şurası, 29.12.2024 tarixli 19 nömrəli qərar | rəsmi | Günəşdən alış tarifi 8.5 qəpik/kWh, kənd təsərrüfatı tarifi 10.6 qəpik/kWh |
 
 Nümunəvi qalanlar (açıq mənbədə yoxdur): sahələrin torpaq analizləri (N, P, K, pH), suya və yola məsafə, investisiya şərtləri, müraciətçilər.
 Admin paneldən statistikanı azstat API-dən canlı yeniləmək olar.
@@ -127,9 +134,17 @@ start.bat
 * **Dürüstlük siqnalları:** başqa müraciətçi ilə eyni telefon/e-poçt, kopyalanmış biznes plan (mətn oxşarlığı), real olmayan investisiya, FİN uyğunsuzluğu, qiymətləndiricinin özü ilə maraqlar toqquşması. Siqnallar qərar vermir, komissiyanın diqqətini çəkir; sahibkar onları görmür.
 * **Böyük Qayıdış:** qayıdan sakinlər üçün yaradılan iş yerləri ayrıca qiymətləndirmə meyarı və statistika göstəricisidir.
 * **Komissiya:** ən azı 2 üzvün müstəqil balı, maraqlar toqquşması bəyannaməsi.
-* **QR qəbz:** ictimai yoxlama səhifəsi `/yoxla`.
+* **QR qəbz və qərar sənədi:** müraciət qəbzi və komissiyanın qərarı (QR kod, komissiya balları, elektron imza, möhür) çap və PDF üçün; ictimai yoxlama səhifəsi `/yoxla`.
+* **Peyk monitorinqi (NDVI):** hər sahə üçün son 13 ayın ən az buludlu Sentinel-2 görüntüsü, NDVI sahənin rəsmi sərhədi üzrə hesablanır. Yazda bütün boş sahələr yağışdan yaşıllaşır, ona görə əkin yay aylarındakı (iyun–sentyabr) NDVI və ötən ilin həmin ayı ilə müqayisə ilə müəyyən edilir. Qərardan 6 ay sonra əkin görünmürsə, qırmızı xəbərdarlıq yaranır. Investorun foto-hesabatından asılı olmayan ikinci yoxlama.
+* **Günəş enerjisi:** sahənin günəş paneli üçün uyğunluğu (100 bal: PVGIS potensialı, minatəmizləmə, şəbəkə, fəaliyyətlə uyğunluq). İki ssenari: «aktiv istehlakçı» (150 kW-a qədər, öz ehtiyacı 10.6 qəpik qənaət, artığı Azərişıq şəbəkəsinə 8.5 qəpik) və aqrovoltaik stansiya (panellər altında əkin davam edir). Sahənin illik gəlirinə təsiri, geri qaytarılma, CO₂. Xərclər redaktə edilə bilən fərziyyələrdir.
+* **3D xəritə:** relyef, peyk görüntüsü, ANAMA qatı və sahələr; sahə seçiləndə kamera ona uçur. Sahə səhifəsində "3D bax".
+* **E-poçt bildirişləri:** qeydiyyat, müraciət, status dəyişikliyi, EKTİS təsdiqi və monitorinq nəticəsi istifadəçinin e-poçtuna göndərilir (Brevo HTTP API; SMTP də dəstəklənir). `@demo.az` hesablarına göndərilmir.
+* **Üç dil:** AZ / EN / RU (yuxarı zolaqda). Rəsmi mənbələrdən gələn adlar azərbaycanca qalır.
 
-Demo: `evaluator@demo.az` → İnzibati panel → "Öhdəliklərin monitorinqi" (qırmızı layihə) və Müraciətlər → "Elçin Qurbanov" (6 siqnal).
+Demo:
+* `evaluator@demo.az` → İnzibati panel → "Öhdəliklərin monitorinqi": pilot qalib (Seyidmahmudlu, 14 ay əvvəl) qırmızıdır, həm gecikmiş mərhələyə, həm də peykə görə: "Torpaq verildi, amma 14 aydır əkin görünmür" (real Sentinel-2 məlumatı).
+* Müraciətlər → "Elçin Qurbanov" (6 siqnal).
+* Sahə səhifəsi → "Günəş enerjisi" tabı, məsələn `/sahe/1?tab=gunes`.
 
 ## Təhlükəsizlik
 
@@ -141,6 +156,17 @@ Demo: `evaluator@demo.az` → İnzibati panel → "Öhdəliklərin monitorinqi" 
 * Siyahılarda FİN/VÖEN maskalanır; tam baxış və sənəd yükləmə audit jurnalına yazılır.
 * CSV hesabatında formula injection qorunması.
 * Sistemlərarası API-lər `X-API-Key` ilə (sabit vaxtlı müqayisə).
+
+## Yerləşdirmə
+
+| Hissə | Harada | Konfiqurasiya |
+|---|---|---|
+| Frontend | Vercel, Root Directory `frontend` | `frontend/vercel.json`: `/api`, `/mock-mygov`, Swagger sorğuları Render-ə ötürülür (eyni domen, cookie işləyir) |
+| Backend | Render, Docker, pulsuz plan | `Dockerfile`, `render.yaml` |
+| Oyaq saxlama | GitHub Actions, hər 10 dəqiqə | `.github/workflows/keep-awake.yml` |
+
+Render mühit dəyişənləri (hamısı istəyə bağlı): `BREVO_API_KEY` və `MAIL_FROM` (e-poçt), `SMTP_USER` / `SMTP_PASSWORD` (SMTP alternativi, Render-in pulsuz planında SMTP portları bağlıdır), `GROQ_API_KEY` (chatbot üçün LLM).
+Hansı kanalların açıq olduğunu `/api/v1/public/status` göstərir. Render hər deploy-da demo bazanı yenidən yaradır.
 
 ## Struktur
 
