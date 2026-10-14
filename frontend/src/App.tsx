@@ -39,11 +39,11 @@ export function App() {
   return (
     <Suspense fallback={<Loading />}>
       <Routes>
-        <Route path="tanitim" element={<Landing />} />
+        <Route index element={<Landing />} />
         <Route path="mygov-demo" element={<MyGovDemo />} />
         <Route path="kabinet/:id/qebz" element={<RequireUser roles={["INVESTOR"]}><Receipt /></RequireUser>} />
         <Route element={<Layout />}>
-          <Route index element={<Home />} />
+          <Route path="portal" element={<Home />} />
           <Route path="xerite" element={<MapPage />} />
           <Route path="kataloq" element={<Catalog />} />
           <Route path="sahe/:id" element={<PlotDetail />} />

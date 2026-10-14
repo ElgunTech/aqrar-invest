@@ -338,7 +338,8 @@ export default function Landing() {
               <div className="lf-finale__meta">
                 {comp && <span>Ən yaxın son tarix: <b>{countdown(comp.deadline)}</b></span>}
                 {stats && <span>Planlaşdırılan investisiya: <b>{money(stats.plannedInvestment)}</b></span>}
-                <Link to="/haqqinda">Foto: Wikimedia Commons</Link>
+                <Link to="/portal">Portalın ana səhifəsi</Link>
+                  <Link to="/haqqinda">Foto: Wikimedia Commons</Link>
               </div>
             </div>
           </div>

@@ -206,3 +206,17 @@
 @media (max-width: 860px) {
   .lf-scrim--finale { background: linear-gradient(to top, rgb(11 26 20 / 0.96) 0%, rgb(11 26 20 / 0.86) 38%, rgb(11 26 20 / 0.45) 62%, transparent 78%); }
 }
+
+/* Landing nav in the same institutional green band as the inner pages. */
+.lf-nav { background: #2e9e44; color: #fff; border-bottom: 0; height: 72px; }
+.lf-nav .brand, .lf-nav .brand:hover { color: #fff; }
+.lf-nav .brand__mark { background: #fff; color: #2e9e44; border-radius: 50%; }
+.lf-nav .brand__name { font: 700 15px/1.15 "Roboto", Arial, sans-serif; text-transform: uppercase; color: #fff; }
+.lf-nav .brand__sub { color: rgb(255 255 255 / 0.9); text-transform: uppercase; font-size: 11px; }
+.lf-nav__links { margin-left: auto; gap: 0; }
+.lf-nav__links a { color: #fff; font: 500 14px "Roboto", Arial, sans-serif; border-radius: 0; position: relative; }
+.lf-nav__links a + a::before { content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 1px; background: rgb(255 255 255 / 0.55); }
+.lf-nav__links a:hover { background: none; color: #fff; text-decoration: underline; text-underline-offset: 6px; }
+.lf-nav__right .btn { --bg: transparent; --fg: #fff; --bd: rgb(255 255 255 / 0.85); box-shadow: none; border-radius: 4px; }
+.lf-nav__right .btn:hover { --bg: #fff; --fg: #237a33; --bd: #fff; }
+.lf-top .flag-strip { display: block; }
