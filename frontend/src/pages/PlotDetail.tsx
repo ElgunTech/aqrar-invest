@@ -1,9 +1,10 @@
+import { useT } from "../lib/i18n";
 import { SolarPanel } from "../components/Solar";
 import { SatellitePanel } from "../components/Satellite";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { GeoJSON, MapContainer, TileLayer } from "react-leaflet";
 import { Box,
-  ArrowRight, CalendarClock, Check, Droplets, FileText, Landmark, MapPin, Route, Scale, Zap, X as XIcon,
+  ArrowRight, BarChart3, CalendarClock, Calculator as CalcIcon, Check, ChevronRight, Droplets, FileText, Landmark, MapPin, Route, Satellite, Scale, Sprout, Sun, Zap, X as XIcon,
 } from "lucide-react";
 import { Calculator } from "../components/Calculator";
 import { Callout, Empty, Loading, Meter, MineTag, Tag } from "../components/ui";
@@ -12,6 +13,17 @@ import { ACTIVITY } from "../lib/domain";
 import { countdown, date, money, num, pct, pct1 } from "../lib/format";
 import { useApi, useDocumentTitle } from "../lib/hooks";
 import type { CropRecommendation, OfficialIndicator, Plot } from "../lib/types";
+
+type TabKey = "umumi" | "ai" | "gelir" | "gunes" | "peyk" | "statistika";
+const TABS: { key: TabKey; label: string; icon: typeof Sun }[] = [
+  { key: "umumi", label: "Ümumi", icon: Landmark },
+  { key: "ai", label: "Torpaq və AI", icon: Sprout },
+  { key: "gelir", label: "Gəlir kalkulyatoru", icon: CalcIcon },
+  { key: "gunes", label: "Günəş enerjisi", icon: Sun },
+  { key: "peyk", label: "Peyk monitorinqi", icon: Satellite },
+  { key: "statistika", label: "Rəsmi statistika", icon: BarChart3 },
+];
+const SOLAR_SHORT = { HIGH: "yüksək uyğunluq", GOOD: "uyğundur", LIMITED: "məhdud", BLOCKED: "hazırda uyğun deyil" } as const;
 
 export function AiCard({ rec, inputs }: { rec: CropRecommendation; inputs?: Plot }) {
   const shown = rec.recommendations.filter((c) => c.probability >= 0.01);
@@ -99,7 +111,15 @@ export default function PlotDetail() {
   const { user } = useAuth();
   const { data: p, error } = useApi<Plot>(`/api/v1/public/plots/${id}`);
   const { data: rec } = useApi<CropRecommendation>(`/api/v1/public/plots/${id}/recommendation`);
+  const { data: solar } = useApi<{ score: number; verdictCode: keyof typeof SOLAR_SHORT }>(`/api/v1/public/plots/${id}/solar`);
   useDocumentTitle(p?.title ?? "Sahə");
+  const { t } = useT();
+  const [params, setParams] = useSearchParams();
+  const tab = (params.get("tab") as TabKey) || "umumi";
+  const go = (k: TabKey) => {
+    setParams((prev) => { const n = new URLSearchParams(prev); if (k === "umumi") n.delete("tab"); else n.set("tab", k); return n; }, { replace: true });
+    document.getElementById("plot-tabs")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   if (error) return <div className="wrap page"><div className="panel"><Empty title="Sahə tapılmadı"><Link className="btn" to="/kataloq" style={{ marginTop: 14 }}>Kataloqa qayıt</Link></Empty></div></div>;
   if (!p) return <Loading />;
@@ -148,42 +168,67 @@ export default function PlotDetail() {
               <div className="panel metric"><div className="metric__label">Müraciətlər</div><div className="metric__value">{p.applicationCount}</div></div>
             </div>
 
-            {rec ? <AiCard rec={rec} inputs={p} /> : <div className="panel"><Loading /></div>}
+            <div className="glance">
+              <button className="glance__item" onClick={() => go("ai")}>
+                <Sprout size={20} />
+                <span><small>{t("Ən uyğun bitki (AI)")}</small><b>{rec?.recommendations[0] ? `${rec.recommendations[0].name} · ${pct(rec.recommendations[0].probability)}` : "…"}</b></span>
+                <ChevronRight size={16} />
+              </button>
+              <button className="glance__item" onClick={() => go("gunes")}>
+                <Sun size={20} />
+                <span><small>{t("Günəş paneli")}</small><b>{solar ? `${solar.score}/100 · ${SOLAR_SHORT[solar.verdictCode]}` : "…"}</b></span>
+                <ChevronRight size={16} />
+              </button>
+              <button className="glance__item" onClick={() => go("umumi")}>
+                <Zap size={20} />
+                <span><small>{t("İnfrastruktur")}</small><b>{p.electricityAvailable ? "Elektrik var" : "Elektrik yoxdur"} · su {num(p.waterSourceKm, 1)} km</b></span>
+                <ChevronRight size={16} />
+              </button>
+            </div>
 
-            <OfficialStats district={p.district} />
-            <SolarPanel plot={p} />
-            <SatellitePanel plotId={p.id} />
+            <div id="plot-tabs" className="tabs plot-tabs" role="tablist">
+              {TABS.map(({ key, label, icon: Icon }) => (
+                <button key={key} role="tab" aria-selected={tab === key} onClick={() => go(key)}><Icon size={15} /> {t(label)}</button>
+              ))}
+            </div>
 
-            <Calculator plot={p} />
+            {tab === "umumi" && (
+              <>
+                <section className="panel">
+                  <div className="panel__head"><h3><Landmark size={18} /> Sahə haqqında</h3></div>
+                  <div className="panel__body">
+                    {p.description && <p style={{ marginBottom: 18 }}>{p.description}</p>}
+                    <dl className="kv">
+                      <dt>Torpaq tipi</dt><dd>{p.soilType ?? "yoxdur"}</dd>
+                      <dt><Droplets size={14} /> Su mənbəyinə məsafə</dt><dd>{num(p.waterSourceKm, 1)} km</dd>
+                      <dt><Route size={14} /> Asfalt yola məsafə</dt><dd>{num(p.roadKm, 1)} km</dd>
+                      <dt>Suvarma sistemi</dt><dd>{yes(p.irrigationAvailable)}</dd>
+                      <dt><Zap size={14} /> Elektrik xətti</dt><dd>{yes(p.electricityAvailable)}</dd>
+                      <dt>Minadan təmizlənmə</dt><dd><MineTag label={p.mineClearance} /> {p.clearanceStartDate && <span className="muted"> {date(p.clearanceStartDate)} –</span>}{p.mineClearanceDate && <span className="muted"> {date(p.mineClearanceDate)}</span>}</dd>
+                      <dt>İcarə müddəti</dt><dd>{p.leaseYears} il</dd>
+                    </dl>
+                    <hr className="divider" />
+                    <h4 style={{ marginBottom: 6 }}>İstifadə şərtləri</h4>
+                    <p className="muted">{p.usageTerms}</p>
+                    {p.dataSource && <p className="faint" style={{ fontSize: 12.5, marginTop: 12 }}>Mənbə: {p.dataSource} Torpaq göstəriciləri, infrastruktur məsafələri və investisiya şərtləri nümunəvidir.</p>}
+                  </div>
+                </section>
 
-            <section className="panel">
-              <div className="panel__head"><h3><Landmark size={18} /> Sahə haqqında</h3></div>
-              <div className="panel__body">
-                {p.description && <p style={{ marginBottom: 18 }}>{p.description}</p>}
-                <dl className="kv">
-                  <dt>Torpaq tipi</dt><dd>{p.soilType ?? "yoxdur"}</dd>
-                  <dt><Droplets size={14} /> Su mənbəyinə məsafə</dt><dd>{num(p.waterSourceKm, 1)} km</dd>
-                  <dt><Route size={14} /> Asfalt yola məsafə</dt><dd>{num(p.roadKm, 1)} km</dd>
-                  <dt>Suvarma sistemi</dt><dd>{yes(p.irrigationAvailable)}</dd>
-                  <dt><Zap size={14} /> Elektrik xətti</dt><dd>{yes(p.electricityAvailable)}</dd>
-                  <dt>Minadan təmizlənmə</dt><dd><MineTag label={p.mineClearance} /> {p.clearanceStartDate && <span className="muted"> {date(p.clearanceStartDate)} –</span>}{p.mineClearanceDate && <span className="muted"> {date(p.mineClearanceDate)}</span>}</dd>
-                  <dt>İcarə müddəti</dt><dd>{p.leaseYears} il</dd>
-                </dl>
-                <hr className="divider" />
-                <h4 style={{ marginBottom: 6 }}>İstifadə şərtləri</h4>
-                <p className="muted">{p.usageTerms}</p>
-                {p.dataSource && <p className="faint" style={{ fontSize: 12.5, marginTop: 12 }}>Mənbə: {p.dataSource} Torpaq göstəriciləri, infrastruktur məsafələri və investisiya şərtləri nümunəvidir.</p>}
-              </div>
-            </section>
-
-            <section className="panel" style={{ overflow: "hidden" }}>
-              <div style={{ height: 360 }}>
-                <MapContainer center={[p.latitude, p.longitude]} zoom={13} scrollWheelZoom={false} style={{ height: "100%" }}>
-                  <TileLayer attribution="Esri World Imagery" url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" maxZoom={18} />
-                  {p.boundaryGeoJson && <GeoJSON data={JSON.parse(p.boundaryGeoJson)} style={{ color: "#f5c542", weight: 3, fillColor: a.color, fillOpacity: 0.3 }} />}
-                </MapContainer>
-              </div>
-            </section>
+                <section className="panel" style={{ overflow: "hidden" }}>
+                  <div style={{ height: 360 }}>
+                    <MapContainer center={[p.latitude, p.longitude]} zoom={13} scrollWheelZoom={false} style={{ height: "100%" }}>
+                      <TileLayer attribution="Esri World Imagery" url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" maxZoom={18} />
+                      {p.boundaryGeoJson && <GeoJSON data={JSON.parse(p.boundaryGeoJson)} style={{ color: "#f5c542", weight: 3, fillColor: a.color, fillOpacity: 0.3 }} />}
+                    </MapContainer>
+                  </div>
+                </section>
+              </>
+            )}
+            {tab === "ai" && (rec ? <AiCard rec={rec} inputs={p} /> : <div className="panel"><Loading /></div>)}
+            {tab === "gelir" && <Calculator plot={p} />}
+            {tab === "gunes" && <SolarPanel plot={p} />}
+            {tab === "peyk" && <SatellitePanel plotId={p.id} />}
+            {tab === "statistika" && <OfficialStats district={p.district} />}
           </div>
 
           <aside className="sticky stack" style={{ ["--gap" as string]: "18px" }}>

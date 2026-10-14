@@ -212,6 +212,16 @@ const DICT: Record<string, [string, string]> = {
   "Təbii rənglər": ["True colour", "Естественные цвета"],
   "boş → yaşıl": ["bare → green", "голая почва → зелень"],
 
+  // plot page tabs
+  "Ümumi": ["Overview", "Обзор"],
+  "Torpaq və AI": ["Soil & AI", "Почва и ИИ"],
+  "Gəlir kalkulyatoru": ["Income calculator", "Калькулятор дохода"],
+  "Peyk monitorinqi": ["Satellite monitoring", "Спутниковый мониторинг"],
+  "Rəsmi statistika": ["Official statistics", "Официальная статистика"],
+  "Ən uyğun bitki (AI)": ["Best crop (AI)", "Лучшая культура (ИИ)"],
+  "Günəş paneli": ["Solar panels", "Солнечные панели"],
+  "İnfrastruktur": ["Infrastructure", "Инфраструктура"],
+
   // solar
   "Günəş enerjisi": ["Solar energy", "Солнечная энергия"],
   "Tarif Şurası": ["Tariff Council", "Тарифный совет"],
