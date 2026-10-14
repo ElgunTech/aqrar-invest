@@ -109,6 +109,7 @@ export default function Landing() {
   const fgRef = useRef<HTMLImageElement>(null);
   const mistRef = useRef<HTMLDivElement>(null);
   const mistFrontRef = useRef<HTMLDivElement>(null);
+  const bloomRef = useRef<HTMLElement>(null);
   const [leg, setLeg] = useState(0);
   const [sample, setSample] = useState(0);
   const [preds, setPreds] = useState<CropRecommendation[] | null>(null);
@@ -161,6 +162,15 @@ export default function Landing() {
         titleRef.current.style.opacity = hero > 0.55 ? "0" : "1";
       }
       const pr = t / TOTAL;
+      // Signature: the xarıbülbül of Shusha rises out of the spring plain, turns and opens as the last leg plays.
+      if (bloomRef.current) {
+        const raw = (t - (STARTS[4] + 0.12 * LEGS[4].w)) / (0.55 * LEGS[4].w);
+        const k = Math.min(1, Math.max(0, raw));
+        const e = 1 - Math.pow(1 - k, 3);
+        const b = bloomRef.current;
+        b.style.opacity = (reduce ? (k > 0 ? 1 : 0) : Math.min(1, k * 2.2)).toFixed(3);
+        b.style.setProperty("--k", (reduce ? 1 : e).toFixed(4));
+      }
       root.current?.querySelectorAll<HTMLElement>("[data-lf-win]").forEach((s) => {
         s.style.opacity = windowVis(pr, s.dataset.lfWin!).toFixed(3);
       });
@@ -338,6 +348,15 @@ export default function Landing() {
                   </div>
               </div>
             </div>
+
+            <figure className="lf-bloom" ref={bloomRef} aria-hidden="true">
+              <div className="lf-bloom__glow" />
+              <picture>
+                <source type="image/webp" srcSet="/world/xaribulbul-m.webp 480w, /world/xaribulbul.webp 900w" sizes="(max-width: 760px) 60vw, 40vw" />
+                <img src="/world/xaribulbul.png" alt="" width={900} height={671} decoding="async" loading="lazy" />
+              </picture>
+              <figcaption>Xarıbülbül · Şuşa</figcaption>
+            </figure>
 
             <div className="lf-copy lf-finale" data-sc-copy data-sc-window="finale">
               <h2>Torpaq gözləyir. Müsabiqə açıqdır.</h2>
