@@ -85,10 +85,10 @@ export function ApplicationFacts({ app, docBase }: { app: Application; docBase: 
         <div className="panel__head"><h3>Müraciətçi və investisiya</h3></div>
         <div className="panel__body">
           <dl className="kv" style={{ gridTemplateColumns: "minmax(120px,170px) 1fr" }}>
-            <dt>Müraciətçi</dt><dd>{app.applicantName}</dd>
+            <dt>Müraciətçi</dt><dd>{app.applicantName}{app.blind && <div className="blind-note">Kor qiymətləndirmə: ad, FİN və əlaqə məlumatları balınızı verdikdən sonra açılır</div>}</dd>
             <dt>Növ</dt><dd>{app.applicantType.label}</dd>
             <dt>FİN / VÖEN</dt><dd className="mono">{app.taxId}</dd>
-            <dt>Əlaqə</dt><dd>{app.phone}<br />{app.email}</dd>
+            <dt>Əlaqə</dt><dd>{app.blind ? "gizlidir" : <>{app.phone}<br />{app.email}</>}</dd>
             <dt>Fəaliyyət</dt><dd>{app.activityType.label}{app.plannedCropName && ` · ${app.plannedCropName}`}</dd>
             <dt>İnvestisiya</dt><dd>{money(app.plannedInvestment)} · öz vəsaiti {app.ownFundsPercent}%</dd>
             <dt>İş yerləri</dt><dd>{app.jobsCreated} (qayıdan sakinlər üçün: {app.returneeJobs})</dd>

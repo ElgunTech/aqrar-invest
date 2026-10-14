@@ -203,6 +203,8 @@ export interface Application {
   plotTitle: string;
   district: string;
   applicantType: Label;
+  /** Blind evaluation: identity hidden until the viewer has scored this application. */
+  blind: boolean;
   applicantName: string;
   taxId: string;
   phone: string;
@@ -234,6 +236,7 @@ export interface Application {
 export interface ApplicationListItem {
   id: number;
   applicationNumber: string;
+  blind: boolean;
   applicantName: string;
   taxIdMasked: string;
   competitionTitle: string;

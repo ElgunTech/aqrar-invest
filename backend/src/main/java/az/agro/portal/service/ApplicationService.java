@@ -173,7 +173,7 @@ public class ApplicationService {
                 .filter(a -> status == null || a.getStatus() == status)
                 .filter(a -> competitionId == null || a.getCompetition().getId().equals(competitionId))
                 .filter(a -> needle.isEmpty()
-                        || a.getApplicantName().toLowerCase(Locale.ROOT).contains(needle)
+                        || (!blind(a) && a.getApplicantName().toLowerCase(Locale.ROOT).contains(needle))
                         || (a.getApplicationNumber() != null && a.getApplicationNumber().toLowerCase(Locale.ROOT).contains(needle))
                         || a.getPlot().getCode().toLowerCase(Locale.ROOT).contains(needle))
                 .map(this::toListItem)
@@ -183,7 +183,7 @@ public class ApplicationService {
     @Transactional
     public ApplicationDto adminGet(Long id) {
         InvestmentApplication a = find(id);
-        audit.log("PII_VIEWED", "InvestmentApplication", a.getId(), "Müraciətin şəxsi məlumatlarına baxış: " + a.getApplicationNumber());
+        if (!blind(a)) audit.log("PII_VIEWED", "InvestmentApplication", a.getId(), "Müraciətin şəxsi məlumatlarına baxış: " + a.getApplicationNumber());
         return toDto(a, false);
     }
 
@@ -305,6 +305,9 @@ public class ApplicationService {
         if (!staff && !a.getApplicant().getId().equals(user.getId())) throw ApiException.notFound("Müraciət");
         ApplicationDocument d = a.getDocuments().stream().filter(x -> x.getId().equals(documentId)).findFirst()
                 .orElseThrow(() -> ApiException.notFound("Sənəd"));
+        if (staff && blind(a) && (d.getType() == DocumentType.ID_DOCUMENT || d.getType() == DocumentType.REGISTRATION_CERT)) {
+            throw ApiException.forbidden("Kor qiymətləndirmə: şəxsiyyət sənədləri balınızı verdikdən sonra açılır");
+        }
         if (staff) audit.log("DOCUMENT_DOWNLOADED", "ApplicationDocument", d.getId(), a.getApplicationNumber() + " / " + d.getOriginalName());
         return new DocumentFile(files.load(d.getStoredName()), d.getOriginalName(), d.getContentType());
     }
@@ -320,8 +323,24 @@ public class ApplicationService {
         if (!a.getApplicant().getId().equals(currentUser.require().getId())) throw ApiException.notFound("Müraciət");
     }
 
+    /**
+     * Blind evaluation: a staff member who has not yet scored an undecided application sees it without the applicant's
+     * identity (name, FİN/VÖEN, contacts, identity documents). The identity opens once their own score is in, so the
+     * score cannot depend on who the applicant is. Integrity signals stay visible: they refer to application numbers.
+     */
+    boolean blind(InvestmentApplication a) {
+        AppUser viewer = currentUser.find().orElse(null);
+        if (viewer == null || viewer.getRole() == Role.INVESTOR || a.getStatus().isFinal()) return false;
+        return scores.findByApplicationIdAndEvaluatorId(a.getId(), viewer.getId()).isEmpty();
+    }
+
+    static String anonymous(InvestmentApplication a) {
+        return "Müraciətçi A-" + String.format("%03d", a.getId());
+    }
+
     private ApplicationListItem toListItem(InvestmentApplication a) {
-        return new ApplicationListItem(a.getId(), a.getApplicationNumber(), a.getApplicantName(), Labels.maskTaxId(a.getTaxId()),
+        boolean blind = blind(a);
+        return new ApplicationListItem(a.getId(), a.getApplicationNumber(), blind, blind ? anonymous(a) : a.getApplicantName(), blind ? "•••••••" : Labels.maskTaxId(a.getTaxId()),
                 a.getCompetition().getTitle(), a.getPlot().getCode(), a.getPlot().getTitle(), a.getPlot().getDistrict(),
                 Labels.of(a.getActivityType()), a.getPlannedInvestment(), a.getAutoScore(),
                 currentUser.find().map(u -> u.getRole() != Role.INVESTOR).orElse(false) ? integrity.count(a) : 0,
@@ -329,19 +348,23 @@ public class ApplicationService {
     }
 
     ApplicationDto toDto(InvestmentApplication a, boolean maskPii) {
+        boolean blind = blind(a);
+        String applicantName = a.getApplicantName();
         List<DocumentDto> docs = a.getDocuments().stream()
-                .map(d -> new DocumentDto(d.getId(), Labels.of(d.getType()), d.getOriginalName(), d.getContentType(), d.getSizeBytes(), d.getUploadedAt()))
+                .map(d -> new DocumentDto(d.getId(), Labels.of(d.getType()), blind ? d.getType().getLabel() : d.getOriginalName(), d.getContentType(), d.getSizeBytes(), d.getUploadedAt()))
                 .toList();
         List<HistoryDto> history = a.getHistory().stream()
-                .map(h -> new HistoryDto(Labels.of(h.getFromStatus()), Labels.of(h.getToStatus()), h.getComment(), h.getChangedBy(), h.getChangedAt()))
+                .map(h -> new HistoryDto(Labels.of(h.getFromStatus()), Labels.of(h.getToStatus()), h.getComment(),
+                        blind && (applicantName.equals(h.getChangedBy()) || a.getApplicant().getFullName().equals(h.getChangedBy())) ? anonymous(a) : h.getChangedBy(), h.getChangedAt()))
                 .toList();
         List<PlotDtos.Label> next = a.getStatus().allowedNext().stream()
                 .sorted(Comparator.comparingInt(Enum::ordinal)).map(Labels::of).toList();
         return new ApplicationDto(a.getId(), a.getApplicationNumber(), Labels.of(a.getStatus()),
                 a.getCompetition().getId(), a.getCompetition().getCode(), a.getCompetition().getTitle(),
                 a.getPlot().getId(), a.getPlot().getCode(), a.getPlot().getTitle(), a.getPlot().getDistrict(),
-                Labels.of(a.getApplicantType()), a.getApplicantName(),
-                maskPii ? Labels.maskTaxId(a.getTaxId()) : a.getTaxId(), a.getPhone(), a.getEmail(), a.getAddress(),
+                blind, Labels.of(a.getApplicantType()), blind ? anonymous(a) : a.getApplicantName(),
+                blind ? "•••••••" : maskPii ? Labels.maskTaxId(a.getTaxId()) : a.getTaxId(),
+                blind ? null : a.getPhone(), blind ? null : a.getEmail(), blind ? null : a.getAddress(),
                 Labels.of(a.getActivityType()), a.getPlannedCrop(), a.getPlannedCrop() == null ? null : CropCatalog.nameAz(a.getPlannedCrop()),
                 a.getPlannedInvestment(), a.getOwnFundsPercent(), a.getJobsCreated(), a.getReturneeJobs(), a.getProjectMonths(), a.getExperienceYears(),
                 a.getBusinessPlan(), scorer.score(a), commission(a),

@@ -167,7 +167,7 @@ function ApplicationDrawer({ id, onClose, onChanged }: { id: number; onClose: ()
                 </button>
               )}
             </div>
-            <div className="panel__body"><LedgerPanel number={app.applicationNumber} reloadKey={ledgerKey} /></div>
+            <div className="panel__body">{app.blind ? <p className="faint">Jurnalda müraciətçinin adı var: kor qiymətləndirmə bitəndə görünəcək.</p> : <LedgerPanel number={app.applicationNumber} reloadKey={ledgerKey} />}</div>
           </section>
           <p className="faint" style={{ fontSize: 12 }}><ShieldCheck size={13} style={{ verticalAlign: -2 }} /> Bu baxış audit jurnalına yazıldı (şəxsi məlumatlara giriş).</p>
         </div>

@@ -66,7 +66,7 @@ public final class ApplicationDtos {
             Long id, String applicationNumber, PlotDtos.Label status,
             Long competitionId, String competitionCode, String competitionTitle,
             Long plotId, String plotCode, String plotTitle, String district,
-            PlotDtos.Label applicantType, String applicantName, String taxId, String phone, String email, String address,
+            boolean blind, PlotDtos.Label applicantType, String applicantName, String taxId, String phone, String email, String address,
             PlotDtos.Label activityType, String plannedCrop, String plannedCropName,
             long plannedInvestment, int ownFundsPercent, int jobsCreated, int returneeJobs, int projectMonths, int experienceYears,
             String businessPlan,
@@ -82,7 +82,7 @@ public final class ApplicationDtos {
     }
 
     public record ApplicationListItem(
-            Long id, String applicationNumber, String applicantName, String taxIdMasked,
+            Long id, String applicationNumber, boolean blind, String applicantName, String taxIdMasked,
             String competitionTitle, String plotCode, String plotTitle, String district,
             PlotDtos.Label activityType, long plannedInvestment, int autoScore, int signalCount,
             PlotDtos.Label status, PlotDtos.Label ektisStatus, Instant createdAt, Instant updatedAt) {
