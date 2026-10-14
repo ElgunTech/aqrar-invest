@@ -9,6 +9,7 @@ import { countdown, money, num } from "../lib/format";
 import { useDocumentTitle } from "../lib/hooks";
 import type { Competition, CropRecommendation, PublicStats, SoilClimate } from "../lib/types";
 import "./landing.css";
+import { LANGS, setLang, useT } from "../lib/i18n";
 
 /*
  * Worldflight landing (scroll-craft). One fixed stage, five legs, nothing in document flow but the spacer.
@@ -101,6 +102,7 @@ function Gauge({ label, value, unit, max, digits = 0 }: { label: string; value: 
 
 export default function Landing() {
   useDocumentTitle("");
+  const { t, lang } = useT();
   const { user } = useAuth();
   const root = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
@@ -192,24 +194,31 @@ export default function Landing() {
   const peak = useMemo(() => profileAt(sample / (SAMPLES - 1)), [sample]);
   const pred = preds?.[sample];
   const go = (i: number) => scrollTo({ top: (STARTS[i] + (i === 0 ? 0 : LEGS[i].w * 0.45)) * innerHeight, behavior: "smooth" });
-  const account = user ? (isStaff(user) ? { to: "/admin", label: "İnzibati panel" } : { to: "/kabinet", label: "Kabinetim" }) : { to: "/giris", label: "Daxil ol" };
+  const account = user ? (isStaff(user) ? { to: "/admin", label: t("İnzibati panel") } : { to: "/kabinet", label: t("Kabinetim") }) : { to: "/giris", label: t("Daxil ol") };
 
   return (
     <div className="landing">
       <div className="lf-top">
         <div className="flag-strip" />
-        <nav className="lf-nav" aria-label="Əsas menyu">
+        <div className="lf-govbar">
+          <span className="lang-switch" role="group" aria-label={t("Dil")}>
+            {LANGS.map((l) => <button key={l.code} type="button" aria-pressed={lang === l.code} onClick={() => setLang(l.code)}>{l.label}</button>)}
+          </span>
+          <span className="lf-govbar__links"><Link to="/portal">{t("Portal")}</Link><Link to="/yoxla">{t("Qəbzi yoxla")}</Link><a href="/swagger-ui.html">{t("Açıq API")}</a></span>
+        </div>
+        <nav className="lf-nav" aria-label={t("Əsas menyu")}>
           <Brand />
           <div className="lf-nav__links">
-            <Link to="/xerite">Xəritə</Link>
-            <Link to="/kataloq">Kataloq</Link>
-            <Link to="/musabiqeler">Müsabiqələr</Link>
-            <Link to="/ai">AI məsləhətçi</Link>
-            <Link to="/seffafliq">Şəffaflıq</Link>
+            <Link to="/xerite">{t("Xəritə")}</Link>
+            <Link to="/xerite-3d">{t("3D xəritə")}</Link>
+            <Link to="/kataloq">{t("Kataloq")}</Link>
+            <Link to="/musabiqeler">{t("Müsabiqələr")}</Link>
+            <Link to="/ai">{t("AI məsləhətçi")}</Link>
+            <Link to="/seffafliq">{t("Şəffaflıq")}</Link>
           </div>
           <div className="lf-nav__right">
             <Link className="btn btn--sm btn--quiet" to={account.to}>{account.label}</Link>
-            <Link className="btn btn--sm" to="/xerite"><MapIcon size={15} /> Sahəni tap</Link>
+            <Link className="btn btn--sm" to="/xerite"><MapIcon size={15} /> {t("Sahəni tap")}</Link>
           </div>
         </nav>
       </div>
@@ -230,7 +239,7 @@ export default function Landing() {
                 <div className="lf-hero__frame">
                   <img className="lf-hero__bg" src="/world/01-mountains.jpg" srcSet="/world/01-mountains-m.jpg 1100w, /world/01-mountains.jpg 2400w" sizes="150vh" alt="" decoding="async" />
                   <div className="lf-hero__mist" ref={mistRef} />
-                  <h1 className="lf-hero__title" ref={titleRef}>Qarabağın torpağı yenidən <em>əkinə hazırdır</em></h1>
+                  <h1 className="lf-hero__title" ref={titleRef}>{t("Qarabağın torpağı yenidən")} <em>{t("əkinə hazırdır")}</em></h1>
                   <img className="lf-hero__fg" ref={fgRef} src="/world/01-mountains.jpg" srcSet="/world/01-mountains-m.jpg 1100w, /world/01-mountains.jpg 2400w" sizes="150vh" alt="" decoding="async" />
                   <div className="lf-hero__mist lf-hero__mist--front" ref={mistFrontRef} />
                 </div>
@@ -271,8 +280,8 @@ export default function Landing() {
             <div className="lf-scrim lf-scrim--finale" data-lf-win={FINALE_WIN} aria-hidden="true" />
 
             <div className="lf-copy lf-copy--hero" data-sc-copy data-sc-window="hero">
-              <p>Minadan təmizlənmiş sahələri tapın, süni intellektlə yoxlayın, investisiya müsabiqəsinə onlayn müraciət edin.</p>
-              <Link className="lf-btn" to="/xerite">Sahəni tap <ArrowRight size={18} /></Link>
+              <p>{t("Minadan təmizlənmiş sahələri tapın, süni intellektlə yoxlayın, investisiya müsabiqəsinə onlayn müraciət edin.")}</p>
+              <Link className="lf-btn" to="/xerite">{t("Sahəni tap")} <ArrowRight size={18} /></Link>
             </div>
 
             <div className="lf-copy lf-copy--lead" data-sc-copy data-sc-window={win(1.65, 2.75)}>

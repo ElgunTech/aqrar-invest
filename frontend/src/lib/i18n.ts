@@ -99,6 +99,13 @@ const DICT: Record<string, [string, string]> = {
   "Portal köməkçisi": ["Portal assistant", "Помощник портала"],
   "Köməkçi": ["Assistant", "Помощник"],
 
+  // landing
+  "Portal": ["Portal", "Портал"],
+  "Sahəni tap": ["Find a plot", "Найти участок"],
+  "Qarabağın torpağı yenidən": ["Karabakh land is ready", "Земля Карабаха снова"],
+  "əkinə hazırdır": ["to farm again", "готова к посеву"],
+  "Minadan təmizlənmiş sahələri tapın, süni intellektlə yoxlayın, investisiya müsabiqəsinə onlayn müraciət edin.": ["Find demined plots, check them with AI and apply to the investment tender online.", "Найдите разминированные участки, проверьте их с помощью ИИ и подайте заявку на инвестиционный конкурс онлайн."],
+
   // home
   "Ana səhifə": ["Home", "Главная"],
   "Qarabağ iqtisadi rayonu": ["Karabakh economic region", "Карабахский экономический район"],
