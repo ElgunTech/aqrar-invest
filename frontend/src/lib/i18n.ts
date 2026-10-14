@@ -118,6 +118,23 @@ const DICT: Record<string, [string, string]> = {
   "əkinə hazırdır": ["to farm again", "готова к посеву"],
   "Minadan təmizlənmiş sahələri tapın, süni intellektlə yoxlayın, investisiya müsabiqəsinə onlayn müraciət edin.": ["Find demined plots, check them with AI and apply to the investment tender online.", "Найдите разминированные участки, проверьте их с помощью ИИ и подайте заявку на инвестиционный конкурс онлайн."],
 
+  "Təhlükəsizlik": ["Safety", "Безопасность"],
+  "Torpaq": ["Soil", "Земля"],
+  "Qayıdış": ["Return", "Возвращение"],
+  "Hər sahə minadan təmizlənib və sertifikatlıdır.": ["Every plot is demined and certified.", "Каждый участок разминирован и сертифицирован."],
+  "Portala yalnız ANAMA-nın rəsmi sertifikat verdiyi sahələr çıxarılır. Təmizlənmə tarixi və sahənin dəqiq sərhədi xəritədə hər kəs üçün açıqdır.": ["Only plots certified by ANAMA, the national demining agency, are offered. The clearance date and exact boundary are public on the map.", "На портал выставляются только участки с официальным сертификатом ANAMA. Дата разминирования и точные границы открыты на карте."],
+  "sahə ANAMA sertifikatlı": ["plots ANAMA-certified", "участков с сертификатом ANAMA"],
+  "Torpaq yenidən məhsul verməyə hazırdır.": ["The land is ready to yield again.", "Земля снова готова давать урожай."],
+  "Süni intellekt hər sahənin torpağına görə ən uyğun bitkini tövsiyə edir. Ərazi, su, yol, icarə şərtləri və rəsmi məhsuldarlıq statistikası bir kartda.": ["AI recommends the best crop for each plot's soil. Area, water, roads, lease terms and official yield statistics in one card.", "ИИ рекомендует лучшую культуру для почвы каждого участка. Площадь, вода, дороги, условия аренды и официальная статистика урожайности в одной карточке."],
+  "{n} sahədə": ["across {n} plots", "на {n} участках"],
+  "Sahələrə bax": ["See the plots", "Смотреть участки"],
+  "Böyük Qayıdış torpaqdan başlayır.": ["The Great Return starts with the land.", "Великое возвращение начинается с земли."],
+  "Hər investisiya kəndə qayıdan ailələr üçün iş yeri deməkdir. Qayıdan sakinlərə verilən iş yerləri müsabiqədə əlavə bal qazandırır.": ["Every investment means jobs for families returning to their villages. Jobs for returning residents earn extra points in the tender.", "Каждая инвестиция — это рабочие места для семей, возвращающихся в свои сёла. Рабочие места для вернувшихся жителей дают дополнительные баллы."],
+  "Müsabiqələrə bax": ["See the tenders", "Смотреть конкурсы"],
+  "Qayıdan sakinlər üçün iş yeri": ["Jobs for returning residents", "Рабочих мест для вернувшихся"],
+  "Ən yaxın son tarix": ["Next deadline", "Ближайший срок"],
+  "Portalın ana səhifəsi": ["Portal home", "Главная портала"],
+
   // home
   "Ana səhifə": ["Home", "Главная"],
   "Qarabağ iqtisadi rayonu": ["Karabakh economic region", "Карабахский экономический район"],

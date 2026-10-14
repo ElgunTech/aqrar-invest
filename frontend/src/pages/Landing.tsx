@@ -244,29 +244,33 @@ export default function Landing() {
             </div>
 
             <div className="lf-copy lf-copy--lead" data-sc-copy data-sc-window={win(1.65, 2.75)}>
-              <h2>Əvvəlcə torpaq təhlükəsiz olmalıdır.</h2>
-              <p>Portaldakı hər sahə üçün ANAMA-nın minadan təmizlənmə statusu və tarixi açıq göstərilir. Risk gizlədilmir: xəritədə, kataloqda və müraciət formasında görünür.</p>
-              {stats && <div className="lf-fact"><b>{stats.clearedPlots} / {stats.plotCount}</b> sahə tam təmizlənib</div>}
+              <span className="lf-kicker">02 · {t("Təhlükəsizlik")}</span>
+              <h2>{t("Hər sahə minadan təmizlənib və sertifikatlıdır.")}</h2>
+              <p>{t("Portala yalnız ANAMA-nın rəsmi sertifikat verdiyi sahələr çıxarılır. Təmizlənmə tarixi və sahənin dəqiq sərhədi xəritədə hər kəs üçün açıqdır.")}</p>
+              {stats && <div className="lf-fact"><b>{stats.clearedPlots} / {stats.plotCount}</b> {t("sahə ANAMA sertifikatlı")}</div>}
             </div>
 
             <div className="lf-copy lf-copy--trail" data-sc-copy data-sc-window={win(2.95, 4.05)}>
-              <h2>Sahələr hazırdır. Şərtlər bir yerdə.</h2>
-              <p>Ağdam, Füzuli, Xocalı, Xocavənd, Şuşa, Tərtər və Xankəndi. Hər sahənin kadastr nömrəsi, suyu, yolu, icarə müddəti və minimum investisiyası bir kartda.</p>
-              {stats && <div className="lf-fact"><b>{num(stats.totalAreaHa)} ha</b> {stats.plotCount} sahədə</div>}
-              <div><Link className="lf-link" to="/kataloq">Kataloqa bax <ArrowRight size={16} /></Link></div>
+              <span className="lf-kicker">03 · {t("Torpaq")}</span>
+              <h2>{t("Torpaq yenidən məhsul verməyə hazırdır.")}</h2>
+              <p>{t("Süni intellekt hər sahənin torpağına görə ən uyğun bitkini tövsiyə edir. Ərazi, su, yol, icarə şərtləri və rəsmi məhsuldarlıq statistikası bir kartda.")}</p>
+              {stats && <div className="lf-fact"><b>{num(stats.totalAreaHa)} ha</b> {t("{n} sahədə", { n: stats.plotCount })}</div>}
+              <div><Link className="lf-link" to="/kataloq">{t("Sahələrə bax")} <ArrowRight size={16} /></Link></div>
             </div>
 
             <div className="lf-copy lf-finale" data-sc-copy data-sc-window="finale">
-              <h2>Torpaq gözləyir. Müsabiqə açıqdır.</h2>
-              <p>Sahəni seçin, AI ilə yoxlayın və müraciəti onlayn göndərin. Statusu hər addımda görəcəksiniz.</p>
+              <span className="lf-kicker">04 · {t("Qayıdış")}</span>
+              <h2>{t("Böyük Qayıdış torpaqdan başlayır.")}</h2>
+              <p>{t("Hər investisiya kəndə qayıdan ailələr üçün iş yeri deməkdir. Qayıdan sakinlərə verilən iş yerləri müsabiqədə əlavə bal qazandırır.")}</p>
               <div className="lf-finale__row">
-                <Link className="lf-btn" to="/xerite">Sahəni tap <ArrowRight size={18} /></Link>
-                <Link className="lf-btn lf-btn--ghost" to="/musabiqeler">Müsabiqələrə bax</Link>
+                <Link className="lf-btn" to="/xerite">{t("Sahəni tap")} <ArrowRight size={18} /></Link>
+                <Link className="lf-btn lf-btn--ghost" to="/musabiqeler">{t("Müsabiqələrə bax")}</Link>
               </div>
               <div className="lf-finale__meta">
-                {comp && <span>Ən yaxın son tarix: <b>{countdown(comp.deadline)}</b></span>}
-                {stats && <span>Planlaşdırılan investisiya: <b>{money(stats.plannedInvestment)}</b></span>}
-                <Link to="/portal">Portalın ana səhifəsi</Link>
+                {stats && <span>{t("Qayıdan sakinlər üçün iş yeri")}: <b>{num(stats.returneeJobs)}</b></span>}
+                {comp && <span>{t("Ən yaxın son tarix")}: <b>{countdown(comp.deadline)}</b></span>}
+                {stats && <span>{t("Planlaşdırılan investisiya")}: <b>{money(stats.plannedInvestment)}</b></span>}
+                <Link to="/portal">{t("Portalın ana səhifəsi")}</Link>
                   <Link to="/haqqinda">Foto: Wikimedia Commons</Link>
               </div>
             </div>
