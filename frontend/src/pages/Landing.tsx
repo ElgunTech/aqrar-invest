@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Map as MapIcon } from "lucide-react";
 import { Brand } from "../components/Layout";
@@ -7,19 +7,18 @@ import { api } from "../lib/api";
 import { useAuth, isStaff } from "../lib/auth";
 import { countdown, money, num } from "../lib/format";
 import { useDocumentTitle } from "../lib/hooks";
-import type { Competition, CropRecommendation, PublicStats, SoilClimate } from "../lib/types";
+import type { Competition, PublicStats } from "../lib/types";
 import "./landing.css";
 import { LANGS, setLang, useT } from "../lib/i18n";
 
 /*
  * Worldflight landing (scroll-craft). One fixed stage, five legs, nothing in document flow but the spacer.
- * Track (viewport-heights): hero 1.5 · demining 1.3 · fields 1.3 · PEAK soil 2.4 · spring 1.6 = 8.1 (+1 landing room)
+ * Track (viewport-heights): hero 1.5 · demining 1.3 · fields 1.3 · spring 1.6 = 5.7 (+1 landing room)
  */
 const LEGS = [
   { w: 1.5, label: "Dağlar" },
   { w: 1.3, label: "Təhlükəsizlik" },
   { w: 1.3, label: "Torpaq" },
-  { w: 2.4, label: "AI oxuyur" },
   { w: 1.6, label: "Qayıdış" },
 ];
 const STARTS = LEGS.map((_, i) => LEGS.slice(0, i).reduce((s, l) => s + l.w, 0));
@@ -28,7 +27,7 @@ const win = (from: number, to: number, rIn?: number, rOut?: number) =>
   [from / TOTAL, to / TOTAL, rIn, rOut].filter((x) => x !== undefined).map((x) => (x as number).toFixed(3)).join(" ");
 
 const HERO_WIN = win(0, 0.62 * LEGS[0].w, 0, 0.65);
-const FINALE_WIN = win(STARTS[4] + 0.4 * LEGS[4].w, TOTAL, 0.55, 0);
+const FINALE_WIN = win(STARTS[3] + 0.4 * LEGS[3].w, TOTAL, 0.55, 0);
 
 /** Same plateau window the engine uses for copy, applied to the scrims it does not drive. */
 function windowVis(pr: number, spec: string): number {
@@ -41,29 +40,6 @@ function windowVis(pr: number, spec: string): number {
   if (pr < inEnd) return sm((pr - from) / Math.max(inEnd - from, 0.001));
   if (pr <= outStart) return 1;
   return sm(1 - (pr - outStart) / Math.max(to - outStart, 0.001));
-}
-
-// The peak: soil profiles of three real districts (same values the plots carry). Scroll morphs between them.
-const PROFILES: { place: string; v: SoilClimate }[] = [
-  { place: "Ağdam düzənliyi", v: { nitrogen: 118, phosphorus: 46, potassium: 20, temperature: 24.2, humidity: 79, ph: 6.9, rainfall: 79 } },
-  { place: "Füzuli dağətəyi", v: { nitrogen: 24, phosphorus: 131, potassium: 199, temperature: 23.6, humidity: 81, ph: 6.0, rainfall: 69 } },
-  { place: "Şuşa yaylası", v: { nitrogen: 21, phosphorus: 133, potassium: 200, temperature: 22.4, humidity: 92, ph: 5.9, rainfall: 112 } },
-];
-const SAMPLES = 41;
-const PEAK_FROM = 4.5; // track position where the reader panel is fully legible
-const PEAK_TO = 6.05;
-
-/** u ∈ [0,1] → hold A, morph A→B, hold B, morph B→C, hold C */
-function profileAt(u: number): { v: SoilClimate; place: string; seg: number; f: number } {
-  const stops = [0, 0.2, 0.4, 0.6, 0.8, 1];
-  const ease = (x: number) => x * x * (3 - 2 * x);
-  const mix = (a: SoilClimate, b: SoilClimate, t: number) =>
-    Object.fromEntries(Object.keys(a).map((k) => [k, a[k as keyof SoilClimate] + (b[k as keyof SoilClimate] - a[k as keyof SoilClimate]) * t])) as unknown as SoilClimate;
-  if (u < stops[1]) return { v: PROFILES[0].v, place: PROFILES[0].place, seg: 0, f: u / 0.2 };
-  if (u < stops[2]) { const t = ease((u - 0.2) / 0.2); return { v: mix(PROFILES[0].v, PROFILES[1].v, t), place: t < 0.5 ? PROFILES[0].place : PROFILES[1].place, seg: 0, f: 1 }; }
-  if (u < stops[3]) return { v: PROFILES[1].v, place: PROFILES[1].place, seg: 1, f: (u - 0.4) / 0.2 };
-  if (u < stops[4]) { const t = ease((u - 0.6) / 0.2); return { v: mix(PROFILES[1].v, PROFILES[2].v, t), place: t < 0.5 ? PROFILES[1].place : PROFILES[2].place, seg: 1, f: 1 }; }
-  return { v: PROFILES[2].v, place: PROFILES[2].place, seg: 2, f: (u - 0.8) / 0.2 };
 }
 
 declare global {
@@ -90,16 +66,6 @@ function loadEngine(): Promise<void> {
   });
 }
 
-function Gauge({ label, value, unit, max, digits = 0 }: { label: string; value: number; unit?: string; max: number; digits?: number }) {
-  return (
-    <div className="lf-gauge">
-      <span>{label}</span>
-      <b>{value.toFixed(digits)}{unit && <small style={{ fontSize: 11, fontWeight: 500, marginLeft: 2 }}>{unit}</small>}</b>
-      <u style={{ ["--v" as string]: Math.min(1, value / max) }} />
-    </div>
-  );
-}
-
 export default function Landing() {
   useDocumentTitle("");
   const { t, lang } = useT();
@@ -111,17 +77,13 @@ export default function Landing() {
   const mistFrontRef = useRef<HTMLDivElement>(null);
   const bloomRef = useRef<HTMLElement>(null);
   const [leg, setLeg] = useState(0);
-  const [sample, setSample] = useState(0);
-  const [preds, setPreds] = useState<CropRecommendation[] | null>(null);
   const [stats, setStats] = useState<PublicStats | null>(null);
   const [comp, setComp] = useState<Competition | null>(null);
 
-  // Real data only: stats, the nearest open competition, and the model's actual answers for the peak.
+  // Real data only: stats and the nearest open competition.
   useEffect(() => {
     api<PublicStats>("/api/v1/public/stats").then(setStats).catch(() => {});
     api<Competition[]>("/api/v1/public/competitions").then((cs) => setComp(cs.filter((c) => c.open).sort((a, b) => a.deadline.localeCompare(b.deadline))[0] ?? null)).catch(() => {});
-    const inputs = Array.from({ length: SAMPLES }, (_, i) => profileAt(i / (SAMPLES - 1)).v);
-    api<CropRecommendation[]>("/api/v1/public/ai/recommend/batch", { method: "POST", body: inputs }).then(setPreds).catch(() => {});
   }, []);
 
   // Mount the engine (untouched) and drive the bespoke layers off the same track.
@@ -142,7 +104,6 @@ export default function Landing() {
 
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
     let raf = 0;
-    let lastSample = -1;
     const frame = () => {
       raf = 0;
       const t = scrollY / innerHeight;
@@ -170,12 +131,6 @@ export default function Landing() {
       root.current?.querySelectorAll<HTMLElement>("[data-lf-win]").forEach((s) => {
         s.style.opacity = windowVis(pr, s.dataset.lfWin!).toFixed(3);
       });
-      const u = Math.min(1, Math.max(0, (t - PEAK_FROM) / (PEAK_TO - PEAK_FROM)));
-      const idx = Math.round(u * (SAMPLES - 1));
-      if (idx !== lastSample) {
-        lastSample = idx;
-        setSample(idx);
-      }
     };
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(frame);
@@ -197,8 +152,6 @@ export default function Landing() {
     };
   }, []);
 
-  const peak = useMemo(() => profileAt(sample / (SAMPLES - 1)), [sample]);
-  const pred = preds?.[sample];
   const go = (i: number) => scrollTo({ top: (STARTS[i] + (i === 0 ? 0 : LEGS[i].w * 0.45)) * innerHeight, behavior: "smooth" });
   const account = user ? (isStaff(user) ? { to: "/admin", label: t("İnzibati panel") } : { to: "/kabinet", label: t("Kabinetim") }) : { to: "/giris", label: t("Daxil ol") };
 
@@ -271,13 +224,7 @@ export default function Landing() {
               </div>
             </div>
             {/* 4 · PEAK: young orchard rows on dark soil, Zangilan */}
-            <div data-sc-segment data-sc-w={LEGS[3].w} data-sc-linger="0.35" data-sc-waypoint={LEGS[3].label}>
-              <div className="lf-plate" data-sc-poster>
-                <img src="/world/04-orchard.jpg" srcSet="/world/04-orchard-m.jpg 1100w, /world/04-orchard.jpg 2400w" sizes="100vw" alt="" decoding="async" style={{ objectPosition: "50% 70%" }} />
-              </div>
-            </div>
-            {/* 5 · Resolve: spring on Jidir plain */}
-            <div data-sc-segment data-sc-w={LEGS[4].w} data-sc-waypoint={LEGS[4].label}>
+            <div data-sc-segment data-sc-w={LEGS[3].w} data-sc-waypoint={LEGS[3].label}>
               <div className="lf-plate" data-sc-poster>
                 <img src="/world/05-spring.jpg" srcSet="/world/05-spring-m.jpg 1100w, /world/05-spring.jpg 2400w" sizes="100vw" alt="" decoding="async" style={{ objectPosition: "55% 55%" }} />
               </div>
@@ -289,7 +236,6 @@ export default function Landing() {
             <div className="lf-scrim lf-scrim--hero" data-lf-win={HERO_WIN} aria-hidden="true" />
             <div className="lf-scrim lf-scrim--lead" data-lf-win={win(1.65, 2.75)} aria-hidden="true" />
             <div className="lf-scrim lf-scrim--trail" data-lf-win={win(2.95, 4.05)} aria-hidden="true" />
-            <div className="lf-scrim lf-scrim--peak" data-lf-win={win(4.15, 6.45, 0.14, 0.16)} aria-hidden="true" />
             <div className="lf-scrim lf-scrim--finale" data-lf-win={FINALE_WIN} aria-hidden="true" />
 
             <div className="lf-copy lf-copy--hero" data-sc-copy data-sc-window="hero">
@@ -308,48 +254,6 @@ export default function Landing() {
               <p>Ağdam, Füzuli, Xocalı, Xocavənd, Şuşa, Tərtər və Xankəndi. Hər sahənin kadastr nömrəsi, suyu, yolu, icarə müddəti və minimum investisiyası bir kartda.</p>
               {stats && <div className="lf-fact"><b>{num(stats.totalAreaHa)} ha</b> {stats.plotCount} sahədə</div>}
               <div><Link className="lf-link" to="/kataloq">Kataloqa bax <ArrowRight size={16} /></Link></div>
-            </div>
-
-            <div className="lf-peak">
-              <div className="lf-peak__lead" data-sc-copy data-sc-window={win(4.15, 6.45, 0.14, 0.16)}>
-                <h2>Torpaq danışır. Süni intellekt dinləyir.</h2>
-                <p>Scroll etdikcə torpaq nümunəsi Ağdamdan Füzuliyə, oradan Şuşaya keçir. Hər rəqəm portalın içində işləyən modelin real cavabıdır: Kaggle-da öyrədilib, ONNX ilə birbaşa serverdə işləyir.</p>
-              </div>
-              <div className="lf-reader" aria-live="polite" data-sc-copy data-sc-window={win(4.15, 6.45, 0.14, 0.16)}>
-                  <div className="lf-path" aria-hidden>
-                    {[0, 1, 2].map((i) => <span key={i}><i style={{ ["--f" as string]: i < peak.seg ? 1 : i === peak.seg ? Math.min(1, peak.f) : 0 }} /></span>)}
-                  </div>
-                  <div className="lf-reader__head">
-                    <span className="lf-reader__place">{peak.place}</span>
-                    <span className="lf-reader__live"><i /> Canlı model</span>
-                  </div>
-                  <div className="lf-gauges">
-                    <Gauge label="Azot" value={peak.v.nitrogen} max={140} />
-                    <Gauge label="Fosfor" value={peak.v.phosphorus} max={145} />
-                    <Gauge label="Kalium" value={peak.v.potassium} max={205} />
-                    <Gauge label="pH" value={peak.v.ph} max={9} digits={1} />
-                    <Gauge label="Temp." value={peak.v.temperature} unit="°" max={43} digits={1} />
-                    <Gauge label="Rütubət" value={peak.v.humidity} unit="%" max={100} />
-                    <Gauge label="Yağıntı" value={peak.v.rainfall} unit="mm" max={300} />
-                  </div>
-                  <div className="lf-crops">
-                    {(pred?.recommendations ?? []).filter((c, i) => i === 0 || c.probability >= 0.01).map((c, i) => (
-                      <div key={c.code} className={`lf-crop${i === 0 ? " lf-crop--top" : ""}`}>
-                        <span className="lf-crop__name">{c.name}</span>
-                        <span className="lf-crop__pct">{Math.round(c.probability * 100)}%</span>
-                        <span className="lf-crop__bar"><span style={{ transform: `scaleX(${Math.max(0.02, c.probability)})` }} /></span>
-                      </div>
-                    ))}
-                    {!pred && <span style={{ color: "var(--sc-ink-soft)" }}>Model yüklənir…</span>}
-                    {pred && pred.recommendations.filter((c) => c.probability < 0.01).length > 0 && (
-                      <span style={{ color: "var(--sc-ink-soft)", fontSize: 13 }}>Digər bitkilər: hər biri 1%-dən az ({pred.recommendations.filter((c) => c.probability < 0.01).map((c) => c.name).join(", ")})</span>
-                    )}
-                  </div>
-                  <div className="lf-reader__foot">
-                    <span>{pred?.modelLoaded ? `${pred.modelName} · test dəqiqliyi ${Math.round((pred.testAccuracy ?? 0) * 1000) / 10}%` : "Model"}</span>
-                    <Link to="/ai" style={{ color: "var(--sc-accent)", fontWeight: 600 }}>Özün yoxla</Link>
-                  </div>
-              </div>
             </div>
 
             <div className="lf-copy lf-finale" data-sc-copy data-sc-window="finale">
