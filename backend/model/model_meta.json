@@ -1,0 +1,94 @@
+{
+  "model_name": "RandomForest",
+  "version": "2026.10.14-1041",
+  "trained_at": "2026-10-14T10:41:20Z",
+  "dataset": "Kaggle: atharvaingle/crop-recommendation-dataset",
+  "n_samples": 2200,
+  "features": [
+    "N",
+    "P",
+    "K",
+    "temperature",
+    "humidity",
+    "ph",
+    "rainfall"
+  ],
+  "classes": [
+    "apple",
+    "banana",
+    "blackgram",
+    "chickpea",
+    "coconut",
+    "coffee",
+    "cotton",
+    "grapes",
+    "jute",
+    "kidneybeans",
+    "lentil",
+    "maize",
+    "mango",
+    "mothbeans",
+    "mungbean",
+    "muskmelon",
+    "orange",
+    "papaya",
+    "pigeonpeas",
+    "pomegranate",
+    "rice",
+    "watermelon"
+  ],
+  "input_name": "input",
+  "probability_output": "probabilities",
+  "feature_ranges": {
+    "N": {
+      "min": 0.0,
+      "max": 140.0
+    },
+    "P": {
+      "min": 5.0,
+      "max": 145.0
+    },
+    "K": {
+      "min": 5.0,
+      "max": 205.0
+    },
+    "temperature": {
+      "min": 8.825674745,
+      "max": 43.67549305
+    },
+    "humidity": {
+      "min": 14.25803981,
+      "max": 99.98187601
+    },
+    "ph": {
+      "min": 3.504752314,
+      "max": 9.93509073
+    },
+    "rainfall": {
+      "min": 20.21126747,
+      "max": 298.5601175
+    }
+  },
+  "metrics": {
+    "cv_accuracy": 0.9943181818181819,
+    "test_accuracy": 0.9954545454545455,
+    "test_macro_f1": 0.9954517027687758
+  },
+  "feature_importance": {
+    "humidity": 0.3272727272727273,
+    "N": 0.22636363636363638,
+    "rainfall": 0.17409090909090913,
+    "K": 0.16818181818181818,
+    "P": 0.1122727272727273,
+    "ph": 0.010681818181818204,
+    "temperature": 0.006363636363636372
+  },
+  "model_comparison": {
+    "LogisticRegression": 0.9681818181818181,
+    "KNN": 0.965340909090909,
+    "DecisionTree": 0.9852272727272728,
+    "RandomForest": 0.9943181818181819,
+    "ExtraTrees": 0.9914772727272727,
+    "GradientBoosting": 0.9869318181818182
+  }
+}

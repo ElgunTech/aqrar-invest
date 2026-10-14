@@ -1,0 +1,47 @@
+[
+  {
+    "file": "01-mountains",
+    "title": "File:Jidir Plain in March 2021.jpg",
+    "artist": "Vuqar Amrullayev",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Jidir_Plain_in_March_2021.jpg",
+    "scene": "Hero: Qarabağ dağları"
+  },
+  {
+    "file": "02-demining",
+    "title": "File:ANAMA workers demining a village in Fuzuli, Azerbaijan.jpg",
+    "artist": "Aykhan Zayedzadeh",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:ANAMA_workers_demining_a_village_in_Fuzuli,_Azerbaijan.jpg",
+    "scene": "Təhlükəsizlik: minatəmizləmə"
+  },
+  {
+    "file": "03-fields",
+    "title": "File:Landscape of Fuzuli District 56.jpg",
+    "artist": "Aykhan Zayedzadeh",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Landscape_of_Fuzuli_District_56.jpg",
+    "scene": "Torpaq: Füzuli tarlaları"
+  },
+  {
+    "file": "04-orchard",
+    "title": "File:Ilham Aliyev and First Lady Mehriban Aliyeva viewed intensive orchard in Zangilan district 03.jpg",
+    "artist": "Press Service of the President of the Republic of Azerbaijan",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Ilham_Aliyev_and_First_Lady_Mehriban_Aliyeva_viewed_intensive_orchard_in_Zangilan_district_03.jpg",
+    "scene": "AI: Zəngilan intensiv bağı"
+  },
+  {
+    "file": "05-spring",
+    "title": "File:Jidir Plain in 2021.jpg",
+    "artist": "Vuqar Amrullayev",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Jidir_Plain_in_2021.jpg",
+    "scene": "Final: Cıdır düzü"
+  }
+]

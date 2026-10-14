@@ -1,0 +1,12 @@
+# build output
+backend/target/
+frontend/node_modules/
+frontend/dist/
+backend/src/main/resources/static/
+# runtime data (demo DB, uploaded documents)
+backend/data/
+backend/uploads/
+# local tooling
+.tools/
+.claude/
+*.log

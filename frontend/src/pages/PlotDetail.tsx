@@ -1,0 +1,176 @@
+import { Link, useParams } from "react-router-dom";
+import { Circle, MapContainer, TileLayer } from "react-leaflet";
+import {
+  ArrowRight, CalendarClock, Check, Droplets, FileText, Landmark, MapPin, Route, Scale, Zap, X as XIcon,
+} from "lucide-react";
+import { Callout, Empty, Loading, Meter, MineTag, Tag } from "../components/ui";
+import { useAuth } from "../lib/auth";
+import { ACTIVITY } from "../lib/domain";
+import { countdown, date, money, num, pct, pct1 } from "../lib/format";
+import { useApi, useDocumentTitle } from "../lib/hooks";
+import type { CropRecommendation, Plot } from "../lib/types";
+
+export function AiCard({ rec, inputs }: { rec: CropRecommendation; inputs?: Plot }) {
+  const shown = rec.recommendations.filter((c) => c.probability >= 0.01);
+  const list = shown.length ? shown : rec.recommendations.slice(0, 1);
+  const filtered = rec.rawTop.some((c) => !c.regionSuitable && c.probability > 0.01);
+  return (
+    <section className="panel">
+      <div className="panel__head">
+        <h3>Süni intellekt: bu torpaqda nə əkmək sərfəlidir?</h3>
+        <span className="model-badge"><span className="dot" />{rec.modelLoaded ? `${rec.modelName}${rec.testAccuracy ? " · dəqiqlik " + pct1(rec.testAccuracy) : ""}` : "Müvəqqəti alqoritm"}</span>
+      </div>
+      <div className="panel__body">
+        <div className={inputs ? "grid grid--2" : ""} style={{ gap: 28 }}>
+          <div>
+            {list.map((c, i) => (
+              <div className="crop" key={c.code}>
+                <span className="crop__name">{i === 0 && <Tag tone="gold">Ən uyğun</Tag>} {c.name}</span>
+                <span className="crop__pct">{pct(c.probability)}</span>
+                <Meter value={c.probability} gold={i === 0} />
+              </div>
+            ))}
+            <p className="muted" style={{ fontSize: 13.5, marginTop: 14 }}>{rec.explanation}</p>
+            {filtered && <div style={{ marginTop: 12 }}><Callout tone="warn">Model tropik bitki də təklif etdi, lakin regional iqlim filtri onu çıxardı.</Callout></div>}
+          </div>
+          {inputs && (
+            <div>
+              <h4 style={{ marginBottom: 8 }}>Modelin giriş göstəriciləri</h4>
+              <table className="table table--kv table--compact">
+                <tbody>
+                  <tr><td>Azot (N)</td><td className="num">{num(inputs.nitrogen)} kq/ha</td></tr>
+                  <tr><td>Fosfor (P)</td><td className="num">{num(inputs.phosphorus)} kq/ha</td></tr>
+                  <tr><td>Kalium (K)</td><td className="num">{num(inputs.potassium)} kq/ha</td></tr>
+                  <tr><td>Torpağın pH-ı</td><td className="num">{num(inputs.ph, 1)}</td></tr>
+                  <tr><td>Orta temperatur</td><td className="num">{num(inputs.avgTemperature, 1)} °C</td></tr>
+                  <tr><td>Nisbi rütubət</td><td className="num">{num(inputs.humidity)}%</td></tr>
+                  <tr><td>Yağıntı</td><td className="num">{num(inputs.rainfall)} mm</td></tr>
+                </tbody>
+              </table>
+              <p className="faint" style={{ fontSize: 12, marginTop: 8 }}>Model Kaggle-da öyrədilib və ONNX formatında birbaşa portalın Java serverində işləyir.</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export default function PlotDetail() {
+  const { id } = useParams();
+  const { user } = useAuth();
+  const { data: p, error } = useApi<Plot>(`/api/v1/public/plots/${id}`);
+  const { data: rec } = useApi<CropRecommendation>(`/api/v1/public/plots/${id}/recommendation`);
+  useDocumentTitle(p?.title ?? "Sahə");
+
+  if (error) return <div className="wrap page"><div className="panel"><Empty title="Sahə tapılmadı"><Link className="btn" to="/kataloq" style={{ marginTop: 14 }}>Kataloqa qayıt</Link></Empty></div></div>;
+  if (!p) return <Loading />;
+
+  const a = ACTIVITY[p.activityType.code];
+  const comp = p.openCompetition;
+  const yes = (b: boolean) => (b ? <span className="row" style={{ ["--gap" as string]: "6px", color: "var(--forest-600)" }}><Check size={16} /> Var</span> : <span className="row" style={{ ["--gap" as string]: "6px", color: "var(--ink-faint)" }}><XIcon size={16} /> Yoxdur</span>);
+
+  let action;
+  if (!comp) {
+    action = <Callout tone="warn">{p.status.code === "ASSIGNED" ? "Sahə artıq müsabiqə qalibinə təhvil verilib." : "Bu sahə hazırda açıq müsabiqədə deyil."}</Callout>;
+  } else if (!user) {
+    action = <Link className="btn btn--lg btn--block" to={`/giris?next=${encodeURIComponent(`/muraciet?plot=${p.id}&competition=${comp.id}`)}`}>Daxil olub müraciət et</Link>;
+  } else if (user.role !== "INVESTOR") {
+    action = <Callout tone="info">Müraciəti yalnız sahibkar hesabı ilə vermək olar.</Callout>;
+  } else {
+    action = <Link className="btn btn--lg btn--block" to={`/muraciet?plot=${p.id}&competition=${comp.id}`}>Müraciət et <ArrowRight size={18} /></Link>;
+  }
+
+  return (
+    <>
+      <section className="band">
+        <div className="wrap">
+          <nav className="crumbs" aria-label="Naviqasiya"><Link to="/kataloq">Kataloq</Link> / <span>{p.district}</span> / <span className="mono">{p.code}</span></nav>
+          <div className="row row--top" style={{ ["--gap" as string]: "18px" }}>
+                        <div className="grow">
+              <div className="row" style={{ marginBottom: 10 }}>
+                <Tag tone="muted">{p.activityType.label}</Tag>
+                <MineTag label={p.mineClearance} />
+                <Tag label={p.status} />
+              </div>
+              <h1>{p.title}</h1>
+              <p className="row" style={{ ["--gap" as string]: "6px" }}><MapPin size={16} /> {p.district} rayonu, {p.village} kəndi · Kadastr № <span className="mono">{p.cadastreNumber ?? "yoxdur"}</span></p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="wrap page">
+        <div className="layout-2">
+          <div className="stack" style={{ ["--gap" as string]: "22px" }}>
+            <div className="grid grid--4">
+              <div className="panel metric"><div className="metric__label">Ərazi</div><div className="metric__value">{num(p.areaHa, 1)} ha</div></div>
+              <div className="panel metric"><div className="metric__label">Min. investisiya</div><div className="metric__value" style={{ fontSize: 22 }}>{money(p.minInvestment)}</div></div>
+              <div className="panel metric"><div className="metric__label">İcarə müddəti</div><div className="metric__value">{p.leaseYears} il</div></div>
+              <div className="panel metric"><div className="metric__label">Müraciətlər</div><div className="metric__value">{p.applicationCount}</div></div>
+            </div>
+
+            {rec ? <AiCard rec={rec} inputs={p} /> : <div className="panel"><Loading /></div>}
+
+            <section className="panel">
+              <div className="panel__head"><h3><Landmark size={18} /> Sahə haqqında</h3></div>
+              <div className="panel__body">
+                {p.description && <p style={{ marginBottom: 18 }}>{p.description}</p>}
+                <dl className="kv">
+                  <dt>Torpaq tipi</dt><dd>{p.soilType ?? "yoxdur"}</dd>
+                  <dt><Droplets size={14} /> Su mənbəyinə məsafə</dt><dd>{num(p.waterSourceKm, 1)} km</dd>
+                  <dt><Route size={14} /> Asfalt yola məsafə</dt><dd>{num(p.roadKm, 1)} km</dd>
+                  <dt>Suvarma sistemi</dt><dd>{yes(p.irrigationAvailable)}</dd>
+                  <dt><Zap size={14} /> Elektrik xətti</dt><dd>{yes(p.electricityAvailable)}</dd>
+                  <dt>Minadan təmizlənmə</dt><dd><MineTag label={p.mineClearance} /> {p.mineClearanceDate && <span className="muted"> · {date(p.mineClearanceDate)}</span>}</dd>
+                  <dt>İcarə müddəti</dt><dd>{p.leaseYears} il</dd>
+                </dl>
+                <hr className="divider" />
+                <h4 style={{ marginBottom: 6 }}>İstifadə şərtləri</h4>
+                <p className="muted">{p.usageTerms}</p>
+              </div>
+            </section>
+
+            <section className="panel" style={{ overflow: "hidden" }}>
+              <div style={{ height: 360 }}>
+                <MapContainer center={[p.latitude, p.longitude]} zoom={13} scrollWheelZoom={false} style={{ height: "100%" }}>
+                  <TileLayer attribution="Esri World Imagery" url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" maxZoom={18} />
+                  <Circle center={[p.latitude, p.longitude]} radius={Math.sqrt((p.areaHa * 10000) / Math.PI)} pathOptions={{ color: "#d9a23a", weight: 3, fillColor: a.color, fillOpacity: 0.28 }} />
+                </MapContainer>
+              </div>
+            </section>
+          </div>
+
+          <aside className="sticky stack" style={{ ["--gap" as string]: "18px" }}>
+            <div className="panel panel--pad panel--raised">
+              {comp && (
+                <>
+                  <div className="metric__label">Açıq müsabiqə</div>
+                  <h3 style={{ margin: "8px 0 14px" }}>{comp.title}</h3>
+                  <div className="callout callout--ok" style={{ marginBottom: 16 }}>
+                    <CalendarClock />
+                    <div>Son müraciət: <b>{date(comp.deadline)}</b><br /><span className="tabular" style={{ fontWeight: 700 }}>{countdown(comp.deadline)}</span> qalıb</div>
+                  </div>
+                </>
+              )}
+              {action}
+              <div className="row" style={{ marginTop: 14 }}>
+                <Link className="btn btn--sm btn--ghost" to={`/muqayise?ids=${p.id}`}><Scale size={14} /> Müqayisə</Link>
+                <Link className="btn btn--sm btn--ghost" to="/xerite"><MapPin size={14} /> Xəritədə</Link>
+              </div>
+            </div>
+            <div className="panel panel--pad">
+              <h3 style={{ marginBottom: 10 }}><FileText size={17} style={{ verticalAlign: -3 }} /> Tələb olunan sənədlər</h3>
+              <ul className="checklist">
+                <li><Check color="#26775a" /> Biznes plan (PDF / DOCX)</li>
+                <li><Check color="#26775a" /> Şəxsiyyət vəsiqəsi</li>
+                <li><Check color="#26775a" /> Hüquqi şəxs: dövlət qeydiyyatı şəhadətnaməsi</li>
+                <li><Check color="#9aa69f" /> Tövsiyə: maliyyə imkanını təsdiq edən sənəd</li>
+              </ul>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </>
+  );
+}
