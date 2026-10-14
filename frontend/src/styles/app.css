@@ -685,3 +685,15 @@ h3 { font-size: 16px; font-weight: 500; letter-spacing: 0; }
 }
 html, body { overflow-x: clip; }
 @media (max-width: 620px) { .grid--4:has(> .metric) { grid-template-columns: 1fr 1fr; row-gap: 14px; } }
+
+/* decision document */
+.receipt__number b.decision__verdict { font-size: 18px; letter-spacing: .04em; color: var(--danger); }
+.receipt__number b.decision__verdict--ok { color: var(--forest-600); }
+.decision__lead, .decision > p { line-height: 1.6; margin: 14px 48px 12px; font-size: 14.5px; }
+.decision__sign td.decision__line { color: var(--ink-faint); font-size: 12px; font-style: italic; }
+.decision__seal { display: flex; justify-content: space-between; align-items: center; margin: 28px 48px 8px; padding-top: 16px; border-top: 1px dashed var(--line-strong); }
+.decision__seal div:first-child { display: grid; gap: 2px; }
+.decision__seal span { font-size: 12px; color: var(--ink-faint); }
+.decision__seal i { font-size: 12px; color: var(--ink-faint); }
+.decision__stamp { width: 84px; height: 84px; border-radius: 50%; border: 2px solid #2b5fa8; color: #2b5fa8; display: grid; place-items: center; font-weight: 700; opacity: .7; transform: rotate(-12deg); }
+@media (max-width: 640px) { .decision__lead, .decision > p, .decision__seal { margin-inline: 16px; } }

@@ -102,7 +102,7 @@ public class AuthController {
         u.setPhone(r.phone());
         u.setTaxId(fin);
         users.save(u);
-        notifications.notify(u, "Portala xoş gəlmisiniz!", "Xəritədən sahələrə baxın, uyğunluq testindən keçin və müsabiqəyə müraciət edin.", "/xerite");
+        notifications.notify(u, "Aqrar İnvestə xoş gəldiniz!", "Hörmətli " + u.getFullName() + ", qeydiyyatınız uğurla tamamlandı. Xəritədən minadan təmizlənmiş sahələrə baxın, AI məsləhətçidən istifadə edin və müsabiqələrə müraciət edin.", "/xerite");
         Authentication auth = authManager.authenticate(new UsernamePasswordAuthenticationToken(email, r.password()));
         establishSession(auth, req, res);
         audit.logAs(email, "REGISTERED", "AppUser", u.getId(), null);
@@ -145,7 +145,7 @@ public class AuthController {
             u.setPhone(id.phone());
             u.setTaxId(id.fin());
             users.save(u);
-            notifications.notify(u, "Hesabınız myGov ilə yaradıldı", "Şəxsiyyətiniz dövlət identifikasiya sistemi ilə təsdiqləndi. Müraciət formasında məlumatlarınız avtomatik doldurulacaq.", "/kabinet");
+            notifications.notify(u, "Aqrar İnvestə xoş gəldiniz!", "Hesabınız myGov ilə yaradıldı. Şəxsiyyətiniz dövlət identifikasiya sistemi ilə təsdiqləndi. Müraciət formasında məlumatlarınız avtomatik doldurulacaq.", "/kabinet");
             created = true;
         }
         UsernamePasswordAuthenticationToken auth = UsernamePasswordAuthenticationToken.authenticated(u.getEmail(), null,

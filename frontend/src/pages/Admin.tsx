@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useMemo, useState, type FormEvent } from "react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import {
@@ -126,6 +127,7 @@ function ApplicationDrawer({ id, onClose, onChanged }: { id: number; onClose: ()
               <button className="btn btn--sm btn--ghost" onClick={reload}><RefreshCw size={14} /></button>
             </div>
             <StatusFlow status={app.status.code} />
+            {(app.status.code === "APPROVED" || app.status.code === "REJECTED") && <Link className="btn btn--sm btn--ghost" style={{ marginTop: 12 }} to={`/admin/qerar/${app.id}`}>Qərar sənədi (PDF)</Link>}
             {app.allowedNext.length > 0 ? (
               <div style={{ marginTop: 18 }}>
                 <span className="label">Qərar / növbəti addım</span>

@@ -102,6 +102,7 @@ function Detail({ id }: { id: string }) {
         <Link to="/kabinet" className="btn btn--sm btn--quiet"><ArrowLeft size={15} /> Bütün müraciətlər</Link>
         <div className="row">
           <Link className="btn btn--sm btn--ghost" to={`/kabinet/${app.id}/qebz`}><FileText size={14} /> Qəbz (PDF)</Link>
+          {(app.status.code === "APPROVED" || app.status.code === "REJECTED") && <Link className="btn btn--sm" to={`/kabinet/${app.id}/qerar`}><FileText size={14} /> Qərar (PDF)</Link>}
           <button className="btn btn--sm btn--ghost" onClick={reload}><RefreshCw size={14} /> Yenilə</button>
         </div>
       </div>
