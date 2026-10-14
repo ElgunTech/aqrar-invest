@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import maplibregl, { type Map as MlMap } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { ArrowRight, Pause, Play, RotateCw, X } from "lucide-react";
@@ -43,8 +43,11 @@ export default function Map3D() {
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<MlMap | null>(null);
   const orbit = useRef<number | null>(null);
+  const layersAdded = useRef(false);
   const [selected, setSelected] = useState<Plot | null>(null);
   const [orbiting, setOrbiting] = useState(true);
+  const [params] = useSearchParams();
+  const initial = Number(params.get("sahe")) || null;
 
   const stopOrbit = () => {
     if (orbit.current) cancelAnimationFrame(orbit.current);
@@ -80,6 +83,7 @@ export default function Map3D() {
       stopOrbit();
       m.remove();
       map.current = null;
+      layersAdded.current = false;
     };
   }, []);
 
@@ -88,7 +92,8 @@ export default function Map3D() {
     const m = map.current;
     if (!m || plots.length === 0) return;
     const add = async () => {
-      if (m.getSource("plots")) return;
+      if (layersAdded.current) return;
+      layersAdded.current = true;
       const anama = await (await fetch("/api/v1/public/official/anama")).json();
       m.addSource("anama", { type: "geojson", data: anama });
       m.addLayer({ id: "anama-fill", type: "fill", source: "anama", paint: { "fill-color": "#f59e0b", "fill-opacity": 0.28 } });
@@ -122,18 +127,29 @@ export default function Map3D() {
       });
       m.on("mouseenter", "plots-3d", () => (m.getCanvas().style.cursor = "pointer"));
       m.on("mouseleave", "plots-3d", () => (m.getCanvas().style.cursor = ""));
-      startOrbit();
+      const first = initial ? plots.find((x) => x.id === initial) : undefined;
+      if (first) m.setFeatureState({ source: "plots", id: first.id }, { selected: true });
+      else startOrbit();
     };
     if (m.isStyleLoaded()) add();
     else m.once("load", add);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [plots]);
 
+  // deep link from the 2D map or plot page: /xerite-3d?sahe=<id>
+  useEffect(() => {
+    const first = initial ? plots.find((x) => x.id === initial) : undefined;
+    if (first && map.current) select(first);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [plots, initial]);
+
   const select = (p: Plot) => {
     const m = map.current;
     if (!m) return;
-    if (selected) m.setFeatureState({ source: "plots", id: selected.id }, { selected: false });
-    m.setFeatureState({ source: "plots", id: p.id }, { selected: true });
+    if (m.getSource("plots")) {
+      if (selected) m.setFeatureState({ source: "plots", id: selected.id }, { selected: false });
+      m.setFeatureState({ source: "plots", id: p.id }, { selected: true });
+    }
     setSelected(p);
     stopOrbit();
     m.flyTo({ center: centroid(p), zoom: 13.6, pitch: 68, bearing: m.getBearing() + 40, duration: 3200, essential: true });

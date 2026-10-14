@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { Link, useSearchParams } from "react-router-dom";
 import { GeoJSON, LayersControl, MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 import L, { type Marker as LMarker } from "leaflet";
-import { ArrowRight, Clock } from "lucide-react";
+import { ArrowRight, Box, Clock } from "lucide-react";
 import { emptyFilters, filtersToQuery, PlotFilters, type Filters } from "../components/PlotFilters";
 import { MineTag } from "../components/ui";
 import { qs } from "../lib/api";
@@ -148,7 +148,10 @@ export default function MapPage() {
                     ? <div className="row" style={{ ["--gap" as string]: "6px" }}><Clock size={14} /> Müraciətə <b>{p.openCompetition.daysLeft} gün</b> qalıb</div>
                     : <div className="faint">Hazırda müsabiqədə deyil</div>}
                 </div>
-                <Link to={`/sahe/${p.id}`} className="btn btn--sm" style={{ marginTop: 12, color: "#fff" }}>Ətraflı <ArrowRight size={14} /></Link>
+                <div className="row" style={{ marginTop: 12, ["--gap" as string]: "6px" }}>
+                  <Link to={`/sahe/${p.id}`} className="btn btn--sm" style={{ color: "#fff" }}>Ətraflı <ArrowRight size={14} /></Link>
+                  <Link to={`/xerite-3d?sahe=${p.id}`} className="btn btn--sm btn--ghost"><Box size={14} /> 3D bax</Link>
+                </div>
               </Popup>
             </Marker>
           ))}

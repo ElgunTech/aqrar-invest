@@ -1,6 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import { GeoJSON, MapContainer, TileLayer } from "react-leaflet";
-import {
+import { Box,
   ArrowRight, CalendarClock, Check, Droplets, FileText, Landmark, MapPin, Route, Scale, Zap, X as XIcon,
 } from "lucide-react";
 import { Calculator } from "../components/Calculator";
@@ -198,6 +198,7 @@ export default function PlotDetail() {
               <div className="row" style={{ marginTop: 14 }}>
                 <Link className="btn btn--sm btn--ghost" to={`/muqayise?ids=${p.id}`}><Scale size={14} /> Müqayisə</Link>
                 <Link className="btn btn--sm btn--ghost" to="/xerite"><MapPin size={14} /> Xəritədə</Link>
+                <Link className="btn btn--sm btn--ghost" to={`/xerite-3d?sahe=${p.id}`}><Box size={14} /> 3D bax</Link>
               </div>
             </div>
             <div className="panel panel--pad">
