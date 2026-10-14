@@ -99,6 +99,18 @@ const DICT: Record<string, [string, string]> = {
   "Portal köməkçisi": ["Portal assistant", "Помощник портала"],
   "Köməkçi": ["Assistant", "Помощник"],
 
+  // install as app
+  "Tətbiq kimi quraşdır": ["Install as an app", "Установить как приложение"],
+  "Telefonun ana ekranına əlavə edin": ["Add it to your home screen", "Добавьте на главный экран"],
+  "Əlavə et": ["Add", "Добавить"],
+  "Sonra": ["Later", "Позже"],
+  "Ana ekrana əlavə et": ["Add to home screen", "Добавить на главный экран"],
+  "Safari-nin aşağı panelində «Paylaş» düyməsinə toxunun": ["In Safari, tap the Share button in the bottom bar", "В Safari нажмите кнопку «Поделиться» внизу"],
+  "«Ana ekrana əlavə et» (Add to Home Screen) seçin, sonra «Əlavə et»": ["Choose “Add to Home Screen”, then “Add”", "Выберите «На экран Домой», затем «Добавить»"],
+  "Brauzerin menyusunu açın (yuxarı sağda)": ["Open the browser menu (top right)", "Откройте меню браузера (вверху справа)"],
+  "«Ana ekrana əlavə et» və ya «Tətbiqi quraşdır» seçin": ["Choose “Add to Home screen” or “Install app”", "Выберите «Добавить на главный экран» или «Установить приложение»"],
+  "Aydındır": ["Got it", "Понятно"],
+
   // landing
   "Portal": ["Portal", "Портал"],
   "Sahəni tap": ["Find a plot", "Найти участок"],

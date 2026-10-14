@@ -757,3 +757,17 @@ html, body { overflow-x: clip; }
 .ocds-box { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between; background: #fff; border: 1px solid var(--line); border-left: 4px solid var(--forest-600); border-radius: var(--r-md); padding: 12px 16px; }
 .ocds-box > div:first-child { display: grid; gap: 2px; max-width: 720px; font-size: 13.5px; color: var(--ink-soft); }
 .ocds-box b { color: var(--ink); font-size: 14.5px; }
+
+/* add-to-home-screen bar (phones only) */
+.install-bar { position: fixed; left: 12px; right: 84px; bottom: 16px; z-index: 1200; display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 8px 8px 8px 10px; box-shadow: 0 8px 24px rgb(0 0 0 / .18); }
+.install-bar img { border-radius: 8px; flex: none; }
+.install-bar span { flex: 1; display: grid; line-height: 1.2; min-width: 0; }
+.install-bar b { font-size: 14px; }
+.install-bar small { font-size: 12px; color: var(--ink-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.install-bar__close { background: none; border: 0; color: var(--ink-faint); padding: 6px; cursor: pointer; }
+.install-help { position: fixed; inset: 0; z-index: 5000; background: rgb(0 0 0 / .45); display: grid; align-items: end; }
+.install-help__card { background: #fff; border-radius: 16px 16px 0 0; padding: 22px 20px 26px; text-align: center; }
+.install-help__card img { border-radius: 12px; }
+.install-help__card h3 { margin: 10px 0 12px; font-size: 18px; }
+.install-help__card ol { text-align: left; margin: 0 0 18px; padding-left: 20px; display: grid; gap: 10px; font-size: 14.5px; }
+.install-help__card li svg { vertical-align: -4px; color: var(--forest-600); }
