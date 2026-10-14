@@ -166,7 +166,7 @@ public class DemoDataSeeder implements ApplicationRunner {
         Competition c4 = competition("MQ-" + (today.getYear() - 1) + "-004", "Pilot müsabiqə: dənli-paxlalı və meyvə sahələri",
                 "Portalın pilot mərhələsində keçirilmiş müsabiqə.",
                 "Biznes plan və şəxsiyyət vəsiqəsi.",
-                today.minusDays(120), today.minusDays(60), CompetitionStatus.CLOSED, evaluator, admin, fzl3, trt2);
+                today.minusDays(520), today.minusDays(450), CompetitionStatus.CLOSED, evaluator, admin, fzl3, trt2);
 
         Instant now = Instant.now();
         InvestmentApplication s1 = application(investor, c1, agd1, ApplicantType.INDIVIDUAL, "cotton", 720_000, 35, 18, 36, 8,
@@ -183,10 +183,10 @@ public class DemoDataSeeder implements ApplicationRunner {
         InvestmentApplication s6 = application(company, c2, fzl1, ApplicantType.COMPANY, "grapes", 950_000, 45, 30, 60, 11,
                 ApplicationStatus.UNDER_REVIEW, EktisSyncStatus.VERIFIED, now.minus(Duration.ofDays(4)), evaluator, null);
         InvestmentApplication s7 = application(company, c4, fzl3, ApplicantType.COMPANY, "chickpea", 520_000, 40, 22, 36, 11,
-                ApplicationStatus.APPROVED, EktisSyncStatus.VERIFIED, now.minus(Duration.ofDays(95)), evaluator,
+                ApplicationStatus.APPROVED, EktisSyncStatus.VERIFIED, now.minus(Duration.ofDays(437)), evaluator,
                 "Komissiyanın qərarı ilə qalib elan edildi: ən yüksək investisiya və iş yeri göstəriciləri.");
         application(leyla, c4, trt2, ApplicantType.INDIVIDUAL, "apple", 150_000, 10, 3, 24, 3,
-                ApplicationStatus.REJECTED, EktisSyncStatus.VERIFIED, now.minus(Duration.ofDays(90)), evaluator,
+                ApplicationStatus.REJECTED, EktisSyncStatus.VERIFIED, now.minus(Duration.ofDays(460)), evaluator,
                 "Planlaşdırılan investisiya minimum tələbdən (310 000 AZN) aşağıdır.");
 
         score(s1, evaluator, 8, 7, 7, 8, "Real biznes plan, pambıq emalı ilə inteqrasiya müsbətdir.");

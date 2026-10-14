@@ -165,24 +165,40 @@ public class SatelliteService {
                     "Sahə hələ investora verilməyib. Bu göstəricilər müsabiqədən sonrakı monitorinq üçün başlanğıc nöqtəsidir (son 13 ayda ən yüksək NDVI " + fmt(peak) + ")."};
         }
         List<Observation> after = series.stream().filter(o -> !LocalDate.parse(o.date()).isBefore(award)).toList();
-        List<Observation> before = series.stream().filter(o -> LocalDate.parse(o.date()).isBefore(award)).toList();
-        double beforePeak = before.stream().mapToDouble(Observation::ndvi).max().orElse(0);
         double afterPeak = after.stream().mapToDouble(Observation::ndvi).max().orElse(0);
         long months = Period.between(award, today).toTotalMonths();
         if (after.isEmpty()) {
             return new String[]{"PENDING", "Qərardan sonra hələ görüntü yoxdur",
                     "Sahə " + award + " tarixində verilib. Növbəti buludsuz görüntü gələn kimi müqayisə ediləcək."};
         }
-        if (afterPeak >= 0.35 || (afterPeak >= 0.25 && afterPeak > beforePeak + 0.08)) {
+        // Spring rain greens every fallow field in Karabakh (NDVI 0.3-0.45 in April-May) and it dries out by July,
+        // so a spring peak is not evidence of farming. Cultivation shows as green in summer (June-September),
+        // or as a clear gain over the same month a year earlier.
+        double summerPeak = after.stream().filter(o -> summer(o.date())).mapToDouble(Observation::ndvi).max().orElse(0);
+        double gain = after.stream().mapToDouble(o -> o.ndvi() - sameMonthYearBefore(series, o).orElse(o.ndvi())).max().orElse(0);
+        boolean summerSeen = after.stream().anyMatch(o -> summer(o.date()));
+        if (summerPeak >= 0.35 || gain >= 0.12) {
             return new String[]{"ACTIVE", "Sahədə əkin aşkarlanır",
-                    "Qərardan sonra NDVI " + fmt(afterPeak) + " səviyyəsinə çatıb (qərardan əvvəl ən yüksək " + fmt(beforePeak) + "). Peyk məlumatı investorun hesabatlarını təsdiqləyir."};
+                    "Qərardan sonra yay aylarında NDVI " + fmt(summerPeak) + ", ötən illə müqayisədə artım " + fmt(gain)
+                            + ". Peyk məlumatı investorun hesabatlarını təsdiqləyir."};
         }
-        if (months >= 6) {
-            return new String[]{"ALERT", "Torpaq verildi, amma " + months + " aydır boş görünür",
-                    "Qərardan sonra NDVI " + fmt(afterPeak) + "-dən yuxarı qalxmayıb: sahədə yaşıl bitki örtüyü yoxdur. Monitorinq üzrə mütəxəssisin yerində yoxlaması tövsiyə olunur."};
+        if (months >= 6 && summerSeen) {
+            return new String[]{"ALERT", "Torpaq verildi, amma " + months + " aydır əkin görünmür",
+                    "Yazda NDVI " + fmt(afterPeak) + "-ə qalxıb, amma bu, təbii ot örtüyüdür: yay aylarında sahə quruyub (ən yüksək "
+                            + fmt(summerPeak) + "), ötən illə müqayisədə də fərq yoxdur. Mütəxəssisin yerində yoxlaması tövsiyə olunur."};
         }
         return new String[]{"WATCH", "Əkin hələ görünmür",
-                "Qərardan " + months + " ay keçib, NDVI " + fmt(afterPeak) + ". 6 aya qədər əkin görünməsə, xəbərdarlıq yaranacaq."};
+                "Qərardan " + months + " ay keçib, yay aylarında NDVI " + fmt(summerPeak) + ". Yay mövsümündə əkin görünməsə, xəbərdarlıq yaranacaq."};
+    }
+
+    private static boolean summer(String date) {
+        int m = Integer.parseInt(date.substring(5, 7));
+        return m >= 6 && m <= 9;
+    }
+
+    private static java.util.OptionalDouble sameMonthYearBefore(List<Observation> series, Observation o) {
+        String key = (Integer.parseInt(o.date().substring(0, 4)) - 1) + o.date().substring(4, 7);
+        return series.stream().filter(x -> x.date().startsWith(key)).mapToDouble(Observation::ndvi).findFirst();
     }
 
     private Map<String, String> images(JsonNode geometry, String item) {
