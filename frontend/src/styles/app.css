@@ -659,3 +659,18 @@ h3 { font-size: 16px; font-weight: 500; letter-spacing: 0; }
 @media (max-width: 560px) { .chat-fab span { display: none; } .chat-fab { width: 52px; padding: 0; justify-content: center; } }
 .spark { display: inline-flex; align-items: flex-end; gap: 2px; height: 22px; width: 90px; }
 .spark i { flex: 1; background: var(--forest-500); border-radius: 1px; min-height: 2px; }
+
+/* ------------------------------------------------------------ 3D map */
+.map3d { display: grid; grid-template-columns: 300px minmax(0, 1fr); height: calc(100vh - var(--header-h) - 33px); min-height: 560px; }
+.map3d__list { overflow: auto; background: #fff; border-right: 1px solid var(--line); padding: 18px; display: flex; flex-direction: column; gap: 6px; }
+.map3d__list button { display: flex; gap: 10px; align-items: center; text-align: left; padding: 9px 10px; border: 1px solid var(--line); border-radius: var(--r-md); background: #fff; cursor: pointer; font: inherit; color: inherit; }
+.map3d__list button:hover, .map3d__list button[aria-current="true"] { border-color: var(--forest-500); background: var(--forest-50); }
+.map3d__list b { display: block; font-size: 13px; font-weight: 500; }
+.map3d__list span span { font-size: 12px; color: var(--ink-faint); }
+.map3d__ico { width: 30px; height: 30px; border-radius: 6px; display: grid; place-items: center; flex: none; }
+.map3d__stage { position: relative; }
+.map3d__stage .map3d__canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.map3d__tools { position: absolute; left: 14px; top: 14px; display: flex; gap: 8px; z-index: 2; }
+.map3d__card { position: absolute; left: 14px; bottom: 34px; width: min(340px, calc(100% - 28px)); background: #fff; border-radius: 8px; padding: 18px; box-shadow: 0 10px 30px rgb(0 0 0 / 0.3); z-index: 2; }
+.map3d__close { position: absolute; right: 10px; top: 10px; background: none; border: 0; cursor: pointer; color: var(--ink-faint); }
+@media (max-width: 900px) { .map3d { grid-template-columns: 1fr; height: auto; } .map3d__list { max-height: 220px; } .map3d__stage { height: 75vh; } }

@@ -91,7 +91,7 @@ export default function MapPage() {
   return (
     <div className="map-shell">
       <aside className="map-shell__side" aria-label="Filtrlər">
-        <h2 style={{ fontSize: 20 }}>Aqrar investisiya xəritəsi</h2>
+        <div className="row row--between"><h2 style={{ fontSize: 20 }}>Aqrar investisiya xəritəsi</h2><Link className="btn btn--sm" to="/xerite-3d">3D görünüş</Link></div>
         <p className="muted" style={{ fontSize: 13.5, margin: "6px 0 18px" }}>Sahələrin sərhədləri ANAMA-nın rəsmi açıq məlumatlarındandır (opendata.az). Narıncı qat: Kənd Təsərrüfatı Nazirliyinin sifarişi ilə minadan təmizlənmiş bütün sahələr.</p>
         <PlotFilters value={filters} onChange={setFilters} />
         <div className="row row--between">

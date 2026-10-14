@@ -8,6 +8,7 @@ import type { User } from "./lib/types";
 const Landing = lazy(() => import("./pages/Landing"));
 const Home = lazy(() => import("./pages/Home"));
 const MapPage = lazy(() => import("./pages/MapPage"));
+const Map3D = lazy(() => import("./pages/Map3D"));
 const Catalog = lazy(() => import("./pages/Catalog"));
 const PlotDetail = lazy(() => import("./pages/PlotDetail"));
 const Compare = lazy(() => import("./pages/Compare"));
@@ -45,6 +46,7 @@ export function App() {
         <Route element={<Layout />}>
           <Route path="portal" element={<Home />} />
           <Route path="xerite" element={<MapPage />} />
+          <Route path="xerite-3d" element={<Map3D />} />
           <Route path="kataloq" element={<Catalog />} />
           <Route path="sahe/:id" element={<PlotDetail />} />
           <Route path="muqayise" element={<Compare />} />

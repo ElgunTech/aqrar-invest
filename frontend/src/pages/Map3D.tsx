@@ -1,0 +1,204 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import maplibregl, { type Map as MlMap } from "maplibre-gl";
+import "maplibre-gl/dist/maplibre-gl.css";
+import { ArrowRight, Pause, Play, RotateCw, X } from "lucide-react";
+import { MineTag } from "../components/ui";
+import { ACTIVITY } from "../lib/domain";
+import { date, money, num, pct } from "../lib/format";
+import { useApi, useDocumentTitle } from "../lib/hooks";
+import type { Plot } from "../lib/types";
+
+/**
+ * 3D investment map: real terrain (open AWS Terrain Tiles), satellite imagery, the official ANAMA layer and the
+ * competition plots extruded above the ground. Selecting a plot flies the camera there and slowly orbits it.
+ */
+const STYLE: maplibregl.StyleSpecification = {
+  version: 8,
+  sources: {
+    satellite: {
+      type: "raster", tileSize: 256, maxzoom: 18,
+      tiles: ["https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"],
+      attribution: "Esri World Imagery",
+    },
+    dem: {
+      type: "raster-dem", encoding: "terrarium", tileSize: 256, maxzoom: 14,
+      tiles: ["https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"],
+      attribution: "Terrain Tiles (AWS Open Data)",
+    },
+  },
+  layers: [{ id: "satellite", type: "raster", source: "satellite" }],
+  terrain: { source: "dem", exaggeration: 1.6 },
+  sky: { "sky-color": "#a9c8e8", "horizon-color": "#e8eef2", "sky-horizon-blend": 0.6, "horizon-fog-blend": 0.6, "fog-color": "#dfe7ec" },
+};
+
+function centroid(p: Plot): [number, number] {
+  return [p.longitude, p.latitude];
+}
+
+export default function Map3D() {
+  useDocumentTitle("3D xəritə");
+  const { data } = useApi<Plot[]>("/api/v1/public/plots");
+  const plots = useMemo(() => (data ?? []).filter((p) => p.boundaryGeoJson), [data]);
+  const container = useRef<HTMLDivElement>(null);
+  const map = useRef<MlMap | null>(null);
+  const orbit = useRef<number | null>(null);
+  const [selected, setSelected] = useState<Plot | null>(null);
+  const [orbiting, setOrbiting] = useState(true);
+
+  const stopOrbit = () => {
+    if (orbit.current) cancelAnimationFrame(orbit.current);
+    orbit.current = null;
+  };
+  const startOrbit = () => {
+    stopOrbit();
+    const step = () => {
+      const m = map.current;
+      if (!m) return;
+      m.setBearing((m.getBearing() + 0.08) % 360);
+      orbit.current = requestAnimationFrame(step);
+    };
+    orbit.current = requestAnimationFrame(step);
+  };
+
+  useEffect(() => {
+    if (!container.current || map.current) return;
+    const m = new maplibregl.Map({
+      container: container.current, style: STYLE, center: [46.95, 39.85], zoom: 8.6, pitch: 55, bearing: -15, maxPitch: 80,
+      attributionControl: { compact: true },
+      preserveDrawingBuffer: true, // lets the 3D view be printed or captured
+    });
+    m.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "top-right");
+    m.addControl(new maplibregl.TerrainControl({ source: "dem", exaggeration: 1.6 }), "top-right");
+    // user interaction pauses the camera tour
+    ["mousedown", "touchstart", "wheel"].forEach((ev) => m.on(ev as "mousedown", () => { stopOrbit(); setOrbiting(false); }));
+    map.current = m;
+    const resize = new ResizeObserver(() => m.resize());
+    resize.observe(container.current);
+    return () => {
+      resize.disconnect();
+      stopOrbit();
+      m.remove();
+      map.current = null;
+    };
+  }, []);
+
+  // data layers once both the style and the plots are ready
+  useEffect(() => {
+    const m = map.current;
+    if (!m || plots.length === 0) return;
+    const add = async () => {
+      if (m.getSource("plots")) return;
+      const anama = await (await fetch("/api/v1/public/official/anama")).json();
+      m.addSource("anama", { type: "geojson", data: anama });
+      m.addLayer({ id: "anama-fill", type: "fill", source: "anama", paint: { "fill-color": "#f59e0b", "fill-opacity": 0.28 } });
+      m.addLayer({ id: "anama-line", type: "line", source: "anama", paint: { "line-color": "#c2410c", "line-width": 0.8 } });
+
+      m.addSource("plots", {
+        type: "geojson",
+        data: {
+          type: "FeatureCollection",
+          features: plots.map((p) => ({
+            type: "Feature", id: p.id,
+            properties: { id: p.id, title: p.title, color: ACTIVITY[p.activityType.code].color },
+            geometry: JSON.parse(p.boundaryGeoJson!),
+          })),
+        },
+      });
+      m.addLayer({
+        id: "plots-3d", type: "fill-extrusion", source: "plots",
+        paint: {
+          "fill-extrusion-color": ["get", "color"],
+          "fill-extrusion-height": ["case", ["boolean", ["feature-state", "selected"], false], 140, 60],
+          "fill-extrusion-opacity": 0.85,
+        },
+      });
+      m.addLayer({ id: "plots-outline", type: "line", source: "plots", paint: { "line-color": "#ffffff", "line-width": 2 } });
+
+      m.on("click", "plots-3d", (e) => {
+        const id = e.features?.[0]?.properties?.id;
+        const p = plots.find((x) => x.id === Number(id));
+        if (p) select(p);
+      });
+      m.on("mouseenter", "plots-3d", () => (m.getCanvas().style.cursor = "pointer"));
+      m.on("mouseleave", "plots-3d", () => (m.getCanvas().style.cursor = ""));
+      startOrbit();
+    };
+    if (m.isStyleLoaded()) add();
+    else m.once("load", add);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [plots]);
+
+  const select = (p: Plot) => {
+    const m = map.current;
+    if (!m) return;
+    if (selected) m.setFeatureState({ source: "plots", id: selected.id }, { selected: false });
+    m.setFeatureState({ source: "plots", id: p.id }, { selected: true });
+    setSelected(p);
+    stopOrbit();
+    m.flyTo({ center: centroid(p), zoom: 13.6, pitch: 68, bearing: m.getBearing() + 40, duration: 3200, essential: true });
+    m.once("moveend", () => {
+      startOrbit();
+      setOrbiting(true);
+    });
+  };
+
+  const overview = () => {
+    const m = map.current;
+    if (!m) return;
+    if (selected) m.setFeatureState({ source: "plots", id: selected.id }, { selected: false });
+    setSelected(null);
+    m.flyTo({ center: [46.95, 39.85], zoom: 8.6, pitch: 55, bearing: -15, duration: 2500 });
+  };
+
+  const toggleOrbit = () => {
+    if (orbiting) { stopOrbit(); setOrbiting(false); } else { startOrbit(); setOrbiting(true); }
+  };
+
+  return (
+    <div className="map3d">
+      <aside className="map3d__list">
+        <h2 style={{ fontSize: 18 }}>3D investisiya xəritəsi</h2>
+        <p className="faint" style={{ fontSize: 12.5, margin: "4px 0 12px" }}>Relyef, peyk görüntüsü və ANAMA-nın rəsmi sərhədləri. Sahəni seçin, kamera ona uçacaq.</p>
+        {plots.map((p) => {
+          const a = ACTIVITY[p.activityType.code];
+          const Icon = a.icon;
+          return (
+            <button key={p.id} onClick={() => select(p)} aria-current={selected?.id === p.id}>
+              <span className="map3d__ico" style={{ background: a.tint, color: a.color }}><Icon size={16} /></span>
+              <span className="grow">
+                <b>{p.title}</b>
+                <span>{p.district} · {num(p.areaHa, 1)} ha</span>
+              </span>
+            </button>
+          );
+        })}
+      </aside>
+      <div className="map3d__stage">
+        <div ref={container} className="map3d__canvas" />
+        <div className="map3d__tools">
+          <button className="btn btn--sm btn--light" onClick={toggleOrbit}>{orbiting ? <><Pause size={14} /> Fırlanmanı dayandır</> : <><Play size={14} /> Fırlat</>}</button>
+          <button className="btn btn--sm btn--light" onClick={overview}><RotateCw size={14} /> Ümumi görünüş</button>
+          <Link className="btn btn--sm btn--light" to="/xerite">2D xəritə</Link>
+        </div>
+        {selected && (
+          <div className="map3d__card rise">
+            <button className="map3d__close" onClick={overview} aria-label="Bağla"><X size={16} /></button>
+            <div className="faint mono" style={{ fontSize: 12 }}>{selected.code} · ANAMA {selected.anamaRef}</div>
+            <h3 style={{ margin: "4px 0 8px", fontSize: 18 }}>{selected.title}</h3>
+            <div className="row" style={{ marginBottom: 10 }}><MineTag label={selected.mineClearance} /><span className="faint" style={{ fontSize: 12.5 }}>{date(selected.mineClearanceDate)}</span></div>
+            <dl className="kv" style={{ gridTemplateColumns: "1fr auto", fontSize: 13.5, gap: "4px 12px" }}>
+              <dt>Rayon, kənd</dt><dd>{selected.district}, {selected.village}</dd>
+              <dt>Ərazi</dt><dd>{num(selected.areaHa, 1)} ha</dd>
+              <dt>Təyinat</dt><dd>{selected.activityType.label}</dd>
+              <dt>Min. investisiya</dt><dd>{money(selected.minInvestment)}</dd>
+              {selected.aiTopCrop && <><dt>AI tövsiyəsi</dt><dd>{selected.aiTopCrop.name} ({pct(selected.aiTopCrop.probability)})</dd></>}
+              {selected.openCompetition && <><dt>Son müraciət</dt><dd>{date(selected.openCompetition.deadline)}</dd></>}
+            </dl>
+            <Link className="btn btn--block" style={{ marginTop: 14 }} to={`/sahe/${selected.id}`}>Ətraflı <ArrowRight size={16} /></Link>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

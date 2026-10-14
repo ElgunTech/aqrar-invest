@@ -9,6 +9,7 @@ import { dateTime, initials } from "../lib/format";
 
 const NAV = [
   { to: "/xerite", label: "Xəritə" },
+  { to: "/xerite-3d", label: "3D xəritə" },
   { to: "/kataloq", label: "Kataloq" },
   { to: "/musabiqeler", label: "Müsabiqələr" },
   { to: "/ai", label: "Məsləhətçi" },
