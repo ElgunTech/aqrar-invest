@@ -10,3 +10,6 @@ backend/uploads/
 .tools/
 .claude/
 *.log
+
+# rendered demo videos (large binaries)
+/video/
