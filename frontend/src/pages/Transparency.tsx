@@ -29,6 +29,16 @@ export default function Transparency() {
         <div className="wrap">
           <h1>Açıq statistika</h1>
           <p>Müsabiqələrin gedişi hər kəs üçün açıqdır. Şəxsi məlumatlar göstərilmir, rəqəmlər portalın məlumat bazasından canlı hesablanır.</p>
+          <div className="ocds-box">
+            <div>
+              <b>Açıq məlumat: Open Contracting Data Standard (OCDS 1.1)</b>
+              <span>Bütün elan edilmiş müsabiqələr, sahələr, iştirakçılar və qaliblər beynəlxalq standart formatda. Rəsmi OCDS JSON sxeminə uyğunluğu yoxlanılıb. Fiziki şəxslərin adları açıqlanmır.</span>
+            </div>
+            <div className="row">
+              <a className="btn btn--sm" href="/api/v1/public/open-data/ocds?download=true">JSON yüklə</a>
+              <a className="btn btn--sm btn--ghost" href="https://standard.open-contracting.org/latest/en/" target="_blank" rel="noreferrer">Standart haqqında</a>
+            </div>
+          </div>
         </div>
       </section>
       <div className="wrap page stack" style={{ ["--gap" as string]: "22px" }}>
