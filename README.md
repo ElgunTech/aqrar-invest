@@ -10,6 +10,12 @@ EKTİS-ə inteqrasiyaya hazır işlək prototip.
 | AI | scikit-learn RandomForest (Kaggle-da öyrədilib) → ONNX → Java-da ONNX Runtime |
 | API sənədləri | OpenAPI 3 / Swagger UI |
 
+## Sənədlər
+
+* [Arxitektura və ER diaqramı](docs/ARXITEKTURA.md)
+* [EKTİS və myGov inteqrasiyası, API nümunələri](docs/INTEQRASIYA.md)
+* [Texniki yol xəritəsi](docs/YOL-XERITESI.md)
+
 ## Demo hesablar
 
 Bütün demo hesabların şifrəsi: `Demo12345`
