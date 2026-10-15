@@ -77,6 +77,8 @@ export default function Map3D() {
       container: container.current, style: STYLE, center: [46.95, 39.85], zoom: 8.6, pitch: 55, bearing: -15, maxPitch: 80,
       attributionControl: { compact: true },
       canvasContextAttributes: { preserveDrawingBuffer: true }, // lets the 3D view be printed or captured
+      // on touch screens one finger scrolls the page and two fingers move the map
+      cooperativeGestures: window.matchMedia("(pointer: coarse)").matches,
     });
     m.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "top-right");
     m.addControl(new maplibregl.TerrainControl({ source: "dem", exaggeration: 1.6 }), "top-right");
@@ -159,6 +161,8 @@ export default function Map3D() {
     }
     setSelected(p);
     stopOrbit();
+    // phones: the list is under the map, so bring the map back into view
+    if (window.matchMedia("(max-width: 900px)").matches) container.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     m.flyTo({ center: centroid(p), zoom: 13.6, pitch: 68, bearing: m.getBearing() + 40, duration: 3200, essential: true });
     m.once("moveend", () => {
       startOrbit();
@@ -197,6 +201,7 @@ export default function Map3D() {
           );
         })}
       </aside>
+      <div className="map3d__main">
       <div className="map3d__stage">
         <div ref={container} className="map3d__canvas" />
         <div className="map3d__tools">
@@ -204,6 +209,7 @@ export default function Map3D() {
           <button className="btn btn--sm btn--light" onClick={overview}><RotateCw size={14} /> {t("Ümumi görünüş")}</button>
           <Link className="btn btn--sm btn--light" to="/xerite">{t("2D xəritə")}</Link>
         </div>
+      </div>
         {selected && (
           <div className="map3d__card rise">
             <button className="map3d__close" onClick={overview} aria-label={t("Bağla")}><X size={16} /></button>

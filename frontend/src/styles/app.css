@@ -668,23 +668,26 @@ h3 { font-size: 16px; font-weight: 500; letter-spacing: 0; }
 .map3d__list b { display: block; font-size: 13px; font-weight: 500; }
 .map3d__list span span { font-size: 12px; color: var(--ink-faint); }
 .map3d__ico { width: 30px; height: 30px; border-radius: 6px; display: grid; place-items: center; flex: none; }
-.map3d__stage { position: relative; }
+.map3d__main { position: relative; min-width: 0; }
+.map3d__stage { position: absolute; inset: 0; }
 .map3d__stage .map3d__canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 .map3d__tools { position: absolute; left: 14px; top: 14px; display: flex; gap: 8px; z-index: 2; }
 .map3d__card { position: absolute; left: 14px; bottom: 34px; width: min(340px, calc(100% - 28px)); background: #fff; border-radius: 8px; padding: 18px; box-shadow: 0 10px 30px rgb(0 0 0 / 0.3); z-index: 2; }
 .map3d__close { position: absolute; right: 10px; top: 10px; background: none; border: 0; cursor: pointer; color: var(--ink-faint); }
-@media (max-width: 900px) { .map3d { grid-template-columns: 1fr; height: auto; } .map3d__list { max-height: 220px; } .map3d__stage { height: 75vh; } }
-/* phones: the plot card is a compact bottom sheet so the map stays visible above it */
+/* tablets and phones: map, then the selected plot, then the list, one after another so the page scrolls normally */
+@media (max-width: 900px) {
+  .map3d { display: flex; flex-direction: column; height: auto; min-height: 0; }
+  .map3d__main { order: 1; }
+  .map3d__list { order: 2; max-height: none; overflow: visible; border-right: 0; border-top: 1px solid var(--line); }
+  .map3d__stage { position: relative; inset: auto; height: 55vh; min-height: 320px; }
+  .map3d__card { position: relative; left: auto; bottom: auto; width: auto; margin: 0; border-radius: 0; box-shadow: none; border-bottom: 1px solid var(--line); }
+}
+/* phones: compact tools and a two-column plot card */
 @media (max-width: 640px) {
-  .map3d__stage { height: 70vh; min-height: 420px; }
   .map3d__tools { left: 8px; top: 8px; gap: 6px; }
   .map3d__tools .btn { height: 30px; padding: 0 9px; font-size: 12px; }
-  .map3d__card { left: 8px; right: 8px; bottom: 30px; width: auto; max-height: 45%; overflow: auto; padding: 12px 14px; border-radius: 10px; }
-  .map3d__card h3 { font-size: 15px !important; margin: 2px 28px 6px 0 !important; }
-  .map3d__card .kv { grid-template-columns: auto 1fr auto 1fr !important; font-size: 12px !important; gap: 2px 8px !important; }
-  .map3d__card .kv dd { text-align: left; }
-  .map3d__card .btn--block { margin-top: 10px !important; height: 36px; }
-  .map3d__card .map3d__meta { display: none; }
+  .map3d__card { padding: 14px 16px; }
+  .map3d__card .kv { grid-template-columns: auto 1fr auto 1fr !important; font-size: 12.5px !important; gap: 4px 10px !important; }
 }
 
 /* phones: grid children may shrink below their content width; long rows wrap instead of widening the page */
