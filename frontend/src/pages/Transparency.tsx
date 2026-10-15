@@ -2,6 +2,7 @@ import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer,
 import { Loading } from "../components/ui";
 import { money, num } from "../lib/format";
 import { useApi, useDocumentTitle } from "../lib/hooks";
+import { OFFICIAL } from "../lib/officialStats";
 import type { PublicStats } from "../lib/types";
 
 export const CHART = ["#1d5c43", "#d9a23a", "#255e9c", "#8a5530", "#6e3b8e", "#1f7a8c", "#9aa69f"];
@@ -42,6 +43,8 @@ export default function Transparency() {
         </div>
       </section>
       <div className="wrap page stack" style={{ ["--gap" as string]: "22px" }}>
+        <OfficialResults />
+        <h2 style={{ fontSize: 20, margin: "8px 0 0" }}>Portaldakı müsabiqələr (canlı)</h2>
         <div className="grid grid--4">
           {metrics.map(([l, v, h]) => (
             <div key={l} className="panel metric"><div className="metric__label">{l}</div><div className="metric__value">{v}</div><div className="metric__hint">{h}</div></div>
@@ -111,5 +114,40 @@ export default function Transparency() {
         </div>
       </div>
     </>
+  );
+}
+
+/** The real competitions so far, from the Ministry's figures: what the portal is built to scale up. */
+function OfficialResults() {
+  const leasedShare = Math.round((OFFICIAL.leasedHa / OFFICIAL.offeredHa) * 100);
+  const cards = [
+    ["Təklif olunan torpaq", `${num(OFFICIAL.offeredHa)} ha`, `${OFFICIAL.districts} rayonda`],
+    ["Müsabiqələr və iştirakçılar", num(OFFICIAL.participants), `${OFFICIAL.competitions} müsabiqədə iştirakçı`],
+    ["Qaliblər", num(OFFICIAL.winners), `${OFFICIAL.contracts} icarə müqaviləsi imzalanıb (I–II müsabiqə)`],
+    ["İcarəyə verilib", `${num(OFFICIAL.leasedHa)} ha`, `təklif olunanın ${leasedShare}%-i`],
+  ];
+  return (
+    <section className="panel">
+      <div className="panel__head"><h3>Rəsmi nəticələr: azad olunmuş ərazilərdə keçirilmiş müsabiqələr</h3></div>
+      <div className="panel__body stack" style={{ ["--gap" as string]: "18px" }}>
+        <div className="grid grid--4">
+          {cards.map(([l, v, h]) => (
+            <div key={l} className="metric"><div className="metric__label">{l}</div><div className="metric__value">{v}</div><div className="metric__hint">{h}</div></div>
+          ))}
+        </div>
+        <div style={{ height: 320 }}>
+          <ResponsiveContainer>
+            <BarChart data={OFFICIAL.byDistrict} layout="vertical" margin={{ left: 20 }}>
+              <CartesianGrid horizontal={false} stroke="#e5ebe7" />
+              <XAxis type="number" tickLine={false} axisLine={false} fontSize={12} tickFormatter={(v) => num(v)} />
+              <YAxis type="category" dataKey="name" tickLine={false} axisLine={false} fontSize={12} width={80} />
+              <Tooltip formatter={(v: number, n: string) => (n === "ha" ? `${num(v)} ha` : money(v))} />
+              <Bar dataKey="ha" name="İcarəyə verilən ərazi, ha" fill="#1d5c43" radius={[0, 6, 6, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+        <p className="hint" style={{ margin: 0 }}>Mənbə: {OFFICIAL.source}. Ən böyük minimum investisiya öhdəliyi: Xocavənd ({money(80158892)}) və Qubadlı ({money(69574110)}).</p>
+      </div>
+    </section>
   );
 }
