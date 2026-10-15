@@ -67,28 +67,29 @@ interface MeasuredInputs {
 
 /** Model inputs with their origin: ERA5 and SoilGrids measurements where available, illustrative values otherwise. */
 function ModelInputs({ plot }: { plot: Plot }) {
+  const { t } = useT();
   const { data, error } = useApi<MeasuredInputs>(`/api/v1/public/plots/${plot.id}/measured-inputs`);
   if (!data) {
-    return error ? <p className="faint" style={{ fontSize: 12.5 }}>Real ölçü mənbələri hazırda cavab vermir.</p> : <Loading />;
+    return error ? <p className="faint" style={{ fontSize: 12.5 }}>{t("Real ölçü mənbələri hazırda cavab vermir.")}</p> : <Loading />;
   }
   const top = data.recommendation.recommendations.slice(0, 3);
   return (
     <div>
-      <h4 style={{ marginBottom: 8 }}>Modelin giriş göstəriciləri</h4>
+      <h4 style={{ marginBottom: 8 }}>{t("Modelin giriş göstəriciləri")}</h4>
       <table className="table table--kv table--compact">
         <tbody>
           {data.inputs.map((i) => (
-            <tr key={i.key} title={i.source}>
-              <td>{i.label} <Tag tone={i.measured ? "ok" : "muted"}>{i.measured ? "ölçü" : "illüstrativ"}</Tag></td>
-              <td className="num">{num(i.value, i.key === "ph" || i.key === "temperature" ? 1 : i.key === "soilN" ? 2 : 0)}{i.unit ? ` ${i.unit}` : ""}</td>
+            <tr key={i.key} title={t(i.source)}>
+              <td>{t(i.label)} <Tag tone={i.measured ? "ok" : "muted"}>{t(i.measured ? "ölçü" : "illüstrativ")}</Tag></td>
+              <td className="num">{num(i.value, i.key === "ph" || i.key === "temperature" ? 1 : i.key === "soilN" ? 2 : 0)}{i.unit ? ` ${t(i.unit)}` : ""}</td>
             </tr>
           ))}
         </tbody>
       </table>
-      <p className="faint" style={{ fontSize: 12, marginTop: 8 }}>{data.note} Mənbəni görmək üçün sətrin üzərinə gəlin.</p>
+      <p className="faint" style={{ fontSize: 12, marginTop: 8 }}>{t("Model 7 göstəricidən {n}-ni real ölçü ilə alır.", { n: data.measuredCount })} {t("N, P və K üçün açıq xəritə yoxdur: sahədə torpaq analizi aparılmalıdır.")} {t("Mənbəni görmək üçün sətrin üzərinə gəlin.")}</p>
       {top.length > 0 && (
         <p style={{ fontSize: 13, marginTop: 8 }}>
-          <b>Real ölçülərlə model nəticəsi:</b> {top.map((c) => `${c.name} (${fit(c.probability)})`).join(", ")}
+          <b>{t("Real ölçülərlə model nəticəsi:")}</b> {top.map((c) => `${t(c.name)} (${t(fit(c.probability))})`).join(", ")}
         </p>
       )}
     </div>
