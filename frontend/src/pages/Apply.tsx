@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft, ArrowRight, Building2, CheckCircle2, CircleAlert, DatabaseZap, FileText, PartyPopper, Send, Upload, User as UserIcon,
+  Globe2,
 } from "lucide-react";
 import { Callout, Empty, Loading, MineTag, Tag, useToast } from "../components/ui";
 import { api, ApiError } from "../lib/api";
@@ -10,8 +11,17 @@ import { countdown, date, fileSize, money, num, fit } from "../lib/format";
 import { useApi, useDocumentTitle, useMeta } from "../lib/hooks";
 import type { Competition, CropRecommendation, Plot } from "../lib/types";
 
+type ApplicantKind = "INDIVIDUAL" | "COMPANY" | "FOREIGN";
+/** Identifier rule per applicant type: FİN, VÖEN or passport number. */
+const ID_RULE: Record<ApplicantKind, { re: RegExp; label: string; hint: string; error: string; max: number }> = {
+  INDIVIDUAL: { re: /^[A-Za-z0-9]{7}$/, label: "FİN kod", hint: "7 simvol", error: "FİN 7 simvoldan ibarət olmalıdır", max: 7 },
+  COMPANY: { re: /^\d{10}$/, label: "VÖEN", hint: "10 rəqəm", error: "VÖEN 10 rəqəmdən ibarət olmalıdır", max: 10 },
+  FOREIGN: { re: /^[A-Za-z0-9]{6,12}$/, label: "Pasport nömrəsi", hint: "6–12 hərf və rəqəm", error: "Pasport nömrəsi 6–12 hərf və rəqəmdən ibarət olmalıdır", max: 12 },
+};
+
 interface Form {
-  applicantType: "INDIVIDUAL" | "COMPANY";
+  applicantType: ApplicantKind;
+  citizenship: string;
   applicantName: string;
   taxId: string;
   phone: string;
@@ -53,7 +63,7 @@ export default function Apply() {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<Form>(() => {
     const base: Form = {
-      applicantType: "INDIVIDUAL", applicantName: user?.fullName ?? "", taxId: user?.taxId ?? "", phone: user?.phone ?? "", email: user?.email ?? "", address: "",
+      applicantType: "INDIVIDUAL", citizenship: "", applicantName: user?.fullName ?? "", taxId: user?.taxId ?? "", phone: user?.phone ?? "", email: user?.email ?? "", address: "",
       activityType: "", plannedCrop: "", plannedInvestment: "", ownFundsPercent: "30", jobsCreated: "", returneeJobs: "", projectMonths: "36", experienceYears: "", businessPlan: "",
     };
     try {
@@ -92,7 +102,8 @@ export default function Apply() {
     const e: Record<string, string> = {};
     if (s === 1) {
       if (!form.applicantName.trim()) e.applicantName = "Ad tələb olunur";
-      if (!/^([A-Za-z0-9]{7}|\d{10})$/.test(form.taxId.trim())) e.taxId = "FİN 7 simvol, VÖEN 10 rəqəm olmalıdır";
+      if (!ID_RULE[form.applicantType].re.test(form.taxId.trim())) e.taxId = ID_RULE[form.applicantType].error;
+      if (form.applicantType === "FOREIGN" && !form.citizenship.trim()) e.citizenship = "Vətəndaşlığı göstərin";
       if (!/^[+0-9 ()-]{9,20}$/.test(form.phone.trim())) e.phone = "Telefon nömrəsi yanlışdır";
       if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) e.email = "E-poçt yanlışdır";
     }
@@ -138,6 +149,7 @@ export default function Apply() {
     try {
       const data = {
         competitionId: comp.id, plotId: plot.id, applicantType: form.applicantType, applicantName: form.applicantName.trim(), taxId: form.taxId.trim(),
+        citizenship: form.applicantType === "FOREIGN" ? form.citizenship.trim() : null,
         phone: form.phone.trim(), email: form.email.trim(), address: form.address.trim(), activityType: form.activityType, plannedCrop: form.plannedCrop || null,
         plannedInvestment: Number(form.plannedInvestment), ownFundsPercent: Number(form.ownFundsPercent), jobsCreated: Number(form.jobsCreated), returneeJobs: Number(form.returneeJobs || 0),
         projectMonths: Number(form.projectMonths), experienceYears: Number(form.experienceYears), businessPlan: form.businessPlan.trim(),
@@ -254,18 +266,25 @@ export default function Apply() {
               <div className="rise">
                 <h2 style={{ fontSize: 22, marginBottom: 16 }}>Müraciətçi haqqında</h2>
                 <div className="segmented" role="group" aria-label="Müraciətçinin növü" style={{ marginBottom: 18 }}>
-                  <button type="button" aria-pressed={form.applicantType === "INDIVIDUAL"} onClick={() => setForm({ ...form, applicantType: "INDIVIDUAL" })}><UserIcon size={14} style={{ verticalAlign: -2 }} /> Fiziki şəxs / FS</button>
+                  <button type="button" aria-pressed={form.applicantType === "INDIVIDUAL"} onClick={() => setForm({ ...form, applicantType: "INDIVIDUAL" })}><UserIcon size={14} style={{ verticalAlign: -2 }} /> Fiziki şəxs</button>
                   <button type="button" aria-pressed={form.applicantType === "COMPANY"} onClick={() => setForm({ ...form, applicantType: "COMPANY" })}><Building2 size={14} style={{ verticalAlign: -2 }} /> Hüquqi şəxs</button>
+                  <button type="button" aria-pressed={form.applicantType === "FOREIGN"} onClick={() => setForm({ ...form, applicantType: "FOREIGN" })}><Globe2 size={14} style={{ verticalAlign: -2 }} /> Xarici vətəndaş</button>
                 </div>
                 <div className={cls("taxId")}>
-                  <label htmlFor="tax">{form.applicantType === "COMPANY" ? "VÖEN" : "FİN kod"}</label>
+                  <label htmlFor="tax">{ID_RULE[form.applicantType].label}</label>
                   <div className="row" style={{ flexWrap: "nowrap" }}>
-                    <input id="tax" className="input mono" value={form.taxId} onChange={set("taxId")} maxLength={10} placeholder={form.applicantType === "COMPANY" ? "10 rəqəm" : "7 simvol"} style={{ textTransform: "uppercase" }} />
-                    <button type="button" className="btn btn--ghost" onClick={lookupRegistry} disabled={!/^([A-Za-z0-9]{7}|\d{10})$/.test(form.taxId.trim())}><DatabaseZap size={16} /> EKTİS-dən doldur</button>
+                    <input id="tax" className="input mono" value={form.taxId} onChange={set("taxId")} maxLength={ID_RULE[form.applicantType].max} placeholder={ID_RULE[form.applicantType].hint} style={{ textTransform: "uppercase" }} />
+                    <button type="button" className="btn btn--ghost" onClick={lookupRegistry} hidden={form.applicantType === "FOREIGN"} disabled={!ID_RULE[form.applicantType].re.test(form.taxId.trim())}><DatabaseZap size={16} /> EKTİS-dən doldur</button>
                   </div>
                   {err("taxId")}
                   {registry && <span className="hint" style={{ color: "var(--info)" }}>{registry}</span>}
                 </div>
+                {form.applicantType === "FOREIGN" && (
+                  <div className={cls("citizenship")}>
+                    <label htmlFor="cit">Vətəndaşlıq</label>
+                    <input id="cit" className="input" value={form.citizenship} onChange={set("citizenship")} maxLength={60} placeholder="məs. Türkiyə" />{err("citizenship")}
+                  </div>
+                )}
                 <div className={cls("applicantName")}>
                   <label htmlFor="name">{form.applicantType === "COMPANY" ? "Şirkətin adı" : "Ad, soyad, ata adı"}</label>
                   <input id="name" className="input" value={form.applicantName} onChange={set("applicantName")} />{err("applicantName")}
@@ -377,7 +396,7 @@ export default function Apply() {
               <ul className="checklist">
                 {[
                   ["Sahə və fəaliyyət seçilib", !!form.activityType],
-                  ["FİN / VÖEN düzgündür", /^([A-Za-z0-9]{7}|\d{10})$/.test(form.taxId.trim())],
+                  [ID_RULE[form.applicantType].label + " düzgündür", ID_RULE[form.applicantType].re.test(form.taxId.trim())],
                   ["Əlaqə məlumatları", !!form.phone && !!form.email],
                   [`İnvestisiya ≥ ${money(plot.minInvestment)}`, Number(form.plannedInvestment) >= plot.minInvestment],
                   ["Biznes plan (100+ simvol)", form.businessPlan.trim().length >= 100],

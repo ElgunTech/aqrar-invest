@@ -84,6 +84,7 @@ public class ApplicationService {
         List<String> missing = new ArrayList<>();
         if (!present.contains(DocumentType.BUSINESS_PLAN)) missing.add(DocumentType.BUSINESS_PLAN.getLabel());
         if (!present.contains(DocumentType.ID_DOCUMENT)) missing.add(DocumentType.ID_DOCUMENT.getLabel());
+        validateIdentity(r);
         if (r.applicantType() == ApplicantType.COMPANY && !present.contains(DocumentType.REGISTRATION_CERT)) {
             missing.add(DocumentType.REGISTRATION_CERT.getLabel());
         }
@@ -96,6 +97,7 @@ public class ApplicationService {
         a.setApplicantType(r.applicantType());
         a.setApplicantName(r.applicantName().trim());
         a.setTaxId(r.taxId().trim().toUpperCase(Locale.ROOT));
+        a.setCitizenship(r.applicantType() == ApplicantType.FOREIGN ? r.citizenship().trim() : null);
         a.setPhone(r.phone());
         a.setEmail(r.email());
         a.setAddress(r.address());
@@ -178,6 +180,19 @@ public class ApplicationService {
                         || a.getPlot().getCode().toLowerCase(Locale.ROOT).contains(needle))
                 .map(this::toListItem)
                 .toList();
+    }
+
+    /** FİN for citizens, VÖEN for companies, passport number + citizenship for foreign citizens. */
+    static void validateIdentity(ApplicationRequest r) {
+        String id = r.taxId().trim();
+        switch (r.applicantType()) {
+            case INDIVIDUAL -> { if (!id.matches("[A-Za-z0-9]{7}")) throw ApiException.badRequest("FİN 7 simvoldan ibarət olmalıdır"); }
+            case COMPANY -> { if (!id.matches("\\d{10}")) throw ApiException.badRequest("VÖEN 10 rəqəmdən ibarət olmalıdır"); }
+            case FOREIGN -> {
+                if (!id.matches("[A-Za-z0-9]{6,12}")) throw ApiException.badRequest("Pasport nömrəsi 6–12 hərf və rəqəmdən ibarət olmalıdır");
+                if (r.citizenship() == null || r.citizenship().isBlank()) throw ApiException.badRequest("Vətəndaşlığı göstərin");
+            }
+        }
     }
 
     @Transactional

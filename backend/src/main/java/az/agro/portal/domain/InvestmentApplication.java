@@ -52,6 +52,10 @@ public class InvestmentApplication {
     @Column(length = 1200)
     private String address;
 
+    /** Foreign citizens: country of citizenship (the identifier in taxId is then a passport number). */
+    @Column(length = 60)
+    private String citizenship;
+
     // --- Investment & business plan ---
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
@@ -136,6 +140,8 @@ public class InvestmentApplication {
     public void setEmail(String email) { this.email = email; }
     public String getAddress() { return address; }
     public void setAddress(String address) { this.address = address; }
+    public String getCitizenship() { return citizenship; }
+    public void setCitizenship(String citizenship) { this.citizenship = citizenship; }
     public ActivityType getActivityType() { return activityType; }
     public void setActivityType(ActivityType activityType) { this.activityType = activityType; }
     public String getPlannedCrop() { return plannedCrop; }

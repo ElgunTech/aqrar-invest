@@ -19,7 +19,10 @@ public final class ApplicationDtos {
             @NotNull Long plotId,
             @NotNull ApplicantType applicantType,
             @NotBlank @Size(max = 200) String applicantName,
-            @NotBlank @Pattern(regexp = "^([A-Za-z0-9]{7}|\\d{10})$", message = "FİN 7 simvol, VÖEN 10 rəqəm olmalıdır") String taxId,
+            /** FİN (7), VÖEN (10 digits) or, for a foreign citizen, the passport number; checked per type in the service. */
+            @NotBlank @Pattern(regexp = "^[A-Za-z0-9]{6,12}$", message = "Şəxsiyyət nömrəsi 6–12 hərf və rəqəmdən ibarət olmalıdır") String taxId,
+            /** Foreign citizens only. */
+            @Size(max = 60) String citizenship,
             @NotBlank @Pattern(regexp = "^[+0-9 ()-]{9,20}$", message = "Telefon nömrəsi yanlışdır") String phone,
             @NotBlank @Email @Size(max = 120) String email,
             @Size(max = 300) String address,

@@ -142,7 +142,11 @@ public class OcdsService {
 
     /** Legal entities are identified by name; natural persons stay anonymous in open data. */
     private static String publicName(InvestmentApplication a) {
-        return a.getApplicantType() == ApplicantType.COMPANY ? a.getApplicantName() : "Fiziki şəxs (" + a.getApplicationNumber() + ")";
+        return switch (a.getApplicantType()) {
+            case COMPANY -> a.getApplicantName();
+            case FOREIGN -> "Xarici vətəndaş (" + a.getApplicationNumber() + ")";
+            case INDIVIDUAL -> "Fiziki şəxs (" + a.getApplicationNumber() + ")";
+        };
     }
 
     private static String partyId(InvestmentApplication a) {

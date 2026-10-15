@@ -1,8 +1,12 @@
 package az.agro.portal.domain;
 
 public enum ApplicantType {
-    INDIVIDUAL("Fiziki şəxs / fərdi sahibkar"),
-    COMPANY("Hüquqi şəxs (şirkət)");
+    /** Citizen of Azerbaijan (incl. sole proprietors, local residents): identified by FİN. */
+    INDIVIDUAL("Fiziki şəxs"),
+    /** Registered company: identified by VÖEN. */
+    COMPANY("Hüquqi şəxs"),
+    /** Foreign citizen or foreign investor: identified by passport number and citizenship. */
+    FOREIGN("Xarici vətəndaş");
 
     private final String label;
 
