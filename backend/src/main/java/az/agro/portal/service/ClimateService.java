@@ -34,10 +34,29 @@ public class ClimateService {
     private static final Logger log = LoggerFactory.getLogger(ClimateService.class);
     private static final int FROM = 2015, TO = 2024;
 
-    /** winterKill °C (perennials only, null = annual), late-frost sensitive, heat limit °C, seasonal water need mm. */
-    record Limits(Double winterKill, boolean lateFrost, double heat, double water) {}
+    /**
+     * winterKill °C (crops that stand in the field over winter, null = spring-sown), late-frost sensitive, heat limit °C,
+     * seasonal water need mm, and whether the crop grows October–June (winter cereals) instead of April–September.
+     */
+    record Limits(Double winterKill, boolean lateFrost, double heat, double water, boolean winterSeason) {
+        Limits(Double winterKill, boolean lateFrost, double heat, double water) {
+            this(winterKill, lateFrost, heat, water, false);
+        }
+    }
+
+    /**
+     * The main crops of the region that the ML demonstration model does not know (it was trained without them).
+     * They are always assessed with these agroclimatic rules, so the plot page covers what farmers here actually grow.
+     */
+    static final Map<String, String> REGIONAL = new java.util.LinkedHashMap<>(Map.of(
+            "wheat", "Payızlıq buğda", "barley", "Payızlıq arpa", "hazelnut", "Fındıq"));
 
     static final Map<String, Limits> LIMITS = Map.ofEntries(
+            // winter cereals: hardened under snow cover they survive about -18 (barley) to -22 °C (wheat); grain filling suffers above ~35 °C, water from autumn-spring rain
+            Map.entry("wheat", new Limits(-22.0, false, 35, 450, true)),
+            Map.entry("barley", new Limits(-18.0, false, 35, 400, true)),
+            // hazelnut flowers in late winter, so late frost matters; needs moist summers or irrigation
+            Map.entry("hazelnut", new Limits(-25.0, true, 35, 800)),
             Map.entry("apple", new Limits(-30.0, true, 35, 700)),
             Map.entry("grapes", new Limits(-20.0, true, 40, 600)),
             Map.entry("pomegranate", new Limits(-12.0, true, 42, 650)),
@@ -93,6 +112,7 @@ public class ClimateService {
         CropRecommendation rec = plotService.recommendation(plotId);
         List<String> codes = new ArrayList<>();
         rec.recommendations().stream().limit(3).forEach(s -> codes.add(s.code()));
+        REGIONAL.keySet().forEach(code -> { if (!codes.contains(code)) codes.add(code); });
         List<CropRisk> crops = codes.stream().filter(LIMITS::containsKey)
                 .map(code -> cropRisk(code, days, tmax, tmin, pr, ind, p.isIrrigationAvailable())).toList();
 
@@ -146,17 +166,24 @@ public class ClimateService {
             risks.add(new Risk("Gec yaz şaxtası", level, "10 ilin " + y + "-də aprel–may ortasında şaxta olub (çiçəkləmə və cücərmə dövrü)"));
         }
         int hot = 0;
-        for (int i = 0; i < tmax.length; i++) if (!Double.isNaN(tmax[i]) && tmax[i] >= l.heat()) hot++;
+        double winterRain = 0;
+        for (int i = 0; i < tmax.length; i++) {
+            int m = days.get(i).getMonthValue();
+            boolean heatWindow = !l.winterSeason() || m == 5 || m == 6;
+            if (heatWindow && !Double.isNaN(tmax[i]) && tmax[i] >= l.heat()) hot++;
+            if ((m >= 10 || m <= 6) && !Double.isNaN(pr[i])) winterRain += pr[i];
+        }
+        double seasonRain = l.winterSeason() ? winterRain / years : ind.seasonPrecip();
         double hotPerYear = hot / (double) years;
         risks.add(new Risk("İstilik stresi", hotPerYear > 10 ? "HIGH" : hotPerYear > 3 ? "MEDIUM" : "LOW",
-                "İldə orta hesabla " + fmt(hotPerYear) + " gün " + fmt(l.heat()) + "°C-dən isti"));
-        double need = Math.max(0, l.water() - 0.8 * ind.seasonPrecip());
+                "İldə orta hesabla " + fmt(hotPerYear) + " gün " + fmt(l.heat()) + "°C-dən isti" + (l.winterSeason() ? " (may–iyun, dən dolma dövrü)" : "")));
+        double need = Math.max(0, l.water() - 0.8 * seasonRain);
         String wl = need <= 150 ? "LOW" : irrigation ? "MEDIUM" : "HIGH";
-        risks.add(new Risk("Su ehtiyacı", wl, "Mövsümdə " + fmt(l.water()) + " mm lazımdır, yağış " + fmt(ind.seasonPrecip())
+        risks.add(new Risk("Su ehtiyacı", wl, "Mövsümdə" + (l.winterSeason() ? " (oktyabr–iyun) " : " ") + fmt(l.water()) + " mm lazımdır, yağış " + fmt(Math.round(seasonRain))
                 + " mm verir: suvarma " + Math.round(need) + " mm" + (irrigation ? " (sahədə suvarma sistemi var)" : " (sahədə suvarma sistemi yoxdur)")));
         String overall = risks.stream().anyMatch(r -> r.level().equals("HIGH")) ? "HIGH"
                 : risks.stream().filter(r -> r.level().equals("MEDIUM")).count() >= 2 ? "MEDIUM" : "LOW";
-        return new CropRisk(code, CropCatalog.nameAz(code), overall, Math.round(need), risks);
+        return new CropRisk(code, REGIONAL.getOrDefault(code, CropCatalog.nameAz(code)), overall, Math.round(need), risks);
     }
 
     static List<Month> months(List<LocalDate> days, double[] tmax, double[] tmin, double[] pr) {

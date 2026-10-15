@@ -49,4 +49,17 @@ class ClimateRiskTest {
         assertThat(risk.risks()).noneMatch(r -> r.factor().contains("şaxta"));
         assertThat(risk.overall()).isNotEqualTo("HIGH");
     }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void wheatSurvivesMinus15AndUsesWinterRain() {
+        Object[] s = series(true);
+        var days = (List<LocalDate>) s[0];
+        var ind = ClimateService.indicators(days, (double[]) s[1], (double[]) s[2], (double[]) s[3]);
+        var risk = ClimateService.cropRisk("wheat", days, (double[]) s[1], (double[]) s[2], (double[]) s[3], ind, false);
+        assertThat(risk.name()).isEqualTo("Payızlıq buğda");
+        assertThat(risk.risks().get(0).level()).isEqualTo("LOW"); // -15 is well above hardened wheat at -22
+        assertThat(risk.risks()).noneMatch(r -> r.factor().equals("Gec yaz şaxtası"));
+        assertThat(risk.risks()).anyMatch(r -> r.note().contains("oktyabr–iyun"));
+    }
 }
