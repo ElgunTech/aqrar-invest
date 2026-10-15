@@ -1,7 +1,8 @@
 import { useT } from "../lib/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import maplibregl, { type Map as MlMap } from "maplibre-gl";
+import * as maplibregl from "maplibre-gl";
+import type { Map as MlMap } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { ArrowRight, Pause, Play, RotateCw, X } from "lucide-react";
 import { MineTag } from "../components/ui";
@@ -71,7 +72,7 @@ export default function Map3D() {
     const m = new maplibregl.Map({
       container: container.current, style: STYLE, center: [46.95, 39.85], zoom: 8.6, pitch: 55, bearing: -15, maxPitch: 80,
       attributionControl: { compact: true },
-      preserveDrawingBuffer: true, // lets the 3D view be printed or captured
+      canvasContextAttributes: { preserveDrawingBuffer: true }, // lets the 3D view be printed or captured
     });
     m.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "top-right");
     m.addControl(new maplibregl.TerrainControl({ source: "dem", exaggeration: 1.6 }), "top-right");
