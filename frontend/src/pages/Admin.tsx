@@ -12,7 +12,7 @@ import { IntegrityPanel, Light, MilestoneList, NextDue } from "../components/Mon
 import { Callout, Drawer, Empty, Loading, MineTag, Tag, useToast } from "../components/ui";
 import { api, ApiError, qs } from "../lib/api";
 import { useAuth } from "../lib/auth";
-import { date, dateTime, money, num, pct, pct1 } from "../lib/format";
+import { date, dateTime, money, num, pct1, fit } from "../lib/format";
 import { useApi, useDebounced, useDocumentTitle, useMeta } from "../lib/hooks";
 import type {
   Application, ApplicationListItem, AuditEntry, Competition, Dashboard, IntegrationEvent, ModelInfo, Plot, Project,
@@ -98,6 +98,8 @@ function ApplicationDrawer({ id, onClose, onChanged }: { id: number; onClose: ()
   const { data: app, reload, setData } = useApi<Application>(`/api/v1/admin/applications/${id}`);
   const { user: me } = useAuth();
   const [ledgerKey, setLedgerKey] = useState(0);
+  // the tamper simulation exists only when the deployment enables it for a demonstration (DEMO_TAMPER=true)
+  const tamperDemo = useApi<{ tamperDemo?: boolean }>("/api/v1/public/status").data?.tamperDemo === true;
   const [status, setStatus] = useState("");
   const [comment, setComment] = useState("");
   const [busy, setBusy] = useState(false);
@@ -160,10 +162,10 @@ function ApplicationDrawer({ id, onClose, onChanged }: { id: number; onClose: ()
           <section className="panel">
             <div className="panel__head">
               <h3>Qərar jurnalı (hash zənciri)</h3>
-              {me?.role === "ADMIN" && (
+              {me?.role === "ADMIN" && tamperDemo && (
                 <button className="btn btn--sm btn--ghost" title="Demo: verilənlər bazasında tarixçəni jurnaldan yan keçərək birbaşa dəyişir; təkrar basanda bərpa edir"
                   onClick={async () => { const r = await api<{ tampered: boolean }>(`/api/v1/admin/ledger/tamper/${app.applicationNumber}`, { method: "POST" }); toast(r.tampered ? "Bazada qeyd birbaşa dəyişdirildi (demo)" : "Qeyd bərpa edildi", r.tampered); setLedgerKey((k) => k + 1); reload(); }}>
-                  Saxtakarlığı simulyasiya et
+                  <span className="demo-tag">DEMO</span> Saxtakarlığı simulyasiya et
                 </button>
               )}
             </div>
@@ -361,7 +363,7 @@ function Plots({ isAdmin }: { isAdmin: boolean }) {
                   <td className="num">{num(p.areaHa, 1)} ha</td>
                   <td><MineTag label={p.mineClearance} /></td>
                   <td><Tag label={p.status} /></td>
-                  <td style={{ fontSize: 13 }}>{p.aiTopCrop ? `${p.aiTopCrop.name} ${pct(p.aiTopCrop.probability)}` : "yoxdur"}</td>
+                  <td style={{ fontSize: 13 }}>{p.aiTopCrop ? `${p.aiTopCrop.name} · ${fit(p.aiTopCrop.probability)}` : "yoxdur"}</td>
                   <td className="num">{p.applicationCount}</td>
                   <td className="num" style={{ whiteSpace: "nowrap" }}>
                     <button className="btn btn--sm btn--quiet" onClick={() => setEdit(p)} aria-label="Redaktə"><Pencil size={14} /></button>

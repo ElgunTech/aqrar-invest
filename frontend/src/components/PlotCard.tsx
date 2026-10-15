@@ -2,7 +2,7 @@ import { useT } from "../lib/i18n";
 import { Link } from "react-router-dom";
 import type { Plot } from "../lib/types";
 import { ACTIVITY } from "../lib/domain";
-import { date, num, pct } from "../lib/format";
+import { date, num, fit } from "../lib/format";
 
 export function PlotCard({ plot: p, compare }: { plot: Plot; compare?: { checked: boolean; onToggle: () => void } }) {
   const { t } = useT();
@@ -26,7 +26,7 @@ export function PlotCard({ plot: p, compare }: { plot: Plot; compare?: { checked
         </dl>
         <div className="stack" style={{ ["--gap" as string]: "4px", fontSize: 13.5 }}>
           <span className={`plot__mine plot__mine--${p.mineClearance.code}`}>{t(p.mineClearance.label)}</span>
-          {p.aiTopCrop && <span className="ai-line">{t("Torpağa ən uyğun bitki:")} <b>{t(p.aiTopCrop.name)}</b> ({pct(p.aiTopCrop.probability)})</span>}
+          {p.aiTopCrop && <span className="ai-line">{t("Torpağa ən uyğun bitki:")} <b>{t(p.aiTopCrop.name)}</b> ({t(fit(p.aiTopCrop.probability))})</span>}
         </div>
         <div className="plot__foot">
           <span style={{ fontSize: 13 }} className={p.openCompetition ? "" : "faint"}>

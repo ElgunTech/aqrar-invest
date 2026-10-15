@@ -25,12 +25,18 @@ public class AppUser {
     @Column(nullable = false, length = 20)
     private Role role;
 
-    @Column(length = 30)
+    @Convert(converter = az.agro.portal.security.PiiConverter.class)
+    @Column(length = 200)
     private String phone;
 
     /** FİN (individuals) or VÖEN (companies). Personal data: masked in lists. */
-    @Column(length = 20)
+    @Convert(converter = az.agro.portal.security.PiiConverter.class)
+    @Column(length = 200)
     private String taxId;
+
+    /** Keyed hash of the FİN/VÖEN for lookups: the encrypted column itself cannot be searched. */
+    @Column(length = 64)
+    private String taxIdIndex;
 
     private boolean enabled = true;
 
@@ -56,7 +62,10 @@ public class AppUser {
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
     public String getTaxId() { return taxId; }
-    public void setTaxId(String taxId) { this.taxId = taxId; }
+    public void setTaxId(String taxId) {
+        this.taxId = taxId;
+        this.taxIdIndex = az.agro.portal.security.PiiCrypto.index(taxId);
+    }
     public boolean isEnabled() { return enabled; }
     public Instant getCreatedAt() { return createdAt; }
 }

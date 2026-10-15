@@ -258,6 +258,11 @@ const DICT: Record<string, [string, string]> = {
   "Günəş paneli": ["Solar panels", "Солнечные панели"],
   "İnfrastruktur": ["Infrastructure", "Инфраструктура"],
 
+  // AI suitability
+  "çox uyğun": ["highly suitable", "очень подходит"],
+  "uyğun": ["suitable", "подходит"],
+  "az uyğun": ["less suitable", "менее подходит"],
+
   // scenarios
   "Ssenari müqayisəsi (stress test)": ["Scenario comparison (stress test)", "Сравнение сценариев (стресс-тест)"],
   "Pis il olsa, layihə nə qədər dözür?": ["How well does the project survive a bad year?", "Насколько проект выдержит плохой год?"],

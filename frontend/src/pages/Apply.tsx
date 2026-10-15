@@ -6,7 +6,7 @@ import {
 import { Callout, Empty, Loading, MineTag, Tag, useToast } from "../components/ui";
 import { api, ApiError } from "../lib/api";
 import { useAuth } from "../lib/auth";
-import { countdown, date, fileSize, money, num, pct } from "../lib/format";
+import { countdown, date, fileSize, money, num, fit } from "../lib/format";
 import { useApi, useDocumentTitle, useMeta } from "../lib/hooks";
 import type { Competition, CropRecommendation, Plot } from "../lib/types";
 
@@ -242,7 +242,7 @@ export default function Apply() {
                   <div className="ai-line" style={{ alignItems: "flex-start" }}>
                     
                     <span>
-                      AI bu torpaq üçün <b>{rec.recommendations.map((c) => `${c.name} (${pct(c.probability)})`).slice(0, 3).join(", ")}</b> tövsiyə edir.{" "}
+                      AI bu torpaq üçün <b>{rec.recommendations.map((c) => `${c.name} (${fit(c.probability)})`).slice(0, 3).join(", ")}</b> tövsiyə edir.{" "}
                       {form.plannedCrop && (aiRank === 0 ? <b>Seçiminiz ən uyğun variantdır.</b> : aiRank > 0 ? "Seçiminiz ilk üçlükdədir." : `${cropName ?? "Seçilmiş bitki"} bu torpaq üçün optimal deyil, bu avtomatik balı azalda bilər.`)}
                     </span>
                   </div>

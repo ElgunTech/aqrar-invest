@@ -25,7 +25,7 @@ public class LedgerController {
     private final boolean demo;
 
     public LedgerController(LedgerService ledger, ApplicationRepository applications, AuditService audit,
-                            @Value("${app.seed-demo-data:false}") boolean demo) {
+                            @Value("${app.demo.tamper:false}") boolean demo) {
         this.ledger = ledger;
         this.applications = applications;
         this.audit = audit;
@@ -39,14 +39,14 @@ public class LedgerController {
     }
 
     /**
-     * Demonstration only (demo data mode): edits the latest status comment directly, the way a dishonest database
+     * Demonstration only, off by default (app.demo.tamper / DEMO_TAMPER): edits the latest status comment directly, the way a dishonest database
      * administrator would, without going through the ledger. A second call restores it.
      */
     @Operation(summary = "Demo: saxtakarlığı simulyasiya et / bərpa et")
     @PostMapping("/api/v1/admin/ledger/tamper/{number}")
     @Transactional
     public Map<String, Object> tamper(@PathVariable String number) {
-        if (!demo) throw ApiException.forbidden("Yalnız demo rejimində mümkündür");
+        if (!demo) throw ApiException.forbidden("Saxtakarlıq simulyasiyası söndürülüb (DEMO_TAMPER=true ilə yalnız nümayiş üçün açılır)");
         InvestmentApplication a = applications.findByApplicationNumber(number).orElseThrow(() -> ApiException.notFound("Müraciət"));
         if (a.getHistory().isEmpty()) throw ApiException.conflict("Tarixçə boşdur");
         StatusChange last = a.getHistory().get(a.getHistory().size() - 1);

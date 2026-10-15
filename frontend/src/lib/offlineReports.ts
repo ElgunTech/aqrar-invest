@@ -1,3 +1,4 @@
+import { csrfHeaders } from "./api";
 import { useSyncExternalStore } from "react";
 
 /**
@@ -104,7 +105,7 @@ export async function flush() {
       }
       try {
         const res = await fetch(`/api/v1/me/applications/${r.applicationId}/milestones/${r.milestoneId}/report`, {
-          method: "POST", body: fd, credentials: "same-origin",
+          method: "POST", body: fd, credentials: "same-origin", headers: csrfHeaders(),
         });
         if (res.ok) {
           await put({ ...r, status: "sent", sentAt: Date.now() });

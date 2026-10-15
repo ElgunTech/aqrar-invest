@@ -60,3 +60,9 @@ export function initials(name: string): string {
 
 /** One decimal, for model metrics where 99.5% must not round up to 100%. */
 export const pct1 = (p: number | null | undefined) => (p == null ? "yoxdur" : (Math.floor(p * 1000) / 10).toFixed(1) + "%");
+
+/**
+ * Model confidence as words, not a percentage: the classifier is trained on an open Kaggle dataset and its probabilities
+ * (often 99–100%) overstate how certain a recommendation for a real plot can be.
+ */
+export const fit = (p: number | null | undefined) => (p == null ? "yoxdur" : p >= 0.6 ? "çox uyğun" : p >= 0.25 ? "uyğun" : "az uyğun");

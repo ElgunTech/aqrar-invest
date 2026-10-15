@@ -16,12 +16,20 @@ interface Options {
   signal?: AbortSignal;
 }
 
+/** CSRF: the server sets the XSRF-TOKEN cookie; every state-changing request echoes it in a header. */
+export function csrfHeaders(method = "POST"): Record<string, string> {
+  if (method === "GET" || method === "HEAD") return {};
+  const m = document.cookie.match(/(?:^|; )XSRF-TOKEN=([^;]+)/);
+  return m ? { "X-XSRF-TOKEN": decodeURIComponent(m[1]) } : {};
+}
+
 export async function api<T>(path: string, opts: Options = {}): Promise<T> {
-  const init: RequestInit = { method: opts.method ?? "GET", credentials: "same-origin", signal: opts.signal };
+  const method = opts.method ?? "GET";
+  const init: RequestInit = { method, credentials: "same-origin", signal: opts.signal, headers: csrfHeaders(method) };
   if (opts.form) {
     init.body = opts.form;
   } else if (opts.body !== undefined) {
-    init.headers = { "Content-Type": "application/json" };
+    init.headers = { ...csrfHeaders(method), "Content-Type": "application/json" };
     init.body = JSON.stringify(opts.body);
   }
   const res = await fetch(path, init);

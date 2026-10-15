@@ -8,7 +8,7 @@ import { emptyFilters, filtersToQuery, PlotFilters, type Filters } from "../comp
 import { MineTag } from "../components/ui";
 import { qs } from "../lib/api";
 import { ACTIVITY } from "../lib/domain";
-import { money, num, pct } from "../lib/format";
+import { money, num, fit } from "../lib/format";
 import { useApi, useDebounced, useDocumentTitle } from "../lib/hooks";
 import type { Plot } from "../lib/types";
 
@@ -143,7 +143,7 @@ export default function MapPage() {
                   <div><b>{num(p.areaHa, 1)} ha</b> · {p.activityType.label}</div>
                   <div>Minimum investisiya: <b>{money(p.minInvestment)}</b></div>
                   <div><MineTag label={p.mineClearance} /></div>
-                  {p.aiTopCrop && <div className="row" style={{ ["--gap" as string]: "6px" }}>AI: <b>{p.aiTopCrop.name}</b> ({pct(p.aiTopCrop.probability)})</div>}
+                  {p.aiTopCrop && <div className="row" style={{ ["--gap" as string]: "6px" }}>AI: <b>{p.aiTopCrop.name}</b> ({fit(p.aiTopCrop.probability)})</div>}
                   {p.openCompetition
                     ? <div className="row" style={{ ["--gap" as string]: "6px" }}><Clock size={14} /> Müraciətə <b>{p.openCompetition.daysLeft} gün</b> qalıb</div>
                     : <div className="faint">Hazırda müsabiqədə deyil</div>}

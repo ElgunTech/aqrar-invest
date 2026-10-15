@@ -37,16 +37,19 @@ public class InvestmentApplication {
     private String applicantName;
 
     /** FİN or VÖEN. */
-    @Column(nullable = false, length = 20)
+    @Convert(converter = az.agro.portal.security.PiiConverter.class)
+    @Column(nullable = false, length = 200)
     private String taxId;
 
-    @Column(length = 30)
+    @Convert(converter = az.agro.portal.security.PiiConverter.class)
+    @Column(length = 200)
     private String phone;
 
     @Column(length = 120)
     private String email;
 
-    @Column(length = 300)
+    @Convert(converter = az.agro.portal.security.PiiConverter.class)
+    @Column(length = 1200)
     private String address;
 
     // --- Investment & business plan ---

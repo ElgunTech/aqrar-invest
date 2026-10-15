@@ -95,7 +95,7 @@ public class AuthController {
         String email = r.email().trim().toLowerCase(Locale.ROOT);
         if (users.existsByEmailIgnoreCase(email)) throw ApiException.conflict("Bu e-poçt ilə hesab artıq mövcuddur");
         String fin = r.fin() == null || r.fin().isBlank() ? null : r.fin().trim().toUpperCase(Locale.ROOT);
-        if (fin != null && users.findByTaxIdIgnoreCase(fin).isPresent()) {
+        if (fin != null && users.findByTaxIdIndex(az.agro.portal.security.PiiCrypto.index(fin)).isPresent()) {
             throw ApiException.conflict("Bu FİN ilə hesab artıq mövcuddur. myGov ilə daxil olun.");
         }
         AppUser u = new AppUser(email, encoder.encode(r.password()), r.fullName().trim(), Role.INVESTOR);
@@ -136,7 +136,7 @@ public class AuthController {
             throw new ApiException(HttpStatus.BAD_GATEWAY, "myGov cavab vermədi və ya kod etibarsızdır");
         }
         boolean created = false;
-        AppUser u = users.findByTaxIdIgnoreCase(id.fin()).orElse(null);
+        AppUser u = users.findByTaxIdIndex(az.agro.portal.security.PiiCrypto.index(id.fin())).orElse(null);
         if (u == null) {
             String email = id.email() != null && !users.existsByEmailIgnoreCase(id.email())
                     ? id.email().toLowerCase(Locale.ROOT)

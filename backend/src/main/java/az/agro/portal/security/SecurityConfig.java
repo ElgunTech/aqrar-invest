@@ -27,8 +27,13 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, ApiKeyFilter apiKeyFilter) throws Exception {
         http
-                // The session cookie is SameSite=Strict + HttpOnly (application.properties), which blocks cross-site requests.
-                .csrf(AbstractHttpConfigurer::disable)
+                // Two layers: the session cookie is SameSite=Strict + HttpOnly, and state-changing requests need a CSRF token
+                // (XSRF-TOKEN cookie → X-XSRF-TOKEN header). System-to-system endpoints use API keys and are exempt.
+                .csrf(c -> c
+                        .csrfTokenRepository(org.springframework.security.web.csrf.CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .csrfTokenRequestHandler(new SpaCsrf.RequestHandler())
+                        .ignoringRequestMatchers("/api/v1/integration/**", "/mock-ektis/**", "/mock-mygov/**"))
+                .addFilterAfter(new SpaCsrf.CookieFilter(), org.springframework.security.web.authentication.www.BasicAuthenticationFilter.class)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .logout(AbstractHttpConfigurer::disable)

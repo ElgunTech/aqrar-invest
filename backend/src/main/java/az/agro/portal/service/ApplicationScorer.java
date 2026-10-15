@@ -69,7 +69,7 @@ public class ApplicationScorer {
             if (top.get(i).code().equalsIgnoreCase(crop)) {
                 int pts = i == 0 ? 15 : 10;
                 return new ScoreItem("AI: bitkinin torpağa uyğunluğu", pts, 15,
-                        "AI tövsiyəsində " + (i + 1) + "-ci yerdədir (" + Math.round(top.get(i).probability() * 100) + "%)");
+                        "AI tövsiyəsində " + (i + 1) + "-ci yerdədir");
             }
         }
         String best = top.isEmpty() ? "-" : top.get(0).name();

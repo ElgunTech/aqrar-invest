@@ -6,7 +6,7 @@ import { Loading } from "../components/ui";
 import { ClimateBody, type ClimateReport } from "../components/Climate";
 import { ECON, GENERIC } from "../components/Calculator";
 import { breakEven, scenarios, simulate } from "../components/Scenarios";
-import { date, dateTime, money, num, pct, pct1 } from "../lib/format";
+import { date, dateTime, money, num, pct1, fit } from "../lib/format";
 import { useApi, useDocumentTitle } from "../lib/hooks";
 import type { CropRecommendation, OfficialIndicator, Plot, SatelliteReport } from "../lib/types";
 
@@ -74,7 +74,7 @@ export default function Passport() {
         <table className="receipt__table">
           <tbody>
             <tr><th>Torpaq</th><td>{p.soilType ?? "—"} · N {num(p.nitrogen)} · P {num(p.phosphorus)} · K {num(p.potassium)} · pH {num(p.ph, 1)}</td></tr>
-            <tr><th>AI tövsiyəsi</th><td>{rec ? rec.recommendations.filter((c, i) => i === 0 || c.probability >= 0.01).slice(0, 3).map((c) => `${c.name} ${pct(c.probability)}`).join(" · ") : "…"}</td></tr>
+            <tr><th>AI tövsiyəsi</th><td>{rec ? rec.recommendations.filter((c, i) => i === 0 || c.probability >= 0.01).slice(0, 3).map((c) => `${c.name} (${fit(c.probability)})`).join(" · ") : "…"}</td></tr>
             <tr><th>Model</th><td>{rec?.modelName ?? "…"}{rec?.testAccuracy ? ` · test dəqiqliyi ${pct1(rec.testAccuracy)}` : ""}</td></tr>
           </tbody>
         </table>

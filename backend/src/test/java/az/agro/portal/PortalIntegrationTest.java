@@ -23,6 +23,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -32,6 +33,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class PortalIntegrationTest {
+
+    /** multipart() with a CSRF token, keeping the multipart builder type so .file() can follow. */
+    private static org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder multipartCsrf(String url) {
+        var b = multipart(url);
+        b.with(csrf());
+        return b;
+    }
+
 
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper json;
@@ -60,7 +69,7 @@ class PortalIntegrationTest {
         mvc.perform(get("/mock-ektis/api/v1/farmers/5ZK7QWE").header("X-API-Key", "wrong")).andExpect(status().isUnauthorized());
         mvc.perform(get("/mock-ektis/api/v1/farmers/5ZK7QWE").header("X-API-Key", "demo-ektis-outbound-key"))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.fullName").value("Rəşad Məmmədov"));
-        mvc.perform(post("/api/v1/integration/ektis/events").contentType(MediaType.APPLICATION_JSON).content("{}"))
+        mvc.perform(post("/api/v1/integration/ektis/events").with(csrf()).contentType(MediaType.APPLICATION_JSON).content("{}"))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -68,9 +77,9 @@ class PortalIntegrationTest {
     void loginIsBlockedAfterFiveFailures() throws Exception {
         String bad = "{\"email\":\"aqro@demo.az\",\"password\":\"wrong-pass-1\"}";
         for (int i = 0; i < 5; i++) {
-            mvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON).content(bad)).andExpect(status().isUnauthorized());
+            mvc.perform(post("/api/v1/auth/login").with(csrf()).contentType(MediaType.APPLICATION_JSON).content(bad)).andExpect(status().isUnauthorized());
         }
-        mvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON).content(bad)).andExpect(status().isTooManyRequests());
+        mvc.perform(post("/api/v1/auth/login").with(csrf()).contentType(MediaType.APPLICATION_JSON).content(bad)).andExpect(status().isTooManyRequests());
     }
 
     // ------------------------------------------------------------ competitions: four-eyes rule
@@ -80,16 +89,16 @@ class PortalIntegrationTest {
         long plotId = plots.findAll().get(0).getId();
         String body = json.writeValueAsString(Map.of("title", "Test müsabiqəsi", "deadline", LocalDate.now().plusDays(20).toString(),
                 "plotIds", new long[]{plotId}));
-        JsonNode created = json.readTree(mvc.perform(post("/api/v1/admin/competitions").with(user("admin@demo.az").roles("ADMIN"))
+        JsonNode created = json.readTree(mvc.perform(post("/api/v1/admin/competitions").with(csrf()).with(user("admin@demo.az").roles("ADMIN"))
                         .contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8));
         long id = created.get("id").asLong();
 
-        mvc.perform(post("/api/v1/admin/competitions/" + id + "/submit").with(user("admin@demo.az").roles("ADMIN"))).andExpect(status().isOk());
+        mvc.perform(post("/api/v1/admin/competitions/" + id + "/submit").with(csrf()).with(user("admin@demo.az").roles("ADMIN"))).andExpect(status().isOk());
         // the author cannot approve their own competition
-        mvc.perform(post("/api/v1/admin/competitions/" + id + "/approve").with(user("admin@demo.az").roles("ADMIN"))).andExpect(status().isForbidden());
+        mvc.perform(post("/api/v1/admin/competitions/" + id + "/approve").with(csrf()).with(user("admin@demo.az").roles("ADMIN"))).andExpect(status().isForbidden());
         // an evaluator cannot approve at all
-        mvc.perform(post("/api/v1/admin/competitions/" + id + "/approve").with(user("evaluator@demo.az").roles("EVALUATOR"))).andExpect(status().isForbidden());
+        mvc.perform(post("/api/v1/admin/competitions/" + id + "/approve").with(csrf()).with(user("evaluator@demo.az").roles("EVALUATOR"))).andExpect(status().isForbidden());
         assertThat(competitions.findById(id).orElseThrow().getStatus().name()).isEqualTo("PENDING_APPROVAL");
     }
 
@@ -118,21 +127,21 @@ class PortalIntegrationTest {
         var investor = user("investor@demo.az").roles("INVESTOR");
 
         // a file whose content is not a PDF is refused even with a .pdf name
-        mvc.perform(multipart("/api/v1/me/applications").file(data(cp[0], cp[1]))
+        mvc.perform(multipartCsrf("/api/v1/me/applications").file(data(cp[0], cp[1]))
                         .file(new MockMultipartFile("files", "plan.pdf", "application/pdf", "MZ not a pdf".getBytes()))
                         .file(new MockMultipartFile("files", "id.pdf", "application/pdf", PDF))
                         .param("types", "BUSINESS_PLAN", "ID_DOCUMENT").with(investor))
                 .andExpect(status().isBadRequest());
 
         // a missing mandatory document is reported by name
-        mvc.perform(multipart("/api/v1/me/applications").file(data(cp[0], cp[1]))
+        mvc.perform(multipartCsrf("/api/v1/me/applications").file(data(cp[0], cp[1]))
                         .file(new MockMultipartFile("files", "plan.pdf", "application/pdf", PDF))
                         .param("types", "BUSINESS_PLAN").with(investor))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("Şəxsiyyət vəsiqəsi")));
 
         // a complete application is registered with a number and an automatic score
-        mvc.perform(multipart("/api/v1/me/applications").file(data(cp[0], cp[1]))
+        mvc.perform(multipartCsrf("/api/v1/me/applications").file(data(cp[0], cp[1]))
                         .file(new MockMultipartFile("files", "plan.pdf", "application/pdf", PDF))
                         .file(new MockMultipartFile("files", "id.pdf", "application/pdf", PDF))
                         .param("types", "BUSINESS_PLAN", "ID_DOCUMENT").with(investor))
@@ -141,7 +150,7 @@ class PortalIntegrationTest {
                 .andExpect(jsonPath("$.autoScore").value(org.hamcrest.Matchers.greaterThan(50)));
 
         // the same applicant cannot apply twice for the same plot
-        mvc.perform(multipart("/api/v1/me/applications").file(data(cp[0], cp[1]))
+        mvc.perform(multipartCsrf("/api/v1/me/applications").file(data(cp[0], cp[1]))
                         .file(new MockMultipartFile("files", "plan.pdf", "application/pdf", PDF))
                         .file(new MockMultipartFile("files", "id.pdf", "application/pdf", PDF))
                         .param("types", "BUSINESS_PLAN", "ID_DOCUMENT").with(investor))
@@ -150,7 +159,7 @@ class PortalIntegrationTest {
         // evaluators cannot jump straight to a decision
         var mine = json.readTree(mvc.perform(get("/api/v1/me/applications").with(investor)).andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8));
         long appId = mine.get(0).get("id").asLong();
-        mvc.perform(post("/api/v1/admin/applications/" + appId + "/status").with(user("evaluator@demo.az").roles("EVALUATOR"))
+        mvc.perform(post("/api/v1/admin/applications/" + appId + "/status").with(csrf()).with(user("evaluator@demo.az").roles("EVALUATOR"))
                         .contentType(MediaType.APPLICATION_JSON).content("{\"status\":\"APPROVED\",\"comment\":\"ok\"}"))
                 .andExpect(status().isConflict());
         // and other investors cannot see it
@@ -172,17 +181,17 @@ class PortalIntegrationTest {
         String approve = "{\"status\":\"APPROVED\",\"comment\":\"Qalib\"}";
         String score = "{\"feasibility\":8,\"financing\":7,\"socialImpact\":8,\"technology\":7,\"noConflict\":true}";
 
-        mvc.perform(post("/api/v1/admin/applications/" + id + "/status").with(user("evaluator@demo.az").roles("EVALUATOR"))
+        mvc.perform(post("/api/v1/admin/applications/" + id + "/status").with(csrf()).with(user("evaluator@demo.az").roles("EVALUATOR"))
                 .contentType(MediaType.APPLICATION_JSON).content(approve)).andExpect(status().isConflict());
         // a member who does not declare the absence of a conflict of interest cannot score
-        mvc.perform(post("/api/v1/admin/applications/" + id + "/score").with(user("evaluator@demo.az").roles("EVALUATOR"))
+        mvc.perform(post("/api/v1/admin/applications/" + id + "/score").with(csrf()).with(user("evaluator@demo.az").roles("EVALUATOR"))
                 .contentType(MediaType.APPLICATION_JSON).content(score.replace("true", "false"))).andExpect(status().isBadRequest());
-        mvc.perform(post("/api/v1/admin/applications/" + id + "/score").with(user("evaluator@demo.az").roles("EVALUATOR"))
+        mvc.perform(post("/api/v1/admin/applications/" + id + "/score").with(csrf()).with(user("evaluator@demo.az").roles("EVALUATOR"))
                 .contentType(MediaType.APPLICATION_JSON).content(score)).andExpect(status().isOk())
                 .andExpect(jsonPath("$.commission.average").value(75));
-        mvc.perform(post("/api/v1/admin/applications/" + id + "/score").with(user("admin@demo.az").roles("ADMIN"))
+        mvc.perform(post("/api/v1/admin/applications/" + id + "/score").with(csrf()).with(user("admin@demo.az").roles("ADMIN"))
                 .contentType(MediaType.APPLICATION_JSON).content(score)).andExpect(status().isOk());
-        mvc.perform(post("/api/v1/admin/applications/" + id + "/status").with(user("evaluator@demo.az").roles("EVALUATOR"))
+        mvc.perform(post("/api/v1/admin/applications/" + id + "/status").with(csrf()).with(user("evaluator@demo.az").roles("EVALUATOR"))
                 .contentType(MediaType.APPLICATION_JSON).content(approve)).andExpect(status().isOk())
                 .andExpect(jsonPath("$.status.code").value("APPROVED"));
     }
@@ -211,21 +220,21 @@ class PortalIntegrationTest {
         String url = json.readTree(start).get("url").asText();
         String state = url.replaceAll(".*state=([^&]+).*", "$1");
 
-        String auth = mvc.perform(post("/mock-mygov/api/authorize").contentType(MediaType.APPLICATION_JSON)
+        String auth = mvc.perform(post("/mock-mygov/api/authorize").with(csrf()).contentType(MediaType.APPLICATION_JSON)
                         .content("{\"client_id\":\"aqrar-invest-portal\",\"fin\":\"3LM8K2D\",\"state\":\"" + state + "\"}"))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
         String code = json.readTree(auth).get("code").asText();
 
-        mvc.perform(post("/api/v1/auth/mygov/callback").session(session).contentType(MediaType.APPLICATION_JSON)
+        mvc.perform(post("/api/v1/auth/mygov/callback").with(csrf()).session(session).contentType(MediaType.APPLICATION_JSON)
                         .content("{\"code\":\"" + code + "\",\"state\":\"forged\"}"))
                 .andExpect(status().isBadRequest());
-        assertThat(users.findByTaxIdIgnoreCase("3LM8K2D")).isEmpty();
+        assertThat(users.findByTaxIdIndex(az.agro.portal.security.PiiCrypto.index("3LM8K2D"))).isEmpty();
         // The state is single-use: a forged attempt does not consume it, the genuine one succeeds.
         // (the controller only removes it after a match)
-        mvc.perform(post("/api/v1/auth/mygov/callback").session(session).contentType(MediaType.APPLICATION_JSON)
+        mvc.perform(post("/api/v1/auth/mygov/callback").with(csrf()).session(session).contentType(MediaType.APPLICATION_JSON)
                         .content("{\"code\":\"" + code + "\",\"state\":\"" + state + "\"}"))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.created").value(true))
                 .andExpect(jsonPath("$.user.fullName").value("Günay Quliyeva"));
-        assertThat(users.findByTaxIdIgnoreCase("3LM8K2D")).isPresent();
+        assertThat(users.findByTaxIdIndex(az.agro.portal.security.PiiCrypto.index("3LM8K2D"))).isPresent();
     }
 }

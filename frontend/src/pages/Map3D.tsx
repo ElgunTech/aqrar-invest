@@ -6,7 +6,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { ArrowRight, Pause, Play, RotateCw, X } from "lucide-react";
 import { MineTag } from "../components/ui";
 import { ACTIVITY } from "../lib/domain";
-import { date, money, num, pct } from "../lib/format";
+import { date, money, num, fit } from "../lib/format";
 import { useApi, useDocumentTitle } from "../lib/hooks";
 import type { Plot } from "../lib/types";
 
@@ -210,7 +210,7 @@ export default function Map3D() {
               <dt>{t("Ərazi")}</dt><dd>{num(selected.areaHa, 1)} ha</dd>
               <dt>{t("Təyinat")}</dt><dd>{t(selected.activityType.label)}</dd>
               <dt>{t("Min. investisiya")}</dt><dd>{money(selected.minInvestment)}</dd>
-              {selected.aiTopCrop && <><dt>{t("AI tövsiyəsi")}</dt><dd>{t(selected.aiTopCrop.name)} ({pct(selected.aiTopCrop.probability)})</dd></>}
+              {selected.aiTopCrop && <><dt>{t("AI tövsiyəsi")}</dt><dd>{t(selected.aiTopCrop.name)} ({t(fit(selected.aiTopCrop.probability))})</dd></>}
               {selected.openCompetition && <><dt>{t("Son müraciət:").replace(":", "")}</dt><dd>{date(selected.openCompetition.deadline)}</dd></>}
             </dl>
             <Link className="btn btn--block" style={{ marginTop: 14 }} to={`/sahe/${selected.id}`}>{t("Ətraflı")} <ArrowRight size={16} /></Link>

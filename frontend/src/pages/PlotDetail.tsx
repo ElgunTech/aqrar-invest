@@ -11,7 +11,7 @@ import { Calculator } from "../components/Calculator";
 import { Callout, Empty, Loading, Meter, MineTag, Tag } from "../components/ui";
 import { useAuth } from "../lib/auth";
 import { ACTIVITY } from "../lib/domain";
-import { countdown, date, money, num, pct, pct1 } from "../lib/format";
+import { countdown, date, money, num, pct1, fit } from "../lib/format";
 import { useApi, useDocumentTitle } from "../lib/hooks";
 import type { CropRecommendation, OfficialIndicator, Plot } from "../lib/types";
 
@@ -43,11 +43,12 @@ export function AiCard({ rec, inputs }: { rec: CropRecommendation; inputs?: Plot
             {list.map((c, i) => (
               <div className="crop" key={c.code}>
                 <span className="crop__name">{i === 0 && <Tag tone="gold">Ən uyğun</Tag>} {c.name}</span>
-                <span className="crop__pct">{pct(c.probability)}</span>
+                <span className="crop__pct">{fit(c.probability)}</span>
                 <Meter value={c.probability} gold={i === 0} />
               </div>
             ))}
             <p className="muted" style={{ fontSize: 13.5, marginTop: 14 }}>{rec.explanation}</p>
+            <p className="ai-note"><b>Model haqqında:</b> açıq Kaggle datasetində (Crop Recommendation, 2 200 nümunə) öyrədilib; regional iqlim filtri tropik bitkiləri çıxarır. Real istifadədən əvvəl yerli torpaq analizləri ilə yenidən öyrədilməlidir. Nəticə qərar deyil, ilkin istiqamətdir: iqlim riski tabı ilə birlikdə baxın.</p>
             {filtered && <div style={{ marginTop: 12 }}><Callout tone="warn">Model tropik bitki də təklif etdi, lakin regional iqlim filtri onu çıxardı.</Callout></div>}
           </div>
           {inputs && (
@@ -173,7 +174,7 @@ export default function PlotDetail() {
             <div className="glance">
               <button className="glance__item" onClick={() => go("ai")}>
                 <Sprout size={20} />
-                <span><small>{t("Ən uyğun bitki (AI)")}</small><b>{rec?.recommendations[0] ? `${rec.recommendations[0].name} · ${pct(rec.recommendations[0].probability)}` : "…"}</b></span>
+                <span><small>{t("Ən uyğun bitki (AI)")}</small><b>{rec?.recommendations[0] ? `${rec.recommendations[0].name} · ${t(fit(rec.recommendations[0].probability))}` : "…"}</b></span>
                 <ChevronRight size={16} />
               </button>
               <button className="glance__item" onClick={() => go("gunes")}>

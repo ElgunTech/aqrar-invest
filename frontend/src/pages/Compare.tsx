@@ -3,7 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { Check, Minus } from "lucide-react";
 import { Empty, Loading, MineTag, Tag } from "../components/ui";
 import { ACTIVITY } from "../lib/domain";
-import { date, money, num, pct } from "../lib/format";
+import { date, money, num, fit } from "../lib/format";
 import { useApi, useDocumentTitle } from "../lib/hooks";
 import type { Plot } from "../lib/types";
 
@@ -30,7 +30,7 @@ const ROWS: Row[] = [
   { label: "Asfalt yola", get: (p) => `${num(p.roadKm, 1)} km`, best: bestBy((p) => p.roadKm, "min") },
   { label: "Suvarma", get: (p) => yes(p.irrigationAvailable) },
   { label: "Elektrik", get: (p) => yes(p.electricityAvailable) },
-  { label: "AI tövsiyəsi", get: (p) => (p.aiTopCrop ? `${p.aiTopCrop.name} · ${pct(p.aiTopCrop.probability)}` : "yoxdur") },
+  { label: "AI tövsiyəsi", get: (p) => (p.aiTopCrop ? `${p.aiTopCrop.name} · ${fit(p.aiTopCrop.probability)}` : "yoxdur") },
   { label: "Torpaq pH / N-P-K", get: (p) => <span className="tabular">{num(p.ph, 1)} · {num(p.nitrogen)}-{num(p.phosphorus)}-{num(p.potassium)}</span> },
   { label: "Son müraciət tarixi", get: (p) => (p.openCompetition ? date(p.openCompetition.deadline) : <span className="faint">Müsabiqədə deyil</span>) },
   { label: "Daxil olan müraciətlər", get: (p) => p.applicationCount },

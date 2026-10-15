@@ -17,8 +17,11 @@ public class StatusController {
     private final MailService mail;
     private final AssistantService assistant;
     private final String database;
+    private final boolean tamperDemo;
 
-    public StatusController(MailService mail, AssistantService assistant, javax.sql.DataSource ds) {
+    public StatusController(MailService mail, AssistantService assistant, javax.sql.DataSource ds,
+                            @org.springframework.beans.factory.annotation.Value("${app.demo.tamper:false}") boolean tamperDemo) {
+        this.tamperDemo = tamperDemo;
         String db;
         try (var c = ds.getConnection()) {
             db = c.getMetaData().getDatabaseProductName();
@@ -33,6 +36,6 @@ public class StatusController {
     @Operation(summary = "E-poçt və LLM kanallarının vəziyyəti")
     @GetMapping("/api/v1/public/status")
     public Map<String, Object> status() {
-        return Map.of("email", mail.enabled(), "llm", assistant.llmEnabled(), "database", database);
+        return Map.of("email", mail.enabled(), "llm", assistant.llmEnabled(), "database", database, "tamperDemo", tamperDemo);
     }
 }

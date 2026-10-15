@@ -5,7 +5,7 @@ import { ArrowRight, Brain, Check, FlaskConical, Target, X } from "lucide-react"
 import { Callout, Empty, Loading, Meter, MineTag, Tag } from "../components/ui";
 import { api } from "../lib/api";
 import { ACTIVITY, FEATURE_LABELS } from "../lib/domain";
-import { money, num, pct, pct1 } from "../lib/format";
+import { money, num, pct1, fit } from "../lib/format";
 import { useApi, useDebounced, useDocumentTitle, useMeta } from "../lib/hooks";
 import type { CropRecommendation, MatchResult, ModelInfo, SoilClimate } from "../lib/types";
 
@@ -68,18 +68,19 @@ function SoilLab() {
                 {rec.recommendations.map((c, i) => (
                   <div className="crop" key={c.code}>
                     <span className="crop__name" style={i === 0 ? { fontSize: 18, fontFamily: "var(--font-display)" } : undefined}>{c.name}</span>
-                    <span className="crop__pct">{pct(c.probability)}</span>
+                    <span className="crop__pct">{fit(c.probability)}</span>
                     <Meter value={c.probability} gold={i === 0} />
                   </div>
                 ))}
                 <p className="muted" style={{ fontSize: 13, marginTop: 12 }}>{rec.explanation}</p>
+                <p className="ai-note"><b>Model haqqında:</b> açıq Kaggle datasetində (Crop Recommendation, 2 200 nümunə) öyrədilib; regional iqlim filtri tropik bitkiləri çıxarır. Real istifadədən əvvəl yerli torpaq analizləri ilə yenidən öyrədilməlidir. Nəticə qərar deyil, ilkin istiqamətdir: sahə səhifəsindəki iqlim riski ilə birlikdə baxın.</p>
                 {rec.rawTop.length > 0 && (
                   <details style={{ marginTop: 12, fontSize: 13 }}>
                     <summary style={{ cursor: "pointer", fontWeight: 600 }}>Modelin xam çıxışı (filtrdən əvvəl)</summary>
                     <ul className="reasons" style={{ marginTop: 8 }}>
                       {rec.rawTop.map((c) => (
                         <li key={c.code} className={c.regionSuitable ? "pos" : "neg"}>
-                          {c.regionSuitable ? <Check /> : <X />} {c.name} · {pct(c.probability)} {!c.regionSuitable && <span className="faint">(regiona uyğun deyil)</span>}
+                          {c.regionSuitable ? <Check /> : <X />} {c.name} · {fit(c.probability)} {!c.regionSuitable && <span className="faint">(regiona uyğun deyil)</span>}
                         </li>
                       ))}
                     </ul>

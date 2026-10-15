@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -25,6 +26,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class MonitoringIntegrityTest {
+
+    /** multipart() with a CSRF token, keeping the multipart builder type so .file() can follow. */
+    private static org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder multipartCsrf(String url) {
+        var b = multipart(url);
+        b.with(csrf());
+        return b;
+    }
+
 
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper json;
@@ -61,7 +70,7 @@ class MonitoringIntegrityTest {
         long appId = project.get("applicationId").asLong();
         long mid = overdue.get("id").asLong();
         byte[] png = {(byte) 0x89, 'P', 'N', 'G', 13, 10, 26, 10};
-        JsonNode after = body(mvc.perform(multipart("/api/v1/me/applications/" + appId + "/milestones/" + mid + "/report")
+        JsonNode after = body(mvc.perform(multipartCsrf("/api/v1/me/applications/" + appId + "/milestones/" + mid + "/report")
                         .file(new MockMultipartFile("photo", "sahe.png", "image/png", png))
                         .param("text", "Bağ salınıb").param("investment", "260000").param("lat", "40.40").param("lng", "49.86")
                         .with(user("aqro@demo.az").roles("INVESTOR")))

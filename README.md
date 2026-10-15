@@ -168,7 +168,9 @@ Demo:
 ## Təhlükəsizlik
 
 * Rollar: `INVESTOR`, `EVALUATOR`, `ADMIN`; URL və servis səviyyəsində yoxlama.
-* BCrypt şifrələr, sessiya fiksasiyasından qorunma, HttpOnly + SameSite=Strict cookie.
+* BCrypt şifrələr, sessiya fiksasiyasından qorunma, HttpOnly + SameSite=Strict cookie, CSRF token (XSRF-TOKEN cookie → X-XSRF-TOKEN başlığı).
+* FİN/VÖEN, telefon və ünvan bazada AES-256-GCM ilə şifrələnir (`PII_KEY`); FİN üzrə axtarış HMAC «kor indeks» ilə. Köhnə açıq qeydləri işə düşəndə miqrasiya şifrələyir.
+* «Saxtakarlığı simulyasiya et» yalnız `DEMO_TAMPER=true` ilə açılır (standart: söndürülüb) və «DEMO» kimi işarələnir.
 * 5 uğursuz girişdən sonra 10 dəqiqəlik blok.
 * Müsabiqə üçün "dörd göz" prinsipi: yaradan şəxs təsdiq edə bilməz.
 * Fayllar: ölçü limiti (5 MB), uzantı + məzmun imzası (magic bytes) yoxlaması, təsadüfi adla web root-dan kənarda saxlanma.
@@ -187,7 +189,7 @@ Demo:
 | Backend | Render, Docker, pulsuz plan | `Dockerfile`, `render.yaml` |
 | Oyaq saxlama | GitHub Actions, hər 10 dəqiqə | `.github/workflows/keep-awake.yml` |
 
-Render mühit dəyişənləri (hamısı istəyə bağlı): `BREVO_API_KEY` və `MAIL_FROM` (e-poçt), `SMTP_USER` / `SMTP_PASSWORD` (SMTP alternativi, Render-in pulsuz planında SMTP portları bağlıdır), `GROQ_API_KEY` (chatbot üçün LLM).
+Render mühit dəyişənləri: `PII_KEY` (32 bayt, base64; şəxsi məlumatların şifrələmə açarı, bir dəfə təyin edilir və dəyişdirilmir), istəyə bağlı: `BREVO_API_KEY` və `MAIL_FROM` (e-poçt), `SMTP_USER` / `SMTP_PASSWORD` (SMTP alternativi, Render-in pulsuz planında SMTP portları bağlıdır), `GROQ_API_KEY` (chatbot üçün LLM).
 Hansı kanalların açıq olduğunu `/api/v1/public/status` göstərir. Render hər deploy-da demo bazanı yenidən yaradır.
 
 ## Struktur
