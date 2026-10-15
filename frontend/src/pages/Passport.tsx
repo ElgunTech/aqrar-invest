@@ -4,6 +4,8 @@ import QRCode from "qrcode";
 import { ArrowLeft, Printer } from "lucide-react";
 import { Loading } from "../components/ui";
 import { ClimateBody, type ClimateReport } from "../components/Climate";
+import { ECON, GENERIC } from "../components/Calculator";
+import { breakEven, scenarios, simulate } from "../components/Scenarios";
 import { date, dateTime, money, num, pct, pct1 } from "../lib/format";
 import { useApi, useDocumentTitle } from "../lib/hooks";
 import type { CropRecommendation, OfficialIndicator, Plot, SatelliteReport } from "../lib/types";
@@ -104,9 +106,33 @@ export default function Passport() {
           </tbody>
         </table>
 
+        {rec && rec.recommendations[0] && (() => {
+          const crop = rec.recommendations[0];
+          const e = ECON[crop.code] ?? GENERIC;
+          const years = Math.min(p.leaseYears, 15);
+          const base = simulate(e, p.areaHa, years);
+          const be = breakEven(e);
+          return (
+            <>
+              <h2>6. Ssenari təhlili: {crop.name}, {num(p.areaHa, 1)} ha</h2>
+              <table className="receipt__table">
+                <tbody>
+                  {scenarios(20, 10).map((sc) => {
+                    const o = simulate(e, p.areaHa, years, sc.yieldMul, sc.priceMul);
+                    const d = base.annual ? Math.round(((o.annual - base.annual) / Math.abs(base.annual)) * 100) : 0;
+                    return <tr key={sc.key}><th>{sc.label}</th><td>{money(o.annual)} ildə{sc.key === "base" ? "" : ` (${d}%)`} · {o.payback ? `${o.payback}-ci ildə qaytarılır` : `${years} ildə qaytarılmır`} · {years} ildə {money(o.total)}</td></tr>;
+                  })}
+                  <tr><th>Zərərsizlik həddi</th><td>məhsul {num(be.yieldT, 2)} t/ha (plan {num(e.yieldT, 1)}) · qiymət {money(Math.round(be.price))}/t (plan {money(e.price)})</td></tr>
+                </tbody>
+              </table>
+              <p className="passport__note">Xərc və qiymətlər portal kalkulyatorunun nümunəvi fərziyyələridir; sahə səhifəsində dəyişdirilə bilər.</p>
+            </>
+          );
+        })()}
+
         {stats && stats.length > 0 && (
           <>
-            <h2>6. {p.district} rayonu: rəsmi statistika</h2>
+            <h2>7. {p.district} rayonu: rəsmi statistika</h2>
             <table className="receipt__table">
               <tbody>
                 {stats.slice(0, 6).map((s) => <tr key={s.key}><th>{s.label}</th><td>{num(s.district, 1)} {s.unit} ({s.year})</td></tr>)}

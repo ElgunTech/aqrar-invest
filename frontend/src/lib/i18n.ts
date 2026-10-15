@@ -258,6 +258,27 @@ const DICT: Record<string, [string, string]> = {
   "Günəş paneli": ["Solar panels", "Солнечные панели"],
   "İnfrastruktur": ["Infrastructure", "Инфраструктура"],
 
+  // scenarios
+  "Ssenari müqayisəsi (stress test)": ["Scenario comparison (stress test)", "Сравнение сценариев (стресс-тест)"],
+  "Pis il olsa, layihə nə qədər dözür?": ["How well does the project survive a bad year?", "Насколько проект выдержит плохой год?"],
+  "Məhsul azalması": ["Yield drop", "Снижение урожая"],
+  "Qiymət azalması": ["Price drop", "Снижение цены"],
+  "Əsas plan": ["Base plan", "Базовый план"],
+  "Pis il (ikisi birlikdə)": ["Bad year (both)", "Плохой год (оба)"],
+  "Ssenari": ["Scenario", "Сценарий"],
+  "Dəyişmə": ["Change", "Изменение"],
+  "{n} ildə nəticə": ["Result over {n} years", "Итог за {n} лет"],
+  "{n} ildə qaytarılmır": ["No payback in {n} years", "Не окупается за {n} лет"],
+  "Zərərsizlik həddi": ["Break-even", "Точка безубыточности"],
+  "Məhsul": ["Yield", "Урожай"],
+  "Qiymət": ["Price", "Цена"],
+  "həddindən aşağı düşsə, il zərərlə bağlanır": ["— below this, the year ends at a loss", "— ниже этого год убыточен"],
+  "plan": ["plan", "план"],
+  "ehtiyat": ["margin", "запас"],
+  "Xərclər məhsuldan asılı olmadığı üçün gəlir məhsuldan daha sürətlə düşür: bu, ehtiyat fondu və ya aqrar sığorta üçün əsasdır.": ["Costs do not shrink with the harvest, so income falls faster than yield: the case for a reserve fund or crop insurance.", "Затраты не уменьшаются вместе с урожаем, поэтому доход падает быстрее урожая: довод в пользу резервного фонда или агрострахования."],
+  "İqlim riski tabında bu bitki üçün risk yüksəkdir": ["The climate tab shows a high risk for this crop", "Во вкладке климата риск для этой культуры высокий"],
+  "«Pis il» ssenarisi bu sahə üçün real ehtimaldır.": ["The bad-year scenario is a real possibility for this plot.", "Сценарий «плохого года» для этого участка вполне реален."],
+
   // climate and passport
   "İqlim riski": ["Climate risk", "Климатический риск"],
   "10 illik iqlim məlumatı təhlil edilir": ["Analysing ten years of climate data", "Анализ климатических данных за 10 лет"],

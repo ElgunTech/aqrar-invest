@@ -3,6 +3,7 @@ import { Area, AreaChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Too
 import type { Plot } from "../lib/types";
 import { money, num } from "../lib/format";
 import { useApi, useMeta } from "../lib/hooks";
+import { Scenarios } from "./Scenarios";
 
 /**
  * Per-hectare economics. These are illustrative, editable assumptions (not official statistics);
@@ -60,6 +61,7 @@ export function Calculator({ plot }: { plot: Plot }) {
   );
 
   return (
+    <>
     <section className="panel">
       <div className="panel__head">
         <h3>İnvestisiya kalkulyatoru</h3>
@@ -118,5 +120,7 @@ export function Calculator({ plot }: { plot: Plot }) {
         </div>
       </div>
     </section>
+    <Scenarios e={e} area={area} years={years} cropCode={crop} plotId={plot.id} />
+    </>
   );
 }
