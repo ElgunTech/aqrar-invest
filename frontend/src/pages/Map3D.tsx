@@ -56,6 +56,14 @@ export default function Map3D() {
   const [params] = useSearchParams();
   const initial = Number(params.get("sahe")) || null;
 
+  // the pending "start orbiting when this flight ends" handler, and the selected plot for map click handlers
+  const flightEnd = useRef<(() => void) | null>(null);
+  const selectedRef = useRef<Plot | null>(null);
+  const cancelFlightEnd = () => {
+    if (flightEnd.current) map.current?.off("moveend", flightEnd.current);
+    flightEnd.current = null;
+  };
+
   const stopOrbit = () => {
     if (orbit.current) cancelAnimationFrame(orbit.current);
     orbit.current = null;
@@ -83,7 +91,7 @@ export default function Map3D() {
     m.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "top-right");
     m.addControl(new maplibregl.TerrainControl({ source: "dem", exaggeration: 1.6 }), "top-right");
     // user interaction pauses the camera tour
-    ["mousedown", "touchstart", "wheel"].forEach((ev) => m.on(ev as "mousedown", () => { stopOrbit(); setOrbiting(false); }));
+    ["mousedown", "touchstart", "wheel"].forEach((ev) => m.on(ev as "mousedown", () => { cancelFlightEnd(); stopOrbit(); setOrbiting(false); }));
     map.current = m;
     const resize = new ResizeObserver(() => m.resize());
     resize.observe(container.current);
@@ -137,7 +145,7 @@ export default function Map3D() {
       m.on("mouseenter", "plots-3d", () => (m.getCanvas().style.cursor = "pointer"));
       m.on("mouseleave", "plots-3d", () => (m.getCanvas().style.cursor = ""));
       const first = initial ? plots.find((x) => x.id === initial) : undefined;
-      if (first) m.setFeatureState({ source: "plots", id: first.id }, { selected: true });
+      if (first) { m.setFeatureState({ source: "plots", id: first.id }, { selected: true }); selectedRef.current = first; }
       else startOrbit();
     };
     if (m.isStyleLoaded()) add();
@@ -155,25 +163,38 @@ export default function Map3D() {
   const select = (p: Plot) => {
     const m = map.current;
     if (!m) return;
+    const previous = selectedRef.current;
     if (m.getSource("plots")) {
-      if (selected) m.setFeatureState({ source: "plots", id: selected.id }, { selected: false });
+      if (previous && previous.id !== p.id) m.setFeatureState({ source: "plots", id: previous.id }, { selected: false });
       m.setFeatureState({ source: "plots", id: p.id }, { selected: true });
     }
+    selectedRef.current = p;
     setSelected(p);
+    // a new choice replaces the flight in progress: its end must not start the orbit, which would stop this flight
+    cancelFlightEnd();
     stopOrbit();
+    setOrbiting(false);
     // phones: the list is under the map, so bring the map back into view
     if (window.matchMedia("(max-width: 900px)").matches) container.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     m.flyTo({ center: centroid(p), zoom: 13.6, pitch: 68, bearing: m.getBearing() + 40, duration: 3200, essential: true });
-    m.once("moveend", () => {
+    // registered after flyTo, so the interrupted previous flight's moveend is not taken for this one's end
+    const done = () => {
+      flightEnd.current = null;
       startOrbit();
       setOrbiting(true);
-    });
+    };
+    flightEnd.current = done;
+    m.once("moveend", done);
   };
 
   const overview = () => {
     const m = map.current;
     if (!m) return;
-    if (selected) m.setFeatureState({ source: "plots", id: selected.id }, { selected: false });
+    cancelFlightEnd();
+    stopOrbit();
+    setOrbiting(false);
+    if (selectedRef.current) m.setFeatureState({ source: "plots", id: selectedRef.current.id }, { selected: false });
+    selectedRef.current = null;
     setSelected(null);
     m.flyTo({ center: [46.95, 39.85], zoom: 8.6, pitch: 55, bearing: -15, duration: 2500 });
   };
