@@ -43,7 +43,10 @@ public class PortalApplication {
         java.net.URI u = java.net.URI.create(url.trim());
         String[] userInfo = u.getRawUserInfo() == null ? new String[0] : u.getRawUserInfo().split(":", 2);
         String query = u.getRawQuery() == null ? "sslmode=require" : u.getRawQuery().replace("&channel_binding=require", "").replace("channel_binding=require&", "");
-        System.setProperty("spring.datasource.url", "jdbc:postgresql://" + u.getHost() + (u.getPort() > 0 ? ":" + u.getPort() : "") + u.getRawPath() + "?" + query);
+        System.setProperty("spring.datasource.url", "jdbc:postgresql://" + u.getHost() + (u.getPort() > 0 ? ":" + u.getPort() : "") + u.getRawPath() + "?" + query
+                // Neon pools connections (PgBouncer): server-side prepared statements outlive schema changes and fail
+                // with "cached plan must not change result type", so the driver must not prepare them.
+                + (query.contains("prepareThreshold") ? "" : "&prepareThreshold=0"));
         if (userInfo.length > 0) System.setProperty("spring.datasource.username", java.net.URLDecoder.decode(userInfo[0], java.nio.charset.StandardCharsets.UTF_8));
         if (userInfo.length > 1) System.setProperty("spring.datasource.password", java.net.URLDecoder.decode(userInfo[1], java.nio.charset.StandardCharsets.UTF_8));
         System.setProperty("spring.jpa.database-platform", "org.hibernate.dialect.PostgreSQLDialect");
