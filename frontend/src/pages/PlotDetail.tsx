@@ -48,7 +48,7 @@ export function AiCard({ rec, inputs }: { rec: CropRecommendation; inputs?: Plot
               </div>
             ))}
             <p className="muted" style={{ fontSize: 13.5, marginTop: 14 }}>{rec.explanation}</p>
-            <p className="ai-note"><b>Model haqqında:</b> açıq Kaggle datasetində (Crop Recommendation, 2 200 nümunə) öyrədilib; regional iqlim filtri tropik bitkiləri çıxarır. Real istifadədən əvvəl yerli torpaq analizləri ilə yenidən öyrədilməlidir. Nəticə qərar deyil, ilkin istiqamətdir: iqlim riski tabı ilə birlikdə baxın.</p>
+            <p className="ai-note"><b>ML nümayişi, məsləhət xarakterlidir.</b> açıq Kaggle datasetində (Crop Recommendation, 2 200 nümunə) öyrədilib; regional iqlim filtri tropik bitkiləri çıxarır. Real istifadədən əvvəl yerli torpaq analizləri ilə yenidən öyrədilməlidir. Nəticə qərar deyil, ilkin istiqamətdir: iqlim riski tabı ilə birlikdə baxın.</p>
             {filtered && <div style={{ marginTop: 12 }}><Callout tone="warn">Model tropik bitki də təklif etdi, lakin regional iqlim filtri onu çıxardı.</Callout></div>}
           </div>
           {inputs && (

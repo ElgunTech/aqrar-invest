@@ -73,7 +73,7 @@ function SoilLab() {
                   </div>
                 ))}
                 <p className="muted" style={{ fontSize: 13, marginTop: 12 }}>{rec.explanation}</p>
-                <p className="ai-note"><b>Model haqqında:</b> açıq Kaggle datasetində (Crop Recommendation, 2 200 nümunə) öyrədilib; regional iqlim filtri tropik bitkiləri çıxarır. Real istifadədən əvvəl yerli torpaq analizləri ilə yenidən öyrədilməlidir. Nəticə qərar deyil, ilkin istiqamətdir: sahə səhifəsindəki iqlim riski ilə birlikdə baxın.</p>
+                <p className="ai-note"><b>ML nümayişi, məsləhət xarakterlidir.</b> açıq Kaggle datasetində (Crop Recommendation, 2 200 nümunə) öyrədilib; regional iqlim filtri tropik bitkiləri çıxarır. Real istifadədən əvvəl yerli torpaq analizləri ilə yenidən öyrədilməlidir. Nəticə qərar deyil, ilkin istiqamətdir: sahə səhifəsindəki iqlim riski ilə birlikdə baxın.</p>
                 {rec.rawTop.length > 0 && (
                   <details style={{ marginTop: 12, fontSize: 13 }}>
                     <summary style={{ cursor: "pointer", fontWeight: 600 }}>Modelin xam çıxışı (filtrdən əvvəl)</summary>

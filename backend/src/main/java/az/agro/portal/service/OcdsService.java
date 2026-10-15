@@ -77,7 +77,7 @@ public class OcdsService {
         tender.put("procurementMethodDetails", "Kənd təsərrüfatı torpaqlarının icarəsi üzrə investisiya müsabiqəsi");
         tender.put("mainProcurementCategory", "works");
         tender.put("awardCriteria", "ratedCriteria");
-        tender.put("awardCriteriaDetails", "Avtomatik bal (investisiya, iş yerləri, «Böyük Qayıdış», təcrübə, AI uyğunluğu) və ən azı 2 komissiya üzvünün müstəqil balı");
+        tender.put("awardCriteriaDetails", "Avtomatik bal (investisiya, iş yerləri, «Böyük Qayıdış», təcrübə, ML nümayişi üzrə bitki uyğunluğu: məsləhət xarakterli) və ən azı 2 komissiya üzvünün müstəqil balı");
         Map<String, Object> period = new LinkedHashMap<>();
         if (c.getStartDate() != null) period.put("startDate", c.getStartDate().atStartOfDay().toInstant(ZoneOffset.UTC).toString());
         period.put("endDate", c.getDeadline().atTime(23, 59, 59).toInstant(ZoneOffset.UTC).toString());

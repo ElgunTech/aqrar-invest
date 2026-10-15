@@ -58,21 +58,26 @@ public class ApplicationScorer {
         return new ScoreBreakdown(Math.min(100, total), items);
     }
 
+    /**
+     * The crop model is an ML demonstration trained on a public dataset (22 crops, no wheat, barley or hazelnut, no
+     * local field trials), so it may only add a small bonus: a crop it does not rank or does not know gets the
+     * neutral score, never a penalty. Agronomic suitability is the commission's call.
+     */
     private ScoreItem cropFit(InvestmentApplication a, LandPlot plot) {
+        String label = "ML nümayişi: bitkinin torpağa uyğunluğu";
         String crop = a.getPlannedCrop();
         if (crop == null || crop.isBlank()) {
-            return new ScoreItem("AI: bitkinin torpağa uyğunluğu", 8, 15, "Bitki göstərilməyib (neytral bal)");
+            return new ScoreItem(label, NEUTRAL, 15, "Bitki göstərilməyib (neytral bal)");
         }
         CropRecommendation rec = ai.recommend(SoilClimate.of(plot));
         List<CropRecommendation.CropScore> top = rec.recommendations();
         for (int i = 0; i < top.size(); i++) {
             if (top.get(i).code().equalsIgnoreCase(crop)) {
-                int pts = i == 0 ? 15 : 10;
-                return new ScoreItem("AI: bitkinin torpağa uyğunluğu", pts, 15,
-                        "AI tövsiyəsində " + (i + 1) + "-ci yerdədir");
+                return new ScoreItem(label, i == 0 ? 15 : 13, 15, "Model tövsiyəsində " + (i + 1) + "-ci yerdədir (məsləhət xarakterli)");
             }
         }
-        String best = top.isEmpty() ? "-" : top.get(0).name();
-        return new ScoreItem("AI: bitkinin torpağa uyğunluğu", 4, 15, "Torpaq üçün optimal deyil; AI tövsiyəsi: " + best);
+        return new ScoreItem(label, NEUTRAL, 15, "Model bu bitkini önə çıxarmır; neytral bal, qiymət komissiyanındır");
     }
+
+    private static final int NEUTRAL = 11;
 }
