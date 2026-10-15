@@ -61,7 +61,6 @@ export default function Login() {
             fullName: String(f.get("fullName")).trim(),
             email: String(f.get("email")).trim(),
             phone: String(f.get("phone") ?? "").trim(),
-            fin: String(f.get("fin") ?? "").trim(),
             password,
           },
         });
@@ -119,11 +118,6 @@ export default function Login() {
               <label htmlFor="phone">Mobil nömrə</label>
               <input className="input" id="phone" name="phone" type="tel" placeholder="+994 50 000 00 00" autoComplete="tel" />
               {fieldErr("phone")}
-            </div>
-            <div className={cls("fin")}>
-              <label htmlFor="fin">FİN <span className="faint" style={{ fontWeight: 400 }}>(istəyə bağlı)</span></label>
-              <input className="input mono" id="fin" name="fin" maxLength={7} style={{ textTransform: "uppercase" }} />
-              {fieldErr("fin")}
             </div>
           </div>
         )}

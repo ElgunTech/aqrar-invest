@@ -71,18 +71,19 @@ public class AuthController {
     @PostMapping("/login")
     public UserDto login(@Valid @RequestBody LoginRequest r, HttpServletRequest req, HttpServletResponse res) {
         String email = r.email().trim().toLowerCase(Locale.ROOT);
-        if (attempts.isBlocked(email)) {
+        String key = clientIp(req) + "|" + email;
+        if (attempts.isBlocked(key)) {
             throw new ApiException(HttpStatus.TOO_MANY_REQUESTS, "Çox sayda uğursuz cəhd. 10 dəqiqə sonra yenidən yoxlayın.");
         }
         Authentication auth;
         try {
             auth = authManager.authenticate(new UsernamePasswordAuthenticationToken(email, r.password()));
         } catch (AuthenticationException e) {
-            attempts.recordFailure(email);
+            attempts.recordFailure(key);
             audit.logAs(email, "LOGIN_FAILED", "AppUser", null, null);
             throw new ApiException(HttpStatus.UNAUTHORIZED, "E-poçt və ya şifrə yanlışdır");
         }
-        attempts.recordSuccess(email);
+        attempts.recordSuccess(key);
         establishSession(auth, req, res);
         audit.logAs(email, "LOGIN", "AppUser", null, null);
         return toDto(users.findByEmailIgnoreCase(email).orElseThrow());
@@ -94,13 +95,9 @@ public class AuthController {
     public UserDto register(@Valid @RequestBody RegisterRequest r, HttpServletRequest req, HttpServletResponse res) {
         String email = r.email().trim().toLowerCase(Locale.ROOT);
         if (users.existsByEmailIgnoreCase(email)) throw ApiException.conflict("Bu e-poçt ilə hesab artıq mövcuddur");
-        String fin = r.fin() == null || r.fin().isBlank() ? null : r.fin().trim().toUpperCase(Locale.ROOT);
-        if (fin != null && users.findByTaxIdIndex(az.agro.portal.security.PiiCrypto.index(fin)).isPresent()) {
-            throw ApiException.conflict("Bu FİN ilə hesab artıq mövcuddur. myGov ilə daxil olun.");
-        }
         AppUser u = new AppUser(email, encoder.encode(r.password()), r.fullName().trim(), Role.INVESTOR);
         u.setPhone(r.phone());
-        u.setTaxId(fin);
+        // FİN is not taken from the form: an unverified FİN could claim someone else's identity. It is set by myGov only.
         users.save(u);
         notifications.notify(u, "Aqrar İnvestə xoş gəldiniz!", "Hörmətli " + u.getFullName() + ", qeydiyyatınız uğurla tamamlandı. Xəritədən minadan təmizlənmiş sahələrə baxın, AI məsləhətçidən istifadə edin və müsabiqələrə müraciət edin.", "/xerite");
         Authentication auth = authManager.authenticate(new UsernamePasswordAuthenticationToken(email, r.password()));
@@ -183,5 +180,11 @@ public class AuthController {
     private UserDto toDto(AppUser u) {
         return new UserDto(u.getId(), u.getEmail(), u.getFullName(), u.getRole().name(), u.getRole().getLabel(), u.getPhone(), u.getTaxId(),
                 notifications.unreadCount(u.getId()));
+    }
+
+    private static String clientIp(HttpServletRequest req) {
+        String xf = req.getHeader("X-Forwarded-For");
+        if (xf != null && !xf.isBlank()) return xf.split(",")[0].trim();
+        return req.getRemoteAddr();
     }
 }

@@ -13,3 +13,4 @@ backend/uploads/
 
 # rendered demo videos (large binaries)
 /video/
+*.tsbuildinfo

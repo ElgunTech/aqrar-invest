@@ -44,6 +44,7 @@ public class LedgerController {
      */
     @Operation(summary = "Demo: saxtakarlığı simulyasiya et / bərpa et")
     @PostMapping("/api/v1/admin/ledger/tamper/{number}")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public Map<String, Object> tamper(@PathVariable String number) {
         if (!demo) throw ApiException.forbidden("Saxtakarlıq simulyasiyası söndürülüb (DEMO_TAMPER=true ilə yalnız nümayiş üçün açılır)");

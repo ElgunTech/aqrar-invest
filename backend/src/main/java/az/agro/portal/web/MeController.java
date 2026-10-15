@@ -96,6 +96,11 @@ public class MeController {
     @GetMapping("/registry/{taxId}")
     public Map<String, Object> registry(@PathVariable String taxId) {
         if (!taxId.matches("^([A-Za-z0-9]{7}|\\d{10})$")) throw ApiException.badRequest("FİN 7 simvol, VÖEN 10 rəqəm olmalıdır");
+        // A FİN may only be looked up by its owner (verified via myGov); VÖEN data of companies is public.
+        String own = currentUser.require().getTaxId();
+        if (!taxId.matches("\\d{10}") && (own == null || !own.equalsIgnoreCase(taxId))) {
+            throw ApiException.forbidden("Yalnız öz FİN-iniz (myGov ilə təsdiqlənmiş) və ya VÖEN üzrə sorğu mümkündür");
+        }
         audit.log("REGISTRY_LOOKUP", "Farmer", null, "EKTİS reyestr sorğusu");
         try {
             return integration.findFarmer(taxId)

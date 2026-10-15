@@ -267,7 +267,7 @@ public class DemoDataSeeder implements ApplicationRunner {
         p.setLeaseYears(lease);
         p.setMinInvestment(minInvestment);
         p.setUsageTerms("Torpaq " + lease + " il müddətinə icarəyə verilir. Təyinatı dəyişdirilə bilməz. "
-                + "İlk 2 il ərzində investisiyanın ən azı 50%-i reallaşdırılmalıdır. Minadan təmizlənmə sertifikatı ANAMA tərəfindən verilir.");
+                + "İlk 12 ay ərzində investisiyanın ən azı 50%-i reallaşdırılmalıdır. Minadan təmizlənmə sertifikatı ANAMA tərəfindən verilir.");
         p.setDescription(description);
         applyRealPlot(p, district, activity);
         return plots.save(p);
