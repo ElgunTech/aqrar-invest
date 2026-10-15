@@ -3,7 +3,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import * as maplibregl from "maplibre-gl";
 import type { Map as MlMap } from "maplibre-gl";
+import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
 import "maplibre-gl/dist/maplibre-gl.css";
+
+// maplibre 6 loads its worker from a separate file; let Vite emit it and tell the library where it is
+maplibregl.setWorkerUrl(workerUrl);
 import { ArrowRight, Pause, Play, RotateCw, X } from "lucide-react";
 import { MineTag } from "../components/ui";
 import { ACTIVITY } from "../lib/domain";
