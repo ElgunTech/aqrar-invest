@@ -51,26 +51,47 @@ export function AiCard({ rec, inputs }: { rec: CropRecommendation; inputs?: Plot
             <p className="ai-note"><b>ML nümayişi, məsləhət xarakterlidir.</b> açıq Kaggle datasetində (Crop Recommendation, 2 200 nümunə) öyrədilib; regional iqlim filtri tropik bitkiləri çıxarır. Real istifadədən əvvəl yerli torpaq analizləri ilə yenidən öyrədilməlidir. Nəticə qərar deyil, ilkin istiqamətdir: iqlim riski tabı ilə birlikdə baxın.</p>
             {filtered && <div style={{ marginTop: 12 }}><Callout tone="warn">Model tropik bitki də təklif etdi, lakin regional iqlim filtri onu çıxardı.</Callout></div>}
           </div>
-          {inputs && (
-            <div>
-              <h4 style={{ marginBottom: 8 }}>Modelin giriş göstəriciləri</h4>
-              <table className="table table--kv table--compact">
-                <tbody>
-                  <tr><td>Azot (N)</td><td className="num">{num(inputs.nitrogen)} kq/ha</td></tr>
-                  <tr><td>Fosfor (P)</td><td className="num">{num(inputs.phosphorus)} kq/ha</td></tr>
-                  <tr><td>Kalium (K)</td><td className="num">{num(inputs.potassium)} kq/ha</td></tr>
-                  <tr><td>Torpağın pH-ı</td><td className="num">{num(inputs.ph, 1)}</td></tr>
-                  <tr><td>Orta temperatur</td><td className="num">{num(inputs.avgTemperature, 1)} °C</td></tr>
-                  <tr><td>Nisbi rütubət</td><td className="num">{num(inputs.humidity)}%</td></tr>
-                  <tr><td>Yağıntı</td><td className="num">{num(inputs.rainfall)} mm</td></tr>
-                </tbody>
-              </table>
-              <p className="faint" style={{ fontSize: 12, marginTop: 8 }}>Model Kaggle-da öyrədilib və ONNX formatında birbaşa portalın Java serverində işləyir.</p>
-            </div>
-          )}
+          {inputs && <ModelInputs plot={inputs} />}
         </div>
       </div>
     </section>
+  );
+}
+
+interface MeasuredInputs {
+  inputs: { key: string; label: string; value: number; unit: string; measured: boolean; source: string }[];
+  recommendation: CropRecommendation;
+  measuredCount: number;
+  note: string;
+}
+
+/** Model inputs with their origin: ERA5 and SoilGrids measurements where available, illustrative values otherwise. */
+function ModelInputs({ plot }: { plot: Plot }) {
+  const { data, error } = useApi<MeasuredInputs>(`/api/v1/public/plots/${plot.id}/measured-inputs`);
+  if (!data) {
+    return error ? <p className="faint" style={{ fontSize: 12.5 }}>Real ölçü mənbələri hazırda cavab vermir.</p> : <Loading />;
+  }
+  const top = data.recommendation.recommendations.slice(0, 3);
+  return (
+    <div>
+      <h4 style={{ marginBottom: 8 }}>Modelin giriş göstəriciləri</h4>
+      <table className="table table--kv table--compact">
+        <tbody>
+          {data.inputs.map((i) => (
+            <tr key={i.key} title={i.source}>
+              <td>{i.label} <Tag tone={i.measured ? "ok" : "muted"}>{i.measured ? "ölçü" : "illüstrativ"}</Tag></td>
+              <td className="num">{num(i.value, i.key === "ph" || i.key === "temperature" ? 1 : i.key === "soilN" ? 2 : 0)}{i.unit ? ` ${i.unit}` : ""}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p className="faint" style={{ fontSize: 12, marginTop: 8 }}>{data.note} Mənbəni görmək üçün sətrin üzərinə gəlin.</p>
+      {top.length > 0 && (
+        <p style={{ fontSize: 13, marginTop: 8 }}>
+          <b>Real ölçülərlə model nəticəsi:</b> {top.map((c) => `${c.name} (${fit(c.probability)})`).join(", ")}
+        </p>
+      )}
+    </div>
   );
 }
 

@@ -35,10 +35,13 @@ public class PublicController {
     private final az.agro.portal.service.SatelliteService satellite;
     private final az.agro.portal.service.SolarService solar;
     private final az.agro.portal.service.ClimateService climate;
+    private final az.agro.portal.service.MeasuredInputsService measured;
 
     public PublicController(PlotService plots, CompetitionService competitions, StatsService stats, CropRecommendationService ai,
                             ApplicationService applications, az.agro.portal.service.SatelliteService satellite,
-                            az.agro.portal.service.SolarService solar, az.agro.portal.service.ClimateService climate) {
+                            az.agro.portal.service.SolarService solar, az.agro.portal.service.ClimateService climate,
+                            az.agro.portal.service.MeasuredInputsService measured) {
+        this.measured = measured;
         this.satellite = satellite;
         this.solar = solar;
         this.climate = climate;
@@ -91,6 +94,12 @@ public class PublicController {
     @GetMapping("/plots/{id}/climate")
     public az.agro.portal.service.ClimateService.Report climate(@PathVariable Long id) {
         return climate.report(id);
+    }
+
+    @Operation(summary = "Modelin girişləri real ölçülərlə (ERA5 iqlimi, SoilGrids pH) və onlarla hesablanmış tövsiyə")
+    @GetMapping("/plots/{id}/measured-inputs")
+    public az.agro.portal.service.MeasuredInputsService.Report measuredInputs(@PathVariable Long id) {
+        return measured.report(id);
     }
 
     @Operation(summary = "AI: sahə üçün bitki tövsiyəsi")
