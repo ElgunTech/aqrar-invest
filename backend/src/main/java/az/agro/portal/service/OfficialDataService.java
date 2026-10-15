@@ -146,7 +146,10 @@ public class OfficialDataService {
         return Optional.ofNullable(data.get(key)).map(m -> m.get(unit)).filter(m -> !m.isEmpty()).map(m -> m.lastEntry().getValue());
     }
 
-    /** Latest official yield (t/ha) of a crop in a district, or nationally when the district has none. */
+    /**
+     * Official yield (t/ha) of a crop: the median of the last five reported years, so one drought or bumper year does
+     * not set the business plan. District first, then the Karabakh region, then the national figure.
+     */
     public Optional<Map<String, Object>> cropYield(String crop, String district) {
         String key = CROP_YIELD.get(crop);
         if (key == null || !data.containsKey(key)) return Optional.empty();
@@ -155,8 +158,19 @@ public class OfficialDataService {
             TreeMap<Integer, Double> s = m.get(unit);
             if (s != null && !s.isEmpty()) {
                 Map<String, Object> r = new LinkedHashMap<>();
-                r.put("tonsPerHa", Math.round(s.lastEntry().getValue() / 10 * 100) / 100.0);
+                List<Double> last5 = new ArrayList<>(s.tailMap(s.lastKey() - 4, true).values());
+                Collections.sort(last5);
+                int n = last5.size();
+                double median = n % 2 == 1 ? last5.get(n / 2) : (last5.get(n / 2 - 1) + last5.get(n / 2)) / 2;
+                int fromYear = s.tailMap(s.lastKey() - 4, true).firstKey();
+                r.put("tonsPerHa", Math.round(median / 10 * 100) / 100.0);
                 r.put("year", s.lastKey());
+                r.put("fromYear", fromYear);
+                r.put("years", n);
+                // Before the 2020 liberation the district figures describe only the part under Azerbaijani control.
+                if (fromYear <= 2020 && unit.endsWith("rayonu")) {
+                    r.put("note", "2020-ci ilədək rayon göstəriciləri yalnız işğal altında olmayan hissəni əks etdirir");
+                }
                 r.put("unit", unit);
                 r.put("source", "Dövlət Statistika Komitəsi, " + INDICATORS.get(key)[0]);
                 return Optional.of(r);

@@ -28,7 +28,7 @@ export function Calculator({ plot }: { plot: Plot }) {
   const meta = useMeta();
   const [crop, setCrop] = useState(plot.aiTopCrop?.code ?? "maize");
   const [area, setArea] = useState(Math.min(plot.areaHa, Math.max(5, Math.round(plot.areaHa / 2))));
-  const official = useApi<{ tonsPerHa?: number; year?: number; unit?: string; source?: string }>(
+  const official = useApi<{ tonsPerHa?: number; year?: number; fromYear?: number; years?: number; unit?: string; source?: string; note?: string }>(
     `/api/v1/public/official/yield?crop=${crop}&district=${encodeURIComponent(plot.district)}`).data;
   const officialYield = official?.tonsPerHa;
   const base = { ...(ECON[crop] ?? GENERIC), ...(officialYield ? { yieldT: officialYield } : {}) };
@@ -88,7 +88,7 @@ export function Calculator({ plot }: { plot: Plot }) {
             </div>
             {officialYield && over.yieldT === undefined && (
               <p style={{ fontSize: 12.5, color: "var(--forest-600)", marginBottom: 6 }}>
-                Məhsuldarlıq rəsmi statistikadandır: {officialYield} t/ha, {official?.unit}, {official?.year}-ci il ({official?.source}).
+                Məhsuldarlıq rəsmi statistikadandır: {officialYield} t/ha, {official?.unit}, {official?.fromYear}–{official?.year}-ci illərin medianı ({official?.source}).{official?.note ? ` ${official.note}.` : ""}
               </p>
             )}
             {e.perennial && <p className="faint" style={{ fontSize: 12.5 }}>Çoxillik bitki: məhsul 2-ci ildə 30%, 3-cü ildə 70%, 4-cü ildən tam həcmdə.</p>}
