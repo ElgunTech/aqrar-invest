@@ -114,6 +114,7 @@ Portal demo deyil, rəsmi mənbələrdən istifadə edir (`tools/opendata/fetch.
 | Minadan təmizlənmiş və sertifikatlaşdırılmış sahələrin sərhədləri (2020–2026) | ANAMA, opendata.az | ODC-BY | Müsabiqə sahələrinin real sərhədi, sahəsi, kəndi və təmizlənmə tarixi; xəritədə 1019 k/t sahəsi |
 | Rayonlar üzrə məhsuldarlıq və istehsal (2000–2025, 12 göstərici) | Dövlət Statistika Komitəsi (azstat.gov.az API) | CC0 | Sahə səhifəsində rayon statistikası, kalkulyatorda rəsmi məhsuldarlıq, köməkçinin cavabları |
 | Sentinel-2 L2A peyk görüntüləri (aylıq, son 13 ay) | Copernicus / ESA, Microsoft Planetary Computer | Copernicus açıq lisenziyası | Sahənin sərhədi üzrə NDVI, öhdəliklərin peyk monitorinqi |
+| Gündəlik temperatur və yağıntı (2015–2024) | ERA5 (ECMWF / Copernicus), Open-Meteo | CC BY 4.0 | Sahənin iqlim riski və bitkilər üçün risk qiymətləndirməsi |
 | Günəş radiasiyası və PV istehsalı | PVGIS 5.3, Avropa Komissiyası JRC | açıq | Sahənin günəş paneli üçün uyğunluğu və istehsal potensialı |
 | Elektrik enerjisi tarifləri | Tarif (Qiymət) Şurası, 29.12.2024 tarixli 19 nömrəli qərar | rəsmi | Günəşdən alış tarifi 8.5 qəpik/kWh, kənd təsərrüfatı tarifi 10.6 qəpik/kWh |
 
@@ -142,6 +143,8 @@ start.bat
 * **QR qəbz və qərar sənədi:** müraciət qəbzi və komissiyanın qərarı (QR kod, komissiya balları, elektron imza, möhür) çap və PDF üçün; ictimai yoxlama səhifəsi `/yoxla`.
 * **Peyk monitorinqi (NDVI):** hər sahə üçün son 13 ayın ən az buludlu Sentinel-2 görüntüsü, NDVI sahənin rəsmi sərhədi üzrə hesablanır. Yazda bütün boş sahələr yağışdan yaşıllaşır, ona görə əkin yay aylarındakı (iyun–sentyabr) NDVI və ötən ilin həmin ayı ilə müqayisə ilə müəyyən edilir. Qərardan 6 ay sonra əkin görünmürsə, qırmızı xəbərdarlıq yaranır. Investorun foto-hesabatından asılı olmayan ikinci yoxlama.
 * **Günəş enerjisi:** sahənin günəş paneli üçün uyğunluğu (100 bal: PVGIS potensialı, minatəmizləmə, şəbəkə, fəaliyyətlə uyğunluq). İki ssenari: «aktiv istehlakçı» (150 kW-a qədər, öz ehtiyacı 10.6 qəpik qənaət, artığı Azərişıq şəbəkəsinə 8.5 qəpik) və aqrovoltaik stansiya (panellər altında əkin davam edir). Sahənin illik gəlirinə təsiri, geri qaytarılma, CO₂. Xərclər redaktə edilə bilən fərziyyələrdir.
+* **İqlim riski:** sahənin koordinatları üzrə 10 illik (2015–2024) ERA5 gündəlik məlumatı (Open-Meteo, açarsız): şaxtalı günlər, gec yaz şaxtası, ən soyuq gecə, isti günlər, yağıntı, istilik cəmi. AI-nin tövsiyə etdiyi bitkilər üçün qış şaxtası, gec yaz şaxtası, istilik stresi və suvarma ehtiyacı riski (aşağı / orta / yüksək).
+* **Sahə pasportu (PDF):** `/sahe/{id}/pasport` — minatəmizləmə, AI, iqlim riski, peyk, günəş və rəsmi statistika bir A4 sənəddə, QR kodla; investor banka və tərəfdaşa təqdim edə bilər.
 * **3D xəritə:** relyef, peyk görüntüsü, ANAMA qatı və sahələr; sahə seçiləndə kamera ona uçur. Sahə səhifəsində "3D bax".
 * **E-poçt bildirişləri:** qeydiyyat, müraciət, status dəyişikliyi, EKTİS təsdiqi və monitorinq nəticəsi istifadəçinin e-poçtuna göndərilir (Brevo HTTP API; SMTP də dəstəklənir). `@demo.az` hesablarına göndərilmir.
 * **Üç dil:** AZ / EN / RU (yuxarı zolaqda). Rəsmi mənbələrdən gələn adlar azərbaycanca qalır.

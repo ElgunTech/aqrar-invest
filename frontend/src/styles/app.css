@@ -771,3 +771,40 @@ html, body { overflow-x: clip; }
 .install-help__card h3 { margin: 10px 0 12px; font-size: 18px; }
 .install-help__card ol { text-align: left; margin: 0 0 18px; padding-left: 20px; display: grid; gap: 10px; font-size: 14.5px; }
 .install-help__card li svg { vertical-align: -4px; color: var(--forest-600); }
+
+/* climate risk */
+.climate-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.climate-tiles > div { display: grid; gap: 2px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fafbfa; }
+.climate-tiles span { font-size: 12px; color: var(--ink-soft); }
+.climate-tiles b { font-size: 20px; font-variant-numeric: tabular-nums; }
+.climate-tiles small { font-size: 11.5px; color: var(--ink-faint); }
+.climate-crops { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+.climate-crop { border: 1px solid var(--line); border-top: 4px solid var(--forest-600); border-radius: 8px; padding: 10px 12px; }
+.climate-crop--warn { border-top-color: #d97706; }
+.climate-crop--danger { border-top-color: var(--danger); }
+.climate-crop__head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+.climate-crop__head span { font-size: 12px; font-weight: 600; }
+.climate-crop--ok .climate-crop__head span { color: var(--forest-600); }
+.climate-crop--warn .climate-crop__head span { color: #b45309; }
+.climate-crop--danger .climate-crop__head span { color: var(--danger); }
+.climate-crop ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 12.5px; line-height: 1.4; }
+.climate-crop li b { font-weight: 600; }
+.lvl { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--forest-600); vertical-align: 1px; }
+.lvl--warn { background: #d97706; }
+.lvl--danger { background: var(--danger); }
+@media (max-width: 640px) { .climate-tiles { grid-template-columns: 1fr 1fr; } }
+
+/* plot passport (printable) */
+.passport-btn { margin-top: 12px; }
+.passport__title { font-size: 15px; font-weight: 600; margin-top: 4px; }
+.passport__title .mono { color: var(--ink-faint); font-weight: 500; margin-left: 6px; }
+.passport__block { margin: 8px 48px 0; font-size: 13.5px; }
+.passport__sat { display: grid; grid-template-columns: 1fr 150px 150px; gap: 14px; align-items: start; }
+.passport__sat p { margin: 4px 0; }
+.passport__sat img { width: 150px; height: 150px; object-fit: cover; border-radius: 6px; }
+.passport .climate-tiles b { font-size: 16px; }
+@media (max-width: 640px) { .passport__block { margin-inline: 16px; } .passport__sat { grid-template-columns: 1fr 1fr; } .passport__sat > div { grid-column: 1 / -1; } }
+@media print {
+  .passport h2 { break-after: avoid; }
+  .passport .receipt__table, .passport__block, .climate-crop { break-inside: avoid; }
+}

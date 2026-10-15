@@ -34,12 +34,14 @@ public class PublicController {
     private final ApplicationService applications;
     private final az.agro.portal.service.SatelliteService satellite;
     private final az.agro.portal.service.SolarService solar;
+    private final az.agro.portal.service.ClimateService climate;
 
     public PublicController(PlotService plots, CompetitionService competitions, StatsService stats, CropRecommendationService ai,
                             ApplicationService applications, az.agro.portal.service.SatelliteService satellite,
-                            az.agro.portal.service.SolarService solar) {
+                            az.agro.portal.service.SolarService solar, az.agro.portal.service.ClimateService climate) {
         this.satellite = satellite;
         this.solar = solar;
+        this.climate = climate;
         this.applications = applications;
         this.plots = plots;
         this.competitions = competitions;
@@ -83,6 +85,12 @@ public class PublicController {
     @GetMapping("/plots/{id}/solar")
     public az.agro.portal.service.SolarService.Report solar(@PathVariable Long id) {
         return solar.report(id);
+    }
+
+    @Operation(summary = "İqlim riski: 10 illik ERA5 göstəriciləri və AI-nin tövsiyə etdiyi bitkilər üçün risk")
+    @GetMapping("/plots/{id}/climate")
+    public az.agro.portal.service.ClimateService.Report climate(@PathVariable Long id) {
+        return climate.report(id);
     }
 
     @Operation(summary = "AI: sahə üçün bitki tövsiyəsi")

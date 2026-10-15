@@ -1,10 +1,11 @@
+import { ClimatePanel } from "../components/Climate";
 import { useT } from "../lib/i18n";
 import { SolarPanel } from "../components/Solar";
 import { SatellitePanel } from "../components/Satellite";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { GeoJSON, MapContainer, TileLayer } from "react-leaflet";
 import { Box,
-  ArrowRight, BarChart3, CalendarClock, Calculator as CalcIcon, Check, ChevronRight, Droplets, FileText, Landmark, MapPin, Route, Satellite, Scale, Sprout, Sun, Zap, X as XIcon,
+  ArrowRight, BarChart3, CloudSun, FileDown, CalendarClock, Calculator as CalcIcon, Check, ChevronRight, Droplets, FileText, Landmark, MapPin, Route, Satellite, Scale, Sprout, Sun, Zap, X as XIcon,
 } from "lucide-react";
 import { Calculator } from "../components/Calculator";
 import { Callout, Empty, Loading, Meter, MineTag, Tag } from "../components/ui";
@@ -14,10 +15,11 @@ import { countdown, date, money, num, pct, pct1 } from "../lib/format";
 import { useApi, useDocumentTitle } from "../lib/hooks";
 import type { CropRecommendation, OfficialIndicator, Plot } from "../lib/types";
 
-type TabKey = "umumi" | "ai" | "gelir" | "gunes" | "peyk" | "statistika";
+type TabKey = "umumi" | "ai" | "iqlim" | "gelir" | "gunes" | "peyk" | "statistika";
 const TABS: { key: TabKey; label: string; icon: typeof Sun }[] = [
   { key: "umumi", label: "Ümumi", icon: Landmark },
   { key: "ai", label: "Torpaq və AI", icon: Sprout },
+  { key: "iqlim", label: "İqlim riski", icon: CloudSun },
   { key: "gelir", label: "Gəlir kalkulyatoru", icon: CalcIcon },
   { key: "gunes", label: "Günəş enerjisi", icon: Sun },
   { key: "peyk", label: "Peyk monitorinqi", icon: Satellite },
@@ -225,6 +227,7 @@ export default function PlotDetail() {
               </>
             )}
             {tab === "ai" && (rec ? <AiCard rec={rec} inputs={p} /> : <div className="panel"><Loading /></div>)}
+            {tab === "iqlim" && <ClimatePanel plotId={p.id} />}
             {tab === "gelir" && <Calculator plot={p} />}
             {tab === "gunes" && <SolarPanel plot={p} />}
             {tab === "peyk" && <SatellitePanel plotId={p.id} />}
@@ -249,6 +252,7 @@ export default function PlotDetail() {
                 <Link className="btn btn--sm btn--ghost" to="/xerite"><MapPin size={14} /> Xəritədə</Link>
                 <Link className="btn btn--sm btn--ghost" to={`/xerite-3d?sahe=${p.id}`}><Box size={14} /> 3D bax</Link>
               </div>
+              <Link className="btn btn--block passport-btn" to={`/sahe/${p.id}/pasport`}><FileDown size={16} /> {t("Sahə pasportu (PDF)")}</Link>
             </div>
             <div className="panel panel--pad">
               <h3 style={{ marginBottom: 10 }}><FileText size={17} style={{ verticalAlign: -3 }} /> Tələb olunan sənədlər</h3>

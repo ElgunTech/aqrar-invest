@@ -25,6 +25,7 @@ const MyGovDemo = lazy(() => import("./pages/MyGovDemo"));
 const MyGovCallback = lazy(() => import("./pages/MyGovCallback"));
 const Receipt = lazy(() => import("./pages/Receipt"));
 const Decision = lazy(() => import("./pages/Decision"));
+const Passport = lazy(() => import("./pages/Passport"));
 const Verify = lazy(() => import("./pages/Verify"));
 
 /** Route guard: unauthenticated → login (with return path); wrong role → home. */
@@ -44,6 +45,7 @@ export function App() {
         <Route index element={<Landing />} />
         <Route path="mygov-demo" element={<MyGovDemo />} />
         <Route path="kabinet/:id/qebz" element={<RequireUser roles={["INVESTOR"]}><Receipt /></RequireUser>} />
+        <Route path="sahe/:id/pasport" element={<Passport />} />
         <Route path="kabinet/:id/qerar" element={<RequireUser roles={["INVESTOR"]}><Decision /></RequireUser>} />
         <Route path="admin/qerar/:id" element={<RequireUser roles={["ADMIN", "EVALUATOR"]}><Decision admin /></RequireUser>} />
         <Route element={<Layout />}>
