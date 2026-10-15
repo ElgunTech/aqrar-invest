@@ -67,12 +67,13 @@ public class SatelliteService {
         if (c != null && c.at().plus(CACHE_TTL).isAfter(Instant.now())) return c.report();
         LandPlot plot = plots.findById(plotId).orElseThrow(() -> ApiException.notFound("Sahə"));
         if (plot.getBoundaryGeoJson() == null) throw ApiException.badRequest("Sahənin sərhədi yoxdur");
-        LocalDate award = applications.findAllByOrderByCreatedAtDesc().stream()
+        InvestmentApplication winner = applications.findAllByOrderByCreatedAtDesc().stream()
                 .filter(a -> a.getPlot().getId().equals(plotId) && a.getStatus() == ApplicationStatus.APPROVED)
-                .map(SatelliteService::decidedAt).map(i -> i.atZone(ZoneOffset.UTC).toLocalDate())
                 .findFirst().orElse(null);
+        LocalDate award = winner == null ? null : decidedAt(winner).atZone(ZoneOffset.UTC).toLocalDate();
+        Season season = Season.of(winner == null ? null : winner.getPlannedCrop());
         try {
-            Report r = build(plot, award);
+            Report r = build(plot, award, season);
             cache.put(plotId, new Cached(r, Instant.now()));
             return r;
         } catch (Exception e) {
@@ -87,7 +88,7 @@ public class SatelliteService {
                 .map(az.agro.portal.domain.StatusChange::getChangedAt).max(Comparator.naturalOrder()).orElse(a.getUpdatedAt());
     }
 
-    private Report build(LandPlot plot, LocalDate award) throws Exception {
+    private Report build(LandPlot plot, LocalDate award, Season season) throws Exception {
         JsonNode geometry = json.readTree(plot.getBoundaryGeoJson());
         LocalDate to = LocalDate.now(ZoneOffset.UTC);
         LocalDate from = to.minusMonths(13).withDayOfMonth(1);
@@ -131,7 +132,7 @@ public class SatelliteService {
         }
 
         Observation last = series.get(series.size() - 1);
-        String[] verdict = assess(series, award, to);
+        String[] verdict = assess(series, award, to, season);
         return new Report(plot.getId(), verdict[0], verdict[1], verdict[2], round(last.ndvi()),
                 award == null ? null : award.toString(), series, images(geometry, last.item()), source(), Instant.now());
     }
@@ -156,7 +157,7 @@ public class SatelliteService {
     }
 
     /** status, headline, explanation */
-    static String[] assess(List<Observation> series, LocalDate award, LocalDate today) {
+    static String[] assess(List<Observation> series, LocalDate award, LocalDate today, Season season) {
         Observation last = series.get(series.size() - 1);
         double peak = series.stream().mapToDouble(Observation::ndvi).max().orElse(0);
         if (award == null) {
@@ -172,28 +173,67 @@ public class SatelliteService {
                     "Sahə " + award + " tarixində verilib. Növbəti buludsuz görüntü gələn kimi müqayisə ediləcək."};
         }
         // Spring rain greens every fallow field in Karabakh (NDVI 0.3-0.45 in April-May) and it dries out by July,
-        // so a spring peak is not evidence of farming. Cultivation shows as green in summer (June-September),
-        // or as a clear gain over the same month a year earlier.
-        double summerPeak = after.stream().filter(o -> summer(o.date())).mapToDouble(Observation::ndvi).max().orElse(0);
+        // so each crop is judged in its own growing window: winter cereals and pulses peak in March-May well above
+        // wild grass, summer crops are green in June-September, and young orchards and vineyards show mainly as a
+        // gain over the same month a year earlier.
+        List<Observation> inWindow = after.stream().filter(o -> season.inWindow(o.date())).toList();
+        double windowPeak = inWindow.stream().mapToDouble(Observation::ndvi).max().orElse(0);
         double gain = after.stream().mapToDouble(o -> o.ndvi() - sameMonthYearBefore(series, o).orElse(o.ndvi())).max().orElse(0);
-        boolean summerSeen = after.stream().anyMatch(o -> summer(o.date()));
-        if (summerPeak >= 0.35 || gain >= 0.12) {
+        if ((!inWindow.isEmpty() && windowPeak >= season.threshold) || gain >= season.minGain) {
             return new String[]{"ACTIVE", "Sahədə əkin aşkarlanır",
-                    "Qərardan sonra yay aylarında NDVI " + fmt(summerPeak) + ", ötən illə müqayisədə artım " + fmt(gain)
+                    season.label + " üçün mövsümdə (" + season.window + ") NDVI " + fmt(windowPeak) + ", ötən illə müqayisədə artım " + fmt(gain)
                             + ". Peyk məlumatı investorun hesabatlarını təsdiqləyir."};
         }
-        if (months >= 6 && summerSeen) {
+        if (months >= 6 && !inWindow.isEmpty()) {
             return new String[]{"ALERT", "Torpaq verildi, amma " + months + " aydır əkin görünmür",
-                    "Yazda NDVI " + fmt(afterPeak) + "-ə qalxıb, amma bu, təbii ot örtüyüdür: yay aylarında sahə quruyub (ən yüksək "
-                            + fmt(summerPeak) + "), ötən illə müqayisədə də fərq yoxdur. Mütəxəssisin yerində yoxlaması tövsiyə olunur."};
+                    season.label + " üçün mövsümdə (" + season.window + ") ən yüksək NDVI " + fmt(windowPeak) + ", gözlənilən ən azı "
+                            + fmt(season.threshold) + "; ötən illə müqayisədə də fərq yoxdur (qərardan sonra ən yüksək NDVI " + fmt(afterPeak)
+                            + " təbii ot örtüyünə uyğundur). Mütəxəssisin yerində yoxlaması tövsiyə olunur."};
         }
         return new String[]{"WATCH", "Əkin hələ görünmür",
-                "Qərardan " + months + " ay keçib, yay aylarında NDVI " + fmt(summerPeak) + ". Yay mövsümündə əkin görünməsə, xəbərdarlıq yaranacaq."};
+                "Qərardan " + months + " ay keçib. " + season.label + " üçün yoxlama mövsümü: " + season.window
+                        + ". Mövsümdə əkin görünməsə, xəbərdarlıq yaranacaq."};
     }
 
-    private static boolean summer(String date) {
-        int m = Integer.parseInt(date.substring(5, 7));
-        return m >= 6 && m <= 9;
+    static String[] assess(List<Observation> series, LocalDate award, LocalDate today) {
+        return assess(series, award, today, Season.SUMMER);
+    }
+
+    /** When a crop is visibly green from space, and how green it must be to stand out from wild grass. */
+    enum Season {
+        WINTER_SPRING("Payızlıq dənli və paxlalılar", "mart–may", 3, 5, 0.55, 0.12),
+        SUMMER("Yay bitkiləri", "iyun–sentyabr", 6, 9, 0.35, 0.12),
+        PERENNIAL("Bağ və üzüm sahələri", "iyun–sentyabr", 6, 9, 0.35, 0.08);
+
+        private static final Set<String> SPRING_CROPS = Set.of("wheat", "barley", "chickpea", "lentil", "pea", "oats", "rye");
+        private static final Set<String> PERENNIAL_CROPS = Set.of("apple", "grapes", "pomegranate", "hazelnut", "almond", "walnut",
+                "mango", "orange", "banana", "papaya", "coconut", "coffee");
+
+        final String label, window;
+        final int from, to;
+        final double threshold, minGain;
+
+        Season(String label, String window, int from, int to, double threshold, double minGain) {
+            this.label = label;
+            this.window = window;
+            this.from = from;
+            this.to = to;
+            this.threshold = threshold;
+            this.minGain = minGain;
+        }
+
+        static Season of(String crop) {
+            if (crop == null) return SUMMER;
+            String c = crop.toLowerCase(java.util.Locale.ROOT);
+            if (SPRING_CROPS.contains(c)) return WINTER_SPRING;
+            if (PERENNIAL_CROPS.contains(c)) return PERENNIAL;
+            return SUMMER;
+        }
+
+        boolean inWindow(String date) {
+            int m = Integer.parseInt(date.substring(5, 7));
+            return m >= from && m <= to;
+        }
     }
 
     private static java.util.OptionalDouble sameMonthYearBefore(List<Observation> series, Observation o) {

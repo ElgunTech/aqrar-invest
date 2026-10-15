@@ -43,4 +43,21 @@ class SatelliteAssessTest {
     void notAwardedIsBaseline() {
         assertEquals("BASELINE", SatelliteService.assess(List.of(o("2026-09-10", 0.2)), null, LocalDate.parse("2026-10-01"))[0]);
     }
+
+    @Test
+    void chickpeaJudgedInSpring() {
+        // a sown spring crop peaks well above wild grass in April-May and is harvested before summer
+        var sown = List.of(o("2025-05-10", 0.38), o("2026-04-20", 0.68), o("2026-08-05", 0.10));
+        assertEquals("ACTIVE", SatelliteService.assess(sown, LocalDate.parse("2025-08-15"), LocalDate.parse("2026-10-14"), SatelliteService.Season.of("chickpea"))[0]);
+        // grass-level green in spring is not a crop
+        var fallow = List.of(o("2025-04-10", 0.40), o("2026-04-20", 0.42), o("2026-08-05", 0.05));
+        assertEquals("ALERT", SatelliteService.assess(fallow, LocalDate.parse("2025-08-15"), LocalDate.parse("2026-10-14"), SatelliteService.Season.of("chickpea"))[0]);
+    }
+
+    @Test
+    void cropCalendar() {
+        assertEquals(SatelliteService.Season.WINTER_SPRING, SatelliteService.Season.of("wheat"));
+        assertEquals(SatelliteService.Season.PERENNIAL, SatelliteService.Season.of("grapes"));
+        assertEquals(SatelliteService.Season.SUMMER, SatelliteService.Season.of("cotton"));
+    }
 }
