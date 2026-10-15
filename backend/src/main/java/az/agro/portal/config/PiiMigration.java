@@ -15,7 +15,8 @@ import java.util.Map;
 
 /**
  * Brings an existing database up to field-level encryption: widens the personal-data columns (Hibernate's schema
- * update never changes a column length), encrypts rows still stored in plain text and fills the FİN blind index.
+ * update never changes a column length), encrypts rows still stored in plain text, re-encrypts rows written with an
+ * older key after PII_KEY changes, and keeps the FİN blind index in step with the current key.
  * Idempotent and runs before the demo seeder. The same SQL works on PostgreSQL and H2.
  */
 @Component
@@ -47,16 +48,19 @@ public class PiiMigration implements ApplicationRunner {
         }
         int encrypted = 0;
         for (String[] c : COLUMNS) {
-            List<Map<String, Object>> rows = jdbc.queryForList(
-                    "SELECT id, " + c[1] + " AS v FROM " + c[0] + " WHERE " + c[1] + " IS NOT NULL AND " + c[1] + " NOT LIKE 'enc:v1:%'");
+            List<Map<String, Object>> rows = jdbc.queryForList("SELECT id, " + c[1] + " AS v FROM " + c[0] + " WHERE " + c[1] + " IS NOT NULL");
             for (Map<String, Object> r : rows) {
-                jdbc.update("UPDATE " + c[0] + " SET " + c[1] + " = ? WHERE id = ?", PiiCrypto.encrypt((String) r.get("v")), r.get("id"));
+                String v = (String) r.get("v");
+                if (PiiCrypto.isEncrypted(v) && !PiiCrypto.needsRekey(v)) continue;
+                jdbc.update("UPDATE " + c[0] + " SET " + c[1] + " = ? WHERE id = ?", PiiCrypto.encrypt(PiiCrypto.decrypt(v)), r.get("id"));
                 encrypted++;
             }
         }
         int indexed = 0;
-        for (Map<String, Object> r : jdbc.queryForList("SELECT id, tax_id FROM app_user WHERE tax_id IS NOT NULL AND tax_id_index IS NULL")) {
-            jdbc.update("UPDATE app_user SET tax_id_index = ? WHERE id = ?", PiiCrypto.index(PiiCrypto.decrypt((String) r.get("tax_id"))), r.get("id"));
+        for (Map<String, Object> r : jdbc.queryForList("SELECT id, tax_id, tax_id_index FROM app_user WHERE tax_id IS NOT NULL")) {
+            String index = PiiCrypto.index(PiiCrypto.decrypt((String) r.get("tax_id")));
+            if (index.equals(r.get("tax_id_index"))) continue;
+            jdbc.update("UPDATE app_user SET tax_id_index = ? WHERE id = ?", index, r.get("id"));
             indexed++;
         }
         if (encrypted + indexed > 0) log.info("PII migration: {} values encrypted, {} FİN index entries written", encrypted, indexed);

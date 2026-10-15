@@ -21,7 +21,8 @@ import java.util.Locale;
  * the ciphertext, so the database never needs the key.
  * <p>
  * The key comes from {@code PII_KEY} (base64, 32 bytes). Without it a fixed development key is derived and a warning
- * is logged: fine for a local demo, never for production.
+ * is logged: fine for a local demo, never for production. Once {@code PII_KEY} is set, values written earlier with
+ * the development key still decrypt (it is kept as a legacy key) and the startup migration re-encrypts them.
  */
 public final class PiiCrypto {
 
@@ -30,15 +31,20 @@ public final class PiiCrypto {
     private static final SecureRandom RANDOM = new SecureRandom();
     private static final byte[] KEY;
     private static final byte[] INDEX_KEY;
+    /** Development key, kept for reading old values after PII_KEY is introduced; null when it is the active key. */
+    private static final byte[] LEGACY_KEY;
 
     static {
         String env = System.getenv("PII_KEY");
+        byte[] dev = sha256("aqrar-invest-development-pii-key".getBytes(StandardCharsets.UTF_8));
         byte[] k;
         if (env != null && !env.isBlank()) {
             k = Base64.getDecoder().decode(env.trim());
             if (k.length != 32) throw new IllegalStateException("PII_KEY must be 32 bytes (base64)");
+            LEGACY_KEY = dev;
         } else {
-            k = sha256("aqrar-invest-development-pii-key".getBytes(StandardCharsets.UTF_8));
+            k = dev;
+            LEGACY_KEY = null;
             log.warn("PII_KEY is not set: personal data is encrypted with the built-in development key");
         }
         KEY = k;
@@ -69,13 +75,35 @@ public final class PiiCrypto {
     public static String decrypt(String stored) {
         if (!isEncrypted(stored)) return stored;
         try {
-            byte[] all = Base64.getDecoder().decode(stored.substring(PREFIX.length()));
-            Cipher c = Cipher.getInstance("AES/GCM/NoPadding");
-            c.init(Cipher.DECRYPT_MODE, new SecretKeySpec(KEY, "AES"), new GCMParameterSpec(128, all, 0, 12));
-            return new String(c.doFinal(all, 12, all.length - 12), StandardCharsets.UTF_8);
+            return decrypt(stored, KEY);
         } catch (Exception e) {
+            if (LEGACY_KEY != null) {
+                try {
+                    return decrypt(stored, LEGACY_KEY);
+                } catch (Exception ignored) {
+                    // fall through to the error below
+                }
+            }
             throw new IllegalStateException("PII decryption failed (wrong PII_KEY?)", e);
         }
+    }
+
+    /** True for a value encrypted with an older key, which the migration should re-encrypt with the current one. */
+    public static boolean needsRekey(String stored) {
+        if (!isEncrypted(stored)) return false;
+        try {
+            decrypt(stored, KEY);
+            return false;
+        } catch (Exception e) {
+            return true;
+        }
+    }
+
+    private static String decrypt(String stored, byte[] key) throws Exception {
+        byte[] all = Base64.getDecoder().decode(stored.substring(PREFIX.length()));
+        Cipher c = Cipher.getInstance("AES/GCM/NoPadding");
+        c.init(Cipher.DECRYPT_MODE, new SecretKeySpec(key, "AES"), new GCMParameterSpec(128, all, 0, 12));
+        return new String(c.doFinal(all, 12, all.length - 12), StandardCharsets.UTF_8);
     }
 
     /** Deterministic keyed hash for equality search on an encrypted field; case and spaces are normalised. */

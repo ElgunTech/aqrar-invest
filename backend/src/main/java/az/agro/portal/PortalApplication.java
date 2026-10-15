@@ -12,6 +12,7 @@ public class PortalApplication {
 
     public static void main(String[] args) {
         useDatabaseUrl(System.getenv("DATABASE_URL"));
+        randomSecretsUnlessSet();
         SpringApplication.run(PortalApplication.class, args);
     }
 
@@ -19,6 +20,24 @@ public class PortalApplication {
      * Hosted PostgreSQL (Neon, Render, Heroku-style) hands out one URL: postgresql://user:password@host/db?sslmode=require.
      * Turn it into the JDBC URL, user and password Spring expects, and switch to the postgres profile.
      */
+    /**
+     * The integration secrets have demo defaults for the tests; a running server never uses those public values.
+     * Without the environment variable it gets a random secret for this boot (the built-in mocks read the same property).
+     */
+    static void randomSecretsUnlessSet() {
+        String[][] secrets = {{"EKTIS_API_KEY", "app.ektis.api-key"}, {"INTEGRATION_API_KEY", "app.integration.inbound-api-key"},
+                {"MYGOV_CLIENT_SECRET", "app.mygov.client-secret"}};
+        java.security.SecureRandom random = new java.security.SecureRandom();
+        for (String[] s : secrets) {
+            String env = System.getenv(s[0]);
+            if ((env == null || env.isBlank()) && System.getProperty(s[1]) == null) {
+                byte[] b = new byte[24];
+                random.nextBytes(b);
+                System.setProperty(s[1], java.util.HexFormat.of().formatHex(b));
+            }
+        }
+    }
+
     static void useDatabaseUrl(String url) {
         if (url == null || url.isBlank()) return;
         java.net.URI u = java.net.URI.create(url.trim());
