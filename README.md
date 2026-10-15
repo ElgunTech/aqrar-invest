@@ -134,6 +134,7 @@ start.bat
 ## Fərqləndirici modullar
 
 * **Öhdəliklərin monitorinqi:** müraciət təsdiqlənəndə investor üçün 4 mərhələli öhdəlik planı yaranır (6/12/24/36 ay, investisiyanın 20/50/80/100%-i). Hesabat GPS-li foto ilə verilir, koordinat sahənin sərhədi ilə yoxlanılır. Nazirlik panelində svetofor: vaxtında, diqqət, gecikir.
+* **İnternetsiz foto-hesabat:** sahədə siqnal olmayanda portal keşdən açılır (service worker), hesabat və foto cihazda (IndexedDB) saxlanılır və bağlantı yarananda özü göndərilir; hər hesabatın statusu görünür: «gözləyir», «göndərilir», «göndərildi», «xəta». Fotoda GPS yoxdursa, cihazın GPS-i (internetsiz işləyir) götürülür. Şəxsi keş çıxışda silinir.
 * **Dürüstlük siqnalları:** başqa müraciətçi ilə eyni telefon/e-poçt, kopyalanmış biznes plan (mətn oxşarlığı), real olmayan investisiya, FİN uyğunsuzluğu, qiymətləndiricinin özü ilə maraqlar toqquşması. Siqnallar qərar vermir, komissiyanın diqqətini çəkir; sahibkar onları görmür.
 * **Böyük Qayıdış:** qayıdan sakinlər üçün yaradılan iş yerləri ayrıca qiymətləndirmə meyarı və statistika göstəricisidir.
 * **Komissiya:** ən azı 2 üzvün müstəqil balı, maraqlar toqquşması bəyannaməsi.

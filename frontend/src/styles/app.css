@@ -821,3 +821,17 @@ html, body { overflow-x: clip; }
 .scen-be p { margin: 6px 0; }
 @media (max-width: 760px) { .scen-controls, .scen-grid { grid-template-columns: 1fr; } }
 .passport__note { margin: 6px 48px 0; font-size: 12px; color: var(--ink-faint); } @media (max-width: 640px) { .passport__note { margin-inline: 16px; } }
+
+/* offline field reports */
+.offline-banner { display: flex; gap: 10px; align-items: center; padding: 10px 14px; margin-bottom: 12px; border-radius: 8px; background: #fff8eb; border: 1px solid #f3d9a4; color: #7a4b00; font-size: 13.5px; }
+.queued { display: flex; gap: 10px; align-items: center; margin-top: 10px; padding: 8px 10px; border-radius: 8px; border: 1px dashed var(--line-strong); background: #fafbfa; }
+.queued img { width: 44px; height: 44px; object-fit: cover; border-radius: 6px; flex: none; }
+.queued__state { display: flex; gap: 6px; align-items: center; font-size: 13px; }
+.queued--pending .queued__state { color: #b45309; }
+.queued--sending .queued__state { color: #1c7ed6; }
+.queued--sent { border-style: solid; border-color: var(--forest-100); background: var(--forest-50); }
+.queued--sent .queued__state { color: var(--forest-600); }
+.queued--error { border-color: var(--danger); background: #fdf6f5; }
+.queued--error .queued__state { color: var(--danger); }
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }

@@ -1,3 +1,4 @@
+import { onSent } from "../lib/offlineReports";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, FilePlus2, FileText, Inbox, MessageSquareReply, RefreshCw, Upload } from "lucide-react";
@@ -70,7 +71,9 @@ function Reply({ app, onDone }: { app: Application; onDone: () => void }) {
 }
 
 function Obligations({ id }: { id: number }) {
-  const { data, setData } = useApi<Project>(`/api/v1/me/applications/${id}/monitoring`);
+  const { data, setData, reload } = useApi<Project>(`/api/v1/me/applications/${id}/monitoring`);
+  // a report queued offline was delivered: show the server's view of the milestone
+  useEffect(() => onSent((appId) => { if (String(appId) === String(id)) reload(); }), [id, reload]);
   if (!data || !data.milestones.length) return null;
   return (
     <section className="panel">

@@ -48,6 +48,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     await api("/api/v1/auth/logout", { method: "POST" });
+    // the offline copy of personal data must not outlive the session on a shared device
+    try { await caches.delete("aqrar-api"); } catch { /* caches unavailable */ }
     setUser(null);
   };
 
