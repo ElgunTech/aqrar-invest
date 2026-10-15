@@ -207,7 +207,7 @@ export default function Map3D() {
         {selected && (
           <div className="map3d__card rise">
             <button className="map3d__close" onClick={overview} aria-label={t("Bağla")}><X size={16} /></button>
-            <div className="faint mono" style={{ fontSize: 12 }}>{selected.code} · ANAMA {selected.anamaRef}</div>
+            <div className="faint mono map3d__meta" style={{ fontSize: 12 }}>{selected.code} · ANAMA {selected.anamaRef}</div>
             <h3 style={{ margin: "4px 0 8px", fontSize: 18 }}>{selected.title}</h3>
             <div className="row" style={{ marginBottom: 10 }}><MineTag label={selected.mineClearance} /><span className="faint" style={{ fontSize: 12.5 }}>{date(selected.mineClearanceDate)}</span></div>
             <dl className="kv" style={{ gridTemplateColumns: "1fr auto", fontSize: 13.5, gap: "4px 12px" }}>
