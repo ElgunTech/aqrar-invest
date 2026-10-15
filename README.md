@@ -189,7 +189,7 @@ Demo:
 | Backend | Render, Docker, pulsuz plan | `Dockerfile`, `render.yaml` |
 | Oyaq saxlama | GitHub Actions, hər 10 dəqiqə | `.github/workflows/keep-awake.yml` |
 
-Render mühit dəyişənləri: `PII_KEY` (32 bayt, base64; şəxsi məlumatların şifrələmə açarı, bir dəfə təyin edilir və dəyişdirilmir), istəyə bağlı: `BREVO_API_KEY` və `MAIL_FROM` (e-poçt), `SMTP_USER` / `SMTP_PASSWORD` (SMTP alternativi, Render-in pulsuz planında SMTP portları bağlıdır), `GROQ_API_KEY` (chatbot üçün LLM).
+Render mühit dəyişənləri: `PII_KEY` (32 bayt, base64; şəxsi məlumatların şifrələmə açarı; təyin ediləndə köhnə inkişaf açarı ilə yazılmış qeydləri miqrasiya avtomatik yenidən şifrələyir), `INTEGRATION_API_KEY`, `EKTIS_API_KEY`, `MYGOV_CLIENT_SECRET` (təyin edilmədikdə hər işə düşmədə təsadüfi dəyər yaranır, demo dəyərlər istifadə olunmur), `DEMO_TAMPER=true` (yalnız nümayiş üçün; saxtakarlıq düyməsi yalnız ADMIN üçündür), istəyə bağlı: `BREVO_API_KEY` və `MAIL_FROM` (e-poçt), `SMTP_USER` / `SMTP_PASSWORD` (SMTP alternativi, Render-in pulsuz planında SMTP portları bağlıdır), `GROQ_API_KEY` (chatbot üçün LLM).
 Hansı kanalların açıq olduğunu `/api/v1/public/status` göstərir. Render hər deploy-da demo bazanı yenidən yaradır.
 
 ## Struktur
