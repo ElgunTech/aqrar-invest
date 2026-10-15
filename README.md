@@ -18,6 +18,7 @@ EKTİS-ə inteqrasiyaya hazır işlək prototip.
 
 ## Sənədlər
 
+* **[Qiymətləndirmə meyarları və sübutlar](docs/QIYMETLENDIRME.md)**: təhvil paketinin hər bəndi və hər meyar üçün portalda harada göstərildiyi
 * [Arxitektura və ER diaqramı](docs/ARXITEKTURA.md)
 * [EKTİS və myGov inteqrasiyası, API nümunələri](docs/INTEQRASIYA.md)
 * [Texniki yol xəritəsi](docs/YOL-XERITESI.md)
@@ -77,7 +78,16 @@ cd ../backend && mvn package
 java -jar target/agro-portal.jar
 ```
 
-PostgreSQL ilə: `--spring.profiles.active=postgres` və `DB_URL`, `DB_USER`, `DB_PASSWORD` mühit dəyişənləri.
+PostgreSQL ilə: `DATABASE_URL=postgresql://user:parol@host/db?sslmode=require` (Neon, Render və s. formatı; avtomatik PostgreSQL-ə keçir) və ya `--spring.profiles.active=postgres` ilə `DB_URL`, `DB_USER`, `DB_PASSWORD`.
+
+### 4. Docker ilə (frontend + backend bir imicdə)
+
+```bash
+docker build -t aqrar-invest .
+docker run -p 8080:8080 aqrar-invest            # http://localhost:8080
+```
+
+İstəyə bağlı mühit dəyişənləri: `DATABASE_URL`, `BREVO_API_KEY` + `MAIL_FROM` (e-poçt), `GROQ_API_KEY` (chatbot üçün LLM).
 
 ## myGov ilə giriş
 

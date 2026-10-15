@@ -70,6 +70,12 @@ erDiagram
   INVESTMENT_APPLICATION ||--o{ APPLICATION_DOCUMENT : sənədlər
   INVESTMENT_APPLICATION ||--o{ STATUS_CHANGE : tarixçə
   INVESTMENT_APPLICATION ||..o{ INTEGRATION_EVENT : "aggregateId"
+  INVESTMENT_APPLICATION ||--o{ EVALUATOR_SCORE : "komissiya balları"
+  APP_USER ||--o{ EVALUATOR_SCORE : "qiymətləndirir"
+  INVESTMENT_APPLICATION ||--o{ MILESTONE : "öhdəlik mərhələləri"
+  INVESTMENT_APPLICATION ||..o{ LEDGER_ENTRY : "applicationNumber (hash zənciri)"
+  APPLICATION_DOCUMENT ||..o| STORED_BLOB : "storedName (faylın baza surəti)"
+  MILESTONE ||..o| STORED_BLOB : "foto"
 
   APP_USER {
     bigint id PK
@@ -156,7 +162,44 @@ erDiagram
     int attempts
     string external_reference
   }
+  EVALUATOR_SCORE {
+    bigint id PK
+    bigint application_id FK
+    bigint evaluator_id FK
+    int feasibility "0-10"
+    int financing "0-10"
+    int social_impact "0-10"
+    int technology "0-10"
+    boolean no_conflict_declared
+  }
+  MILESTONE {
+    bigint id PK
+    bigint application_id FK
+    int seq "1-4"
+    int investment_percent "20/50/80/100"
+    date due_date
+    enum status "PLANNED | REPORTED | ACCEPTED | REJECTED"
+    bigint reported_investment
+    double photo_lat
+    double photo_lng
+    boolean gps_inside_plot
+    int gps_distance_m
+  }
+  LEDGER_ENTRY {
+    bigint id PK "zəncirdə sıra"
+    string application_number
+    enum kind "STATUS | SCORE"
+    text payload "kanonik JSON"
+    string prev_hash "SHA-256"
+    string hash "SHA-256(prev|nömrə|növ|payload)"
+  }
+  STORED_BLOB {
+    string name PK
+    bytea content "5 MB-a qədər"
+  }
 ```
+
+Şəkil və sənədlər diskdə saxlanılır, eyni zamanda `STORED_BLOB`-a surəti yazılır (efemer diskli hostinqdə itməsin). `LEDGER_ENTRY` yalnız əlavə olunur, heç vaxt yenilənmir.
 
 ## Müraciətin həyat dövrü
 
