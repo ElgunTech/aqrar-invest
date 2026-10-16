@@ -112,44 +112,53 @@ export default function Map3D() {
       if (layersAdded.current) return;
       layersAdded.current = true;
       const anama = await (await fetch("/api/v1/public/official/anama")).json();
-      m.addSource("anama", { type: "geojson", data: anama });
-      m.addLayer({ id: "anama-fill", type: "fill", source: "anama", paint: { "fill-color": "#f59e0b", "fill-opacity": 0.28 } });
-      m.addLayer({ id: "anama-line", type: "line", source: "anama", paint: { "line-color": "#c2410c", "line-width": 0.8 } });
+      // the style may still be loading (map just created) or long loaded (slow API): try now, else on the next style event
+      const apply = () => {
+        if (map.current !== m || m.getSource("plots")) return;
+        try {
+          m.addSource("anama", { type: "geojson", data: anama });
+        } catch {
+          m.once("styledata", apply);
+          return;
+        }
+        m.addLayer({ id: "anama-fill", type: "fill", source: "anama", paint: { "fill-color": "#f59e0b", "fill-opacity": 0.28 } });
+        m.addLayer({ id: "anama-line", type: "line", source: "anama", paint: { "line-color": "#c2410c", "line-width": 0.8 } });
 
-      m.addSource("plots", {
-        type: "geojson",
-        data: {
-          type: "FeatureCollection",
-          features: plots.map((p) => ({
-            type: "Feature", id: p.id,
-            properties: { id: p.id, title: p.title, color: ACTIVITY[p.activityType.code].color },
-            geometry: JSON.parse(p.boundaryGeoJson!),
-          })),
-        },
-      });
-      m.addLayer({
-        id: "plots-3d", type: "fill-extrusion", source: "plots",
-        paint: {
-          "fill-extrusion-color": ["get", "color"],
-          "fill-extrusion-height": ["case", ["boolean", ["feature-state", "selected"], false], 140, 60],
-          "fill-extrusion-opacity": 0.85,
-        },
-      });
-      m.addLayer({ id: "plots-outline", type: "line", source: "plots", paint: { "line-color": "#ffffff", "line-width": 2 } });
+        m.addSource("plots", {
+          type: "geojson",
+          data: {
+            type: "FeatureCollection",
+            features: plots.map((p) => ({
+              type: "Feature", id: p.id,
+              properties: { id: p.id, title: p.title, color: ACTIVITY[p.activityType.code].color },
+              geometry: JSON.parse(p.boundaryGeoJson!),
+            })),
+          },
+        });
+        m.addLayer({
+          id: "plots-3d", type: "fill-extrusion", source: "plots",
+          paint: {
+            "fill-extrusion-color": ["get", "color"],
+            "fill-extrusion-height": ["case", ["boolean", ["feature-state", "selected"], false], 140, 60],
+            "fill-extrusion-opacity": 0.85,
+          },
+        });
+        m.addLayer({ id: "plots-outline", type: "line", source: "plots", paint: { "line-color": "#ffffff", "line-width": 2 } });
 
-      m.on("click", "plots-3d", (e) => {
-        const id = e.features?.[0]?.properties?.id;
-        const p = plots.find((x) => x.id === Number(id));
-        if (p) select(p);
-      });
-      m.on("mouseenter", "plots-3d", () => (m.getCanvas().style.cursor = "pointer"));
-      m.on("mouseleave", "plots-3d", () => (m.getCanvas().style.cursor = ""));
-      const first = initial ? plots.find((x) => x.id === initial) : undefined;
-      if (first) { m.setFeatureState({ source: "plots", id: first.id }, { selected: true }); selectedRef.current = first; }
-      else startOrbit();
+        m.on("click", "plots-3d", (e) => {
+          const id = e.features?.[0]?.properties?.id;
+          const p = plots.find((x) => x.id === Number(id));
+          if (p) select(p);
+        });
+        m.on("mouseenter", "plots-3d", () => (m.getCanvas().style.cursor = "pointer"));
+        m.on("mouseleave", "plots-3d", () => (m.getCanvas().style.cursor = ""));
+        const first = initial ? plots.find((x) => x.id === initial) : undefined;
+        if (first) { m.setFeatureState({ source: "plots", id: first.id }, { selected: true }); selectedRef.current = first; }
+        else startOrbit();
+      };
+      apply();
     };
-    if (m.isStyleLoaded()) add();
-    else m.once("load", add);
+    add();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [plots]);
 
