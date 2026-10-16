@@ -59,7 +59,7 @@ Content-Type: application/json
   "applicationNumber": "QIM-2026-000009",
   "submittedAt": "2026-10-14T10:49:08Z",
   "competitionCode": "MQ-2026-002",
-  "applicant": { "type": "INDIVIDUAL", "name": "Rəşad Məmmədov", "taxId": "5ZK7QWE", "phone": "+994 55 333 33 33", "email": "investor@demo.az" },
+  "applicant": { "type": "INDIVIDUAL", "name": "Rəşad Məmmədov", "taxId": "5ZK7QWE", "phone": "+994 55 333 33 33", "email": "investor@demo.aze" },
   "plot": { "code": "QR-XCL-001", "cadastreNumber": "10-402-0015-001", "district": "Xocalı", "areaHa": 65.0 },
   "investment": { "activityType": "HORTICULTURE", "plannedCrop": "apple", "amountAzn": 500000, "ownFundsPercent": 30, "jobsCreated": 12, "projectMonths": 36 }
 }

@@ -30,8 +30,8 @@ Bütün demo hesabların şifrəsi: `Demo12345`
 | Rol | E-poçt | Nə edə bilər |
 |---|---|---|
 | Administrator | `admin@demo.az` | Hər şey + müsabiqəni təsdiq etmək, audit jurnalı, AI modelini yenidən yükləmək |
-| Qiymətləndirici | `evaluator@demo.az` | Müraciətlərə baxış, status dəyişmək, sahə və müsabiqə yaratmaq |
-| Sahibkar | `investor@demo.az` | Müraciət etmək, statusu izləmək (FİN `5ZK7QWE` EKTİS reyestrində var) |
+| Qiymətləndirici | `valuator@demo.aza` | Müraciətlərə baxış, status dəyişmək, sahə və müsabiqə yaratmaq |
+| Sahibkar | `investor@demo.aze` | Müraciət etmək, statusu izləmək (FİN `5ZK7QWE` EKTİS reyestrində var) |
 | Sahibkar (şirkət) | `aqro@demo.az` | VÖEN `1402567891` |
 | Sahibkar | `leyla@demo.az` | "Əlavə məlumat tələb olunur" statusunda müraciəti var |
 
@@ -157,11 +157,11 @@ start.bat
 * **İqlim riski:** sahənin koordinatları üzrə 10 illik (2015–2024) ERA5 gündəlik məlumatı (Open-Meteo, açarsız): şaxtalı günlər, gec yaz şaxtası, ən soyuq gecə, isti günlər, yağıntı, istilik cəmi. AI-nin tövsiyə etdiyi bitkilər üçün qış şaxtası, gec yaz şaxtası, istilik stresi və suvarma ehtiyacı riski (aşağı / orta / yüksək).
 * **Sahə pasportu (PDF):** `/sahe/{id}/pasport` — minatəmizləmə, AI, iqlim riski, peyk, günəş və rəsmi statistika bir A4 sənəddə, QR kodla; investor banka və tərəfdaşa təqdim edə bilər.
 * **3D xəritə:** relyef, peyk görüntüsü, ANAMA qatı və sahələr; sahə seçiləndə kamera ona uçur. Sahə səhifəsində "3D bax".
-* **E-poçt bildirişləri:** qeydiyyat, müraciət, status dəyişikliyi, EKTİS təsdiqi və monitorinq nəticəsi istifadəçinin e-poçtuna göndərilir (Brevo HTTP API; SMTP də dəstəklənir). `@demo.az` hesablarına göndərilmir.
+* **E-poçt bildirişləri:** qeydiyyat, müraciət, status dəyişikliyi, EKTİS təsdiqi və monitorinq nəticəsi istifadəçinin e-poçtuna göndərilir (Brevo HTTP API; SMTP də dəstəklənir). Demo hesablarına (`@demo.*`) göndərilmir.
 * **Üç dil:** AZ / EN / RU (yuxarı zolaqda). Rəsmi mənbələrdən gələn adlar azərbaycanca qalır.
 
 Demo:
-* `evaluator@demo.az` → İnzibati panel → "Öhdəliklərin monitorinqi": pilot qalib (Seyidmahmudlu, 14 ay əvvəl) qırmızıdır, həm gecikmiş mərhələyə, həm də peykə görə: "Torpaq verildi, amma 14 aydır əkin görünmür" (real Sentinel-2 məlumatı).
+* `valuator@demo.aza` → İnzibati panel → "Öhdəliklərin monitorinqi": pilot qalib (Seyidmahmudlu, 14 ay əvvəl) qırmızıdır, həm gecikmiş mərhələyə, həm də peykə görə: "Torpaq verildi, amma 14 aydır əkin görünmür" (real Sentinel-2 məlumatı).
 * Müraciətlər → "Elçin Qurbanov" (6 siqnal).
 * Sahə səhifəsi → "Günəş enerjisi" tabı, məsələn `/sahe/1?tab=gunes`.
 

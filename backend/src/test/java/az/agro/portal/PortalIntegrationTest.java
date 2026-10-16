@@ -58,9 +58,9 @@ class PortalIntegrationTest {
     void protectedEndpointsRequireTheRightRole() throws Exception {
         mvc.perform(get("/api/v1/me/applications")).andExpect(status().isUnauthorized());
         mvc.perform(get("/api/v1/admin/dashboard")).andExpect(status().isUnauthorized());
-        mvc.perform(get("/api/v1/admin/dashboard").with(user("investor@demo.az").roles("INVESTOR"))).andExpect(status().isForbidden());
-        mvc.perform(get("/api/v1/admin/dashboard").with(user("evaluator@demo.az").roles("EVALUATOR"))).andExpect(status().isOk());
-        mvc.perform(get("/api/v1/admin/audit").with(user("evaluator@demo.az").roles("EVALUATOR"))).andExpect(status().isForbidden());
+        mvc.perform(get("/api/v1/admin/dashboard").with(user("investor@demo.aze").roles("INVESTOR"))).andExpect(status().isForbidden());
+        mvc.perform(get("/api/v1/admin/dashboard").with(user("valuator@demo.aza").roles("EVALUATOR"))).andExpect(status().isOk());
+        mvc.perform(get("/api/v1/admin/audit").with(user("valuator@demo.aza").roles("EVALUATOR"))).andExpect(status().isForbidden());
     }
 
     @Test
@@ -98,7 +98,7 @@ class PortalIntegrationTest {
         // the author cannot approve their own competition
         mvc.perform(post("/api/v1/admin/competitions/" + id + "/approve").with(csrf()).with(user("admin@demo.az").roles("ADMIN"))).andExpect(status().isForbidden());
         // an evaluator cannot approve at all
-        mvc.perform(post("/api/v1/admin/competitions/" + id + "/approve").with(csrf()).with(user("evaluator@demo.az").roles("EVALUATOR"))).andExpect(status().isForbidden());
+        mvc.perform(post("/api/v1/admin/competitions/" + id + "/approve").with(csrf()).with(user("valuator@demo.aza").roles("EVALUATOR"))).andExpect(status().isForbidden());
         assertThat(competitions.findById(id).orElseThrow().getStatus().name()).isEqualTo("PENDING_APPROVAL");
     }
 
@@ -108,7 +108,7 @@ class PortalIntegrationTest {
         Map<String, Object> r = Map.ofEntries(
                 Map.entry("competitionId", competitionId), Map.entry("plotId", plotId), Map.entry("applicantType", "INDIVIDUAL"),
                 Map.entry("applicantName", "Rəşad Məmmədov"), Map.entry("taxId", "5ZK7QWE"), Map.entry("phone", "+994 55 333 33 33"),
-                Map.entry("email", "investor@demo.az"), Map.entry("activityType", "CROP_FARMING"), Map.entry("plannedCrop", "maize"),
+                Map.entry("email", "investor@demo.aze"), Map.entry("activityType", "CROP_FARMING"), Map.entry("plannedCrop", "maize"),
                 Map.entry("plannedInvestment", 400000), Map.entry("ownFundsPercent", 30), Map.entry("jobsCreated", 10),
                 Map.entry("projectMonths", 36), Map.entry("experienceYears", 6),
                 Map.entry("businessPlan", "Qarğıdalı və yem bitkiləri, damcı suvarma sistemi, soyuducu anbar. Birinci il torpağın hazırlanması, ikinci il tam istehsal, yerli sakinlər işlə təmin olunacaq."));
@@ -124,7 +124,7 @@ class PortalIntegrationTest {
     @Test
     void applicationValidatesDocumentsAndRejectsDuplicates() throws Exception {
         long[] cp = openCompetitionAndPlot("QR-AGD-002");
-        var investor = user("investor@demo.az").roles("INVESTOR");
+        var investor = user("investor@demo.aze").roles("INVESTOR");
 
         // a file whose content is not a PDF is refused even with a .pdf name
         mvc.perform(multipartCsrf("/api/v1/me/applications").file(data(cp[0], cp[1]))
@@ -159,7 +159,7 @@ class PortalIntegrationTest {
         // evaluators cannot jump straight to a decision
         var mine = json.readTree(mvc.perform(get("/api/v1/me/applications").with(investor)).andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8));
         long appId = mine.get(0).get("id").asLong();
-        mvc.perform(post("/api/v1/admin/applications/" + appId + "/status").with(csrf()).with(user("evaluator@demo.az").roles("EVALUATOR"))
+        mvc.perform(post("/api/v1/admin/applications/" + appId + "/status").with(csrf()).with(user("valuator@demo.aza").roles("EVALUATOR"))
                         .contentType(MediaType.APPLICATION_JSON).content("{\"status\":\"APPROVED\",\"comment\":\"ok\"}"))
                 .andExpect(status().isConflict());
         // and other investors cannot see it
@@ -168,7 +168,7 @@ class PortalIntegrationTest {
 
     @Test
     void adminListsMaskPersonalIdentifiers() throws Exception {
-        String body = mvc.perform(get("/api/v1/admin/applications").with(user("evaluator@demo.az").roles("EVALUATOR")))
+        String body = mvc.perform(get("/api/v1/admin/applications").with(user("valuator@demo.aza").roles("EVALUATOR")))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
         assertThat(body).doesNotContain("5ZK7QWE").contains("5Z***WE");
     }
@@ -181,17 +181,17 @@ class PortalIntegrationTest {
         String approve = "{\"status\":\"APPROVED\",\"comment\":\"Qalib\"}";
         String score = "{\"feasibility\":8,\"financing\":7,\"socialImpact\":8,\"technology\":7,\"noConflict\":true}";
 
-        mvc.perform(post("/api/v1/admin/applications/" + id + "/status").with(csrf()).with(user("evaluator@demo.az").roles("EVALUATOR"))
+        mvc.perform(post("/api/v1/admin/applications/" + id + "/status").with(csrf()).with(user("valuator@demo.aza").roles("EVALUATOR"))
                 .contentType(MediaType.APPLICATION_JSON).content(approve)).andExpect(status().isConflict());
         // a member who does not declare the absence of a conflict of interest cannot score
-        mvc.perform(post("/api/v1/admin/applications/" + id + "/score").with(csrf()).with(user("evaluator@demo.az").roles("EVALUATOR"))
+        mvc.perform(post("/api/v1/admin/applications/" + id + "/score").with(csrf()).with(user("valuator@demo.aza").roles("EVALUATOR"))
                 .contentType(MediaType.APPLICATION_JSON).content(score.replace("true", "false"))).andExpect(status().isBadRequest());
-        mvc.perform(post("/api/v1/admin/applications/" + id + "/score").with(csrf()).with(user("evaluator@demo.az").roles("EVALUATOR"))
+        mvc.perform(post("/api/v1/admin/applications/" + id + "/score").with(csrf()).with(user("valuator@demo.aza").roles("EVALUATOR"))
                 .contentType(MediaType.APPLICATION_JSON).content(score)).andExpect(status().isOk())
                 .andExpect(jsonPath("$.commission.average").value(75));
         mvc.perform(post("/api/v1/admin/applications/" + id + "/score").with(csrf()).with(user("admin@demo.az").roles("ADMIN"))
                 .contentType(MediaType.APPLICATION_JSON).content(score)).andExpect(status().isOk());
-        mvc.perform(post("/api/v1/admin/applications/" + id + "/status").with(csrf()).with(user("evaluator@demo.az").roles("EVALUATOR"))
+        mvc.perform(post("/api/v1/admin/applications/" + id + "/status").with(csrf()).with(user("valuator@demo.aza").roles("EVALUATOR"))
                 .contentType(MediaType.APPLICATION_JSON).content(approve)).andExpect(status().isOk())
                 .andExpect(jsonPath("$.status.code").value("APPROVED"));
     }

@@ -25,7 +25,7 @@ import java.util.concurrent.Executors;
 /**
  * Sends an e-mail copy of a portal notification, through the Brevo HTTP API when BREVO_API_KEY is set (works on hosts
  * that block outbound SMTP, such as Render's free tier), otherwise over SMTP. Off when neither is configured or no sender,
- * and never for the seeded demo accounts (@demo.az). Sending runs off the request thread; a failure is only logged.
+ * and never for the seeded demo accounts (@demo.*). Sending runs off the request thread; a failure is only logged.
  */
 @Service
 public class MailService {
@@ -58,7 +58,7 @@ public class MailService {
     }
 
     public void send(String to, String title, String message, String link) {
-        if (!enabled() || to == null || !to.contains("@") || to.endsWith("@demo.az")) return;
+        if (!enabled() || to == null || !to.contains("@") || to.contains("@demo.")) return;
         pool.submit(() -> {
             try {
                 if (!brevoKey.isBlank()) {

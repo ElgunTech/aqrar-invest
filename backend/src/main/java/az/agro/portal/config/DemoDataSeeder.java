@@ -35,6 +35,9 @@ import java.util.*;
 @Component
 public class DemoDataSeeder implements ApplicationRunner {
 
+    static final String INVESTOR_EMAIL = "investor@demo.aze";
+    static final String EVALUATOR_EMAIL = "valuator@demo.aza";
+
     private static final Logger log = LoggerFactory.getLogger(DemoDataSeeder.class);
     private static final String DEMO_PASSWORD = "Demo12345";
 
@@ -78,8 +81,8 @@ public class DemoDataSeeder implements ApplicationRunner {
         log.info("Seeding demo data...");
 
         AppUser admin = user("admin@demo.az", "Şükürov Elgün", Role.ADMIN, "+994 50 111 11 11", null);
-        AppUser evaluator = user("evaluator@demo.az", "Qurbanov Rafael", Role.EVALUATOR, "+994 50 222 22 22", null);
-        AppUser investor = user("investor@demo.az", "Rəşad Məmmədov", Role.INVESTOR, "+994 55 333 33 33", "5ZK7QWE");
+        AppUser evaluator = user(EVALUATOR_EMAIL, "Qurbanov Rafael", Role.EVALUATOR, "+994 50 222 22 22", null);
+        AppUser investor = user(INVESTOR_EMAIL, "Rəşad Məmmədov", Role.INVESTOR, "+994 55 333 33 33", "5ZK7QWE");
         AppUser company = user("aqro@demo.az", "Qarabağ Aqro MMC", Role.INVESTOR, "+994 12 444 44 44", "1402567891");
         AppUser leyla = user("leyla@demo.az", "Leyla Hüseynova", Role.INVESTOR, "+994 70 555 55 55", "7AB3XYZ");
 

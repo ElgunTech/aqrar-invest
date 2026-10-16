@@ -29,7 +29,7 @@ public class MockMyGovController {
 
     /** Simulated civil registry. */
     static final List<MyGovClient.Identity> CITIZENS = List.of(
-            new MyGovClient.Identity("5ZK7QWE", "Rəşad Məmmədov", "+994 55 333 33 33", "investor@demo.az"),
+            new MyGovClient.Identity("5ZK7QWE", "Rəşad Məmmədov", "+994 55 333 33 33", "investor@demo.aze"),
             new MyGovClient.Identity("7AB3XYZ", "Leyla Hüseynova", "+994 70 555 55 55", "leyla@demo.az"),
             new MyGovClient.Identity("6QW2E9R", "Kamran Həsənov", "+994 50 777 12 34", null),
             new MyGovClient.Identity("3LM8K2D", "Günay Quliyeva", "+994 51 222 98 76", null));

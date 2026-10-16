@@ -69,6 +69,6 @@ class LedgerIntegrationTest {
     @Test
     void investorCannotTamper() throws Exception {
         String number = applications.findAll().get(0).getApplicationNumber();
-        mvc.perform(post("/api/v1/admin/ledger/tamper/" + number).with(csrf()).with(user("investor@demo.az").roles("INVESTOR"))).andExpect(status().isForbidden());
+        mvc.perform(post("/api/v1/admin/ledger/tamper/" + number).with(csrf()).with(user("investor@demo.aze").roles("INVESTOR"))).andExpect(status().isForbidden());
     }
 }
