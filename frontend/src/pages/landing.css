@@ -248,7 +248,7 @@
 }
 @keyframes lf-bloom-open { from { --k: 0; } to { --k: 1; } }
 @keyframes lf-bloom-float { 50% { transform: translateY(-2%) rotate(2deg); } }
-@media (max-width: 620px) { .lf-hero__frame > .lf-bloom { left: calc(var(--fx) * 100%); top: 19%; width: min(25vw, 14vh); z-index: 5; } }
+@media (max-width: 620px) { .lf-hero__frame > .lf-bloom { left: calc(var(--fx) * 100%); top: 33.5%; width: min(25vw, 14vh); z-index: 5; } }
 
 /* small chapter label above each scene's headline: number and the rail's waypoint name */
 .lf-kicker { display: inline-block; margin-bottom: 14px; padding: 5px 12px; border-radius: 999px;
